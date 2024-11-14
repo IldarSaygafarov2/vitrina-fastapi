@@ -19,7 +19,7 @@ def load_config(path: Optional[str] = None) -> "Config":
     env.read_env(path)
 
     db_config = DbConfig.from_env(env)
-    run_api_config = RunConfig.from_env()
+    run_api_config = RunConfig.from_env(env)
     api_prefix = ApiPrefix()
 
     return Config(

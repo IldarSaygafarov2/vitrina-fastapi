@@ -19,6 +19,10 @@ class RunConfig:
 @dataclass
 class ApiV1Prefix:
     prefix: str = '/v1'
+    districts: str = '/districts'
+    categories: str = '/categories'
+    advertisements: str = '/advertisements'
+    users: str = '/users'
 
 
 @dataclass
