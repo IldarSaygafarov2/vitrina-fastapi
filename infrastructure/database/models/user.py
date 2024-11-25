@@ -18,5 +18,5 @@ class User(Base, IntIdMixin):
     lastname: Mapped[str] = mapped_column(String(128))
     phone_number: Mapped[str] = mapped_column(String(15), unique=True)
     tg_username: Mapped[str] = mapped_column(String, unique=True)
-    tg_chat_id: Mapped[int] = mapped_column(BIGINT)
+    tg_chat_id: Mapped[int] = mapped_column(BIGINT, nullable=True)
     role: Mapped["UserRole"] = mapped_column(ENUM(UserRole), default=UserRole.REALTOR)

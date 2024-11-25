@@ -2,7 +2,7 @@ import enum
 
 from sqlalchemy import ForeignKey, String, false
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 from .mixins.id_int_pk import IntIdMixin
@@ -59,3 +59,16 @@ class Advertisement(Base, IntIdMixin):
     floor_from: Mapped[int]
     floor_to: Mapped[int]
     is_studio: Mapped[bool]
+
+    images: Mapped[list["AdvertisementImage"]] = relationship(
+        back_populates="advertisement"
+    )
+
+
+class AdvertisementImage(Base, IntIdMixin):
+    url: Mapped[str]
+
+    advertisement_id: Mapped[int] = mapped_column(
+        ForeignKey("advertisements.id", ondelete="CASCADE")
+    )
+    advertisement: Mapped["Advertisement"] = relationship(back_populates="images")
