@@ -2,11 +2,10 @@ from typing import Any
 
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
-from infrastructure.database.setup import create_engine, create_session_pool
-
-from infrastructure.database.repo.requests import RequestsRepo
 
 from config.loader import load_config
+from infrastructure.database.repo.requests import RequestsRepo
+from infrastructure.database.setup import create_engine, create_session_pool
 
 config = load_config(".env")
 engine = create_engine(config.db)

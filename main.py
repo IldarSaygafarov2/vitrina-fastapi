@@ -1,15 +1,13 @@
 import logging
-
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, Request
 from aiogram.types import Update
-from backend.api import router as api_router
-from config.loader import load_config
-from tgbot.bot import bot, dp
+from fastapi import FastAPI, Request
 
-config = load_config()
+from backend.api import router as api_router
+from backend.app.config import config
+from tgbot.bot import bot, dp
 
 
 @asynccontextmanager
@@ -41,7 +39,7 @@ async def webhook(request: Request):
 if __name__ == "__main__":
     uvicorn.run(
         "main:main_app",
-        host="127.0.0.1",
-        port=8000,
+        host=config.run_api.api_host,
+        port=config.run_api.api_port,
         reload=True,
     )

@@ -35,7 +35,7 @@ def register_global_middlewares(dp: Dispatcher, config: Config, session_pool=Non
         dp.callback_query.outer_middleware(middleware_type)
 
 
-config = load_config()
+config = load_config(".env")
 engine = create_engine(db=config.db)
 session_pool = create_session_pool(engine=engine)
 

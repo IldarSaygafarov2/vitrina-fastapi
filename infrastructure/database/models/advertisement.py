@@ -36,7 +36,7 @@ class Advertisement(Base, IntIdMixin):
     property_type: Mapped["PropertyType"] = mapped_column(
         ENUM(PropertyType), default=PropertyType.NEW
     )
-    opretion_type: Mapped["OperationType"] = mapped_column(
+    operation_type: Mapped["OperationType"] = mapped_column(
         ENUM(OperationType), default=OperationType.RENT
     )
     repair_type: Mapped["RepairType"] = mapped_column(

@@ -45,3 +45,13 @@ class UserRepo(BaseRepo):
         stmt = select(User.role).where(User.tg_username == tg_username)
         result = await self.session.execute(stmt)
         return result.scalar_one()
+
+    async def get_user_by_chat_id(self, tg_chat_id: int):
+        stmt = select(User).where(User.tg_chat_id == tg_chat_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
+
+    async def get_user_by_username(self, username: str):
+        stmt = select(User).where(User.tg_username == username)
+        result = await self.session.execute(stmt)
+        return result.scalar_one()

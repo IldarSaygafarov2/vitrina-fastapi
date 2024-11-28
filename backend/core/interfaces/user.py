@@ -2,7 +2,10 @@ from pydantic import BaseModel
 
 
 class UserDTO(BaseModel):
-    pass
+    id: str
+    fullname: str
+    tg_username: str
+    phone_number: str
 
 
 class UserCreateDTO(BaseModel):
