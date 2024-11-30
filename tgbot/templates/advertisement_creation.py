@@ -15,7 +15,7 @@ def choose_photos_quantity_text(category_name: str):
 """
 
 
-def choose_photos_text(photos_quantity: int):
+def choose_photos_text(photos_quantity: str):
     return f"""Количество фотографий для объявления: <b>{photos_quantity}</b>
 
 Отправьте столько фотографий, сколько указали

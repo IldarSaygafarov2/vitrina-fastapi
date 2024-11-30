@@ -1,40 +1,13 @@
-import logging
-from contextlib import asynccontextmanager
-
 import uvicorn
-from aiogram.types import Update
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 
 from backend.api import router as api_router
 from backend.app.config import config
-from tgbot.bot import bot, dp
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    webhook_url = config.webhook.main_webhook_url
-    await bot.set_webhook(
-        url=webhook_url,
-        allowed_updates=dp.resolve_used_update_types(),
-        drop_pending_updates=True,
-    )
-    logging.info("webhook set to " + webhook_url)
-    yield
-    await bot.delete_webhook()
-    logging.info("webhook removed")
-
-
-main_app = FastAPI(lifespan=lifespan)
+from fastapi.staticfiles import StaticFiles
+main_app = FastAPI()
 main_app.include_router(api_router)
 
-
-@main_app.post("/webhook")
-async def webhook(request: Request):
-    logging.info("received webhook request")
-    update = Update.model_validate(await request.json(), context={"bot": bot})
-    await dp.feed_update(bot, update)
-    logging.info("update processed")
-
+main_app.mount("/media", StaticFiles(directory="media"), name="media")
 
 if __name__ == "__main__":
     uvicorn.run(

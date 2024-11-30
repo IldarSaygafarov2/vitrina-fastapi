@@ -1,7 +1,10 @@
+from typing import Optional
+
 from pydantic import BaseModel
-from .user import UserDTO
-from .district import DistrictDTO
-from .category import CategoryDTO
+
+from backend.core.interfaces.category import CategoryDTO
+from backend.core.interfaces.district import DistrictDTO
+from backend.core.interfaces.user import UserDTO
 
 
 class AdvertisementDTO(BaseModel):
@@ -34,6 +37,12 @@ class AdvertisementDetailDTO(BaseModel):
     property_type: str
     description: str
 
-    category: CategoryDTO
-    district: DistrictDTO
-    user: UserDTO
+    category: Optional[CategoryDTO]
+    district: Optional[DistrictDTO]
+    user: Optional[UserDTO]
+    images: Optional[list["AdvertisementImageDTO"]]
+
+
+class AdvertisementImageDTO(BaseModel):
+    id: int
+    url: str

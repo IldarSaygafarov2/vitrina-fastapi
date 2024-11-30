@@ -1,9 +1,11 @@
+import asyncio
 import logging
 
 import betterlogging as bl
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.fsm.storage.memory import MemoryStorage
 
 from config.loader import Config, load_config
 from infrastructure.database.setup import create_engine, create_session_pool
@@ -35,20 +37,34 @@ def register_global_middlewares(dp: Dispatcher, config: Config, session_pool=Non
         dp.callback_query.outer_middleware(middleware_type)
 
 
-config = load_config(".env")
-engine = create_engine(db=config.db)
-session_pool = create_session_pool(engine=engine)
+async def main():
+    setup_logging()
+    config = load_config(".env")
+    storage = MemoryStorage()
 
-bot = Bot(
-    token=config.tg_bot.token,
-    default=DefaultBotProperties(
-        parse_mode=ParseMode.HTML, link_preview_is_disabled=True
-    ),
-)
-dp = Dispatcher()
-dp["config"] = config
-dp.include_routers(*routers_list)
+    bot = Bot(
+        token=config.tg_bot.token,
+        default=DefaultBotProperties(
+            parse_mode=ParseMode.HTML, link_preview_is_disabled=True
+        ),
+    )
+    await bot.delete_webhook()
+
+    dp = Dispatcher(storage=storage)
+    dp["config"] = config
+
+    dp.include_routers(*routers_list)
+
+    engine = create_engine(db=config.db)
+    session_pool = create_session_pool(engine=engine)
+
+    register_global_middlewares(dp, config, session_pool)
+
+    await dp.start_polling(bot)
 
 
-register_global_middlewares(dp, config, session_pool)
-setup_logging()
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        logging.error("Bot was stopped")

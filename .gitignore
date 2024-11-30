@@ -64,3 +64,4 @@ venv.bak/
 cache/
 .vscode/
 test.py
+media/

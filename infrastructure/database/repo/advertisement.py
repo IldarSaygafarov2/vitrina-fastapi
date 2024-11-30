@@ -1,4 +1,6 @@
-from sqlalchemy import insert, select, update
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import selectinload
 
 from infrastructure.database.models import Advertisement, AdvertisementImage
 from infrastructure.utils.slugifier import generate_slug
@@ -36,8 +38,8 @@ class AdvertisementRepo(BaseRepo):
             .values(
                 slug=slug,
                 operation_type=operation_type,
-                category=category,
-                district=district,
+                category_id=category,
+                district_id=district,
                 name=title,
                 description=description,
                 address=address,
@@ -53,9 +55,14 @@ class AdvertisementRepo(BaseRepo):
                 floor_to=floor_to,
                 house_quadrature_from=house_quadrature_from,
                 house_quadrature_to=house_quadrature_to,
-                user=user,
+                user_id=user,
                 repair_type=repair_type,
             )
+            .on_conflict_do_update(
+                index_elements=[Advertisement.slug],
+                set_=dict(slug=slug)
+            )
+            .options(selectinload(Advertisement.category))
             .returning(Advertisement)
         )
         result = await self.session.execute(stmt)
@@ -68,14 +75,29 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def get_advertisement_by_slug(self, advertisement_slug: str):
-        stmt = select(Advertisement).where(Advertisement.slug == advertisement_slug)
+        stmt = (
+            select(Advertisement)
+            .options(
+                selectinload(Advertisement.category, Advertisement.district, Advertisement.user)
+            )
+            .where(Advertisement.slug == advertisement_slug)
+        )
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_advertisement_by_id(self, advertisement_id: int):
-        stmt = select(Advertisement).where(Advertisement.id == advertisement_id)
+        stmt = (
+            select(Advertisement)
+            .options(
+                selectinload(Advertisement.category),
+                selectinload(Advertisement.district),
+                selectinload(Advertisement.user),
+                selectinload(Advertisement.images),
+            )
+            .where(Advertisement.id == advertisement_id)
+        )
         result = await self.session.execute(stmt)
-        return result.scalar_one()
+        return result.scalar_one_or_none()
 
     async def get_advertisement_by_title(self, title: str):
         stmt = select(Advertisement).where(Advertisement.name == title)

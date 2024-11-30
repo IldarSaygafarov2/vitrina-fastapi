@@ -42,12 +42,12 @@ class Advertisement(Base, IntIdMixin):
     repair_type: Mapped["RepairType"] = mapped_column(
         ENUM(RepairType), default=RepairType.WITH
     )
-    district: Mapped[int] = mapped_column(
+    district_id: Mapped[int] = mapped_column(
         ForeignKey("districts.id", ondelete="SET NULL"),
         nullable=True,
     )
-    category: Mapped[int] = mapped_column(ForeignKey("categories.id"))
-    user: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=True,)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True,)
 
     description: Mapped[str]
     address: Mapped[str]
@@ -63,6 +63,9 @@ class Advertisement(Base, IntIdMixin):
     images: Mapped[list["AdvertisementImage"]] = relationship(
         back_populates="advertisement"
     )
+    category = relationship("Category", back_populates='advertisement')
+    district = relationship("District", back_populates="advertisement")
+    user = relationship("User", back_populates="advertisement")
 
 
 class AdvertisementImage(Base, IntIdMixin):

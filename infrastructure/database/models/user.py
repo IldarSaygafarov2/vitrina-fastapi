@@ -2,7 +2,7 @@ import enum
 
 from sqlalchemy import BIGINT, String
 from sqlalchemy.dialects.postgresql import ENUM
-from sqlalchemy.orm import Mapped, mapped_column, validates
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 from .mixins.id_int_pk import IntIdMixin
@@ -20,3 +20,5 @@ class User(Base, IntIdMixin):
     tg_username: Mapped[str] = mapped_column(String, unique=True)
     tg_chat_id: Mapped[int] = mapped_column(BIGINT, nullable=True)
     role: Mapped["UserRole"] = mapped_column(ENUM(UserRole), default=UserRole.REALTOR)
+
+    advertisement = relationship("Advertisement", back_populates="user")

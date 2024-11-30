@@ -310,7 +310,7 @@ async def get_price(
     F.data.startswith("is_studio"),
     AdvertisementCreationState.is_studio,
 )
-async def is_studio(
+async def get_is_studio (
     call: CallbackQuery,
     repo: "RequestsRepo",
     state: FSMContext,
@@ -487,7 +487,10 @@ async def get_floor_to(
     await message.delete()
 
 
-@router.callback_query(F.data.startswith("repair_type"))
+@router.callback_query(
+    F.data.startswith("repair_type"),
+    AdvertisementCreationState.repair_type,
+)
 async def get_repair_type(
     call: CallbackQuery,
     repo: "RequestsRepo",
@@ -495,7 +498,6 @@ async def get_repair_type(
 ):
     await call.answer()
 
-    print("STARTED")
     _, repair_type = call.data.split(":")
     state_data = await state.get_data()
     cur_message = state_data.pop("cur_message")
@@ -503,6 +505,8 @@ async def get_repair_type(
     operation_type = state_data.get("operation_type")
     category = state_data.get("category")
     district = state_data.get("district")
+
+
 
     title = state_data.get("title")
     description = state_data.get("description")
@@ -527,6 +531,8 @@ async def get_repair_type(
     property_type_status = PropertyType(PROPERTY_TYPE_MAPPING[property_type])
     repair_type_status = RepairType(REPAIR_TYPE_MAPPING[repair_type])
 
+    print(category.id, district.id, user.id)
+
     new_advertisement = await repo.advertisements.create_advertisement(
         operation_type=operation_type_status,
         category=category.id,
@@ -550,42 +556,6 @@ async def get_repair_type(
         user=user.id,
     )
 
-    photos = state_data.get("photos")
-    date_str = datetime.now().strftime("%Y-%m-%d")
-
-    advertisements_folder = upload_dir / "advertismenets" / date_str
-    advertisements_folder.mkdir(parents=True, exist_ok=True)
-
-    files_locations = []
-
-    # for photo_id in photos:
-    #     file_obj = await call.bot.get_file(photo_id)
-    #     filename = file_obj.file_path.split("/")[-1]
-    #     file = await call.bot.download_file(file_obj.file_path)
-
-    #     file_location = advertisements_folder / filename
-    #     files_locations.append(file_location)
-
-    #     await repo.advertisement_images.insert_advertisement_image(
-    #         advertisement_id=new_advertisement.id,
-    #         url=file_location,
-    #     )
-
-    #     with open(file_location, "wb") as f:
-    #         shutil.copyfileobj(file, f)
-
-    # media_group = []
-    # for idx, location in enumerate(files_locations):
-    #     if idx == 0:
-    #         media_group.append(
-    #             InputMediaPhoto(
-    #                 open(location, "rb"),
-    #                 caption=advertisement_message,
-    #             )
-    #         )
-    #     else:
-    #         media_group.append(InputMediaPhoto(open(location, "rb")))
-
     advertisement_message = realtor_advertisement_completed_text(
         title=title,
         description=description,
@@ -607,6 +577,35 @@ async def get_repair_type(
         category=category,
         district=district,
     )
-    await call.message.answer(advertisement_message)
 
-    # await call.message.answer_media_group(media=media_group)
+    photos = state_data.get("photos")
+    date_str = datetime.now().strftime("%Y-%m-%d")
+
+    advertisements_folder = upload_dir / "advertismenets" / date_str
+    advertisements_folder.mkdir(parents=True, exist_ok=True)
+
+    files_locations = []
+
+    for photo_id in photos:
+        file_obj = await call.bot.get_file(photo_id)
+        filename = file_obj.file_path.split("/")[-1]
+        file = await call.bot.download_file(file_obj.file_path)
+
+        file_location = advertisements_folder / filename
+        files_locations.append(file_location)
+
+        await repo.advertisement_images.insert_advertisement_image(
+            advertisement_id=new_advertisement.id,
+            url=str(file_location),
+        )
+
+        with open(file_location, "wb") as f:
+            shutil.copyfileobj(file, f)
+
+
+    media_group: list[InputMediaPhoto] = [
+        InputMediaPhoto(media=img, caption=advertisement_message) if i == 0 else InputMediaPhoto(media=img)
+        for i, img in enumerate(photos)
+    ]
+
+    await call.message.answer_media_group(media=media_group)

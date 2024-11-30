@@ -1,11 +1,13 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class UserDTO(BaseModel):
-    id: str
-    fullname: str
-    tg_username: str
-    phone_number: str
+    id: int
+    first_name: Optional[str]
+    lastname: Optional[str]
+    tg_username: Optional[str]
+    phone_number: Optional[str]
 
 
 class UserCreateDTO(BaseModel):
