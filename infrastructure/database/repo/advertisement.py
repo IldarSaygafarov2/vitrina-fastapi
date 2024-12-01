@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
@@ -69,8 +69,8 @@ class AdvertisementRepo(BaseRepo):
         await self.session.commit()
         return result.scalar_one()
 
-    async def get_advertisements(self):
-        stmt = select(Advertisement)
+    async def get_advertisements(self, limit: int = 15, offset: int = 0):
+        stmt = select(Advertisement).limit(limit).offset(offset)
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
@@ -104,6 +104,23 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_total_advertisements(self):
+        stmt = select(func.count(Advertisement.id))
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
+
+    async def get_user_advertisements(self, user_id: int):
+        stmt = (
+            select(Advertisement)
+            .options(
+                selectinload(Advertisement.images),
+                selectinload(Advertisement.category),
+                selectinload(Advertisement.district),
+            )
+            .where(Advertisement.user_id == user_id)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
 
 class AdvertisementImageRepo(BaseRepo):
     async def insert_advertisement_image(

@@ -23,6 +23,8 @@ class ApiV1Prefix:
     categories: str = '/categories'
     advertisements: str = '/advertisements'
     users: str = '/users'
+    request: str = '/request'
+    consultation: str = '/consultation'
 
 
 @dataclass

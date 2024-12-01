@@ -12,8 +12,11 @@ engine = create_engine(config.db)
 session_pool = create_session_pool(engine)
 
 
-class RealtorFilter(BaseFilter):
+class RoleFilter(BaseFilter):
     required_role: str = "realtor"
+
+    def __init__(self, role: str):
+        self.role = role
 
     async def __call__(self, message: Message) -> bool:
         username = message.from_user.username
@@ -25,4 +28,4 @@ class RealtorFilter(BaseFilter):
             if not user_role:
                 return False
 
-            return user_role.value == self.required_role
+            return user_role.value == self.role

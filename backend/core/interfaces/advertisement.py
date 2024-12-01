@@ -46,3 +46,10 @@ class AdvertisementDetailDTO(BaseModel):
 class AdvertisementImageDTO(BaseModel):
     id: int
     url: str
+
+
+class PaginatedAdvertisementDTO(BaseModel):
+    total: int
+    limit: int
+    offset: int
+    results: list[AdvertisementDTO]

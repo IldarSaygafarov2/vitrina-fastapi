@@ -1,8 +1,8 @@
 from aiogram import Router
-from aiogram.types import Message
 from aiogram.filters import CommandStart
-from tgbot.filters.common import CommonFilter
+from aiogram.types import Message
 
+from tgbot.filters.common import CommonFilter
 
 router = Router()
 router.message.filter(CommonFilter())

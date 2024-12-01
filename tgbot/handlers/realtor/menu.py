@@ -1,18 +1,16 @@
 from aiogram import F, Router
 from aiogram.filters import CommandStart
-from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
-
-from tgbot.filters.realtor import RealtorFilter
-from tgbot.keyboards.user.inline import realtor_start_kb, operation_type_kb
-from tgbot.templates.advertisement_creation import choose_operation_type_text
-from tgbot.misc.user_states import AdvertisementCreationState
-
-
-router = Router()
-router.message.filter(RealtorFilter())
+from aiogram.types import CallbackQuery, Message
 
 from infrastructure.database.repo.requests import RequestsRepo
+from tgbot.filters.role import RoleFilter
+from tgbot.keyboards.user.inline import realtor_start_kb, operation_type_kb
+from tgbot.misc.user_states import AdvertisementCreationState
+from tgbot.templates.advertisement_creation import choose_operation_type_text
+
+router = Router()
+router.message.filter(RoleFilter(role='realtor'))
 
 
 @router.message(CommandStart())

@@ -15,7 +15,7 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from infrastructure.utils.text_converter import camel_case_to_snake_case
 
-created_at: Annotated[datetime, mapped_column(
+created_at = Annotated[datetime, mapped_column(
     TIMESTAMP, server_default=func.now()
 )]
 

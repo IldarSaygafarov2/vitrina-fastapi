@@ -1,14 +1,16 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from backend.app.config import config
 from backend.app.dependencies import get_repo
 from backend.core.interfaces.advertisement import (
     AdvertisementDetailDTO,
     AdvertisementDTO,
+    PaginatedAdvertisementDTO
 )
 from infrastructure.database.repo.requests import RequestsRepo
+from backend.core.filters.advertisement import AdvertisementFilter
 
 router = APIRouter(
     prefix=config.api_prefix.v1.advertisements,
@@ -18,10 +20,24 @@ router = APIRouter(
 
 @router.get("/")
 async def get_advertisements(
-    repo: Annotated[RequestsRepo, Depends(get_repo)],
-) -> list[AdvertisementDTO]:
-    advertisements = await repo.advertisements.get_advertisements()
-    return advertisements
+        filters: Annotated[AdvertisementFilter, Query()],
+        repo: Annotated[RequestsRepo, Depends(get_repo)],
+) -> PaginatedAdvertisementDTO:
+
+    advertisements = await repo.advertisements.get_advertisements(
+        limit=filters.limit,
+        offset=filters.offset
+    )
+    advertisements = [AdvertisementDTO.model_validate(obj, from_attributes=True) for obj in advertisements]
+
+    total = await repo.advertisements.get_total_advertisements()
+
+    return PaginatedAdvertisementDTO(
+        total=total,
+        limit=filters.limit,
+        offset=filters.offset,
+        results=advertisements
+    )
 
 
 
