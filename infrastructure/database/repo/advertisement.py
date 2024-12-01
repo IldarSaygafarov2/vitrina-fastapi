@@ -59,8 +59,7 @@ class AdvertisementRepo(BaseRepo):
                 repair_type=repair_type,
             )
             .on_conflict_do_update(
-                index_elements=[Advertisement.slug],
-                set_=dict(slug=slug)
+                index_elements=[Advertisement.slug], set_=dict(slug=slug)
             )
             .options(selectinload(Advertisement.category))
             .returning(Advertisement)
@@ -78,7 +77,9 @@ class AdvertisementRepo(BaseRepo):
         stmt = (
             select(Advertisement)
             .options(
-                selectinload(Advertisement.category, Advertisement.district, Advertisement.user)
+                selectinload(
+                    Advertisement.category, Advertisement.district, Advertisement.user
+                )
             )
             .where(Advertisement.slug == advertisement_slug)
         )
@@ -122,15 +123,18 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+
 class AdvertisementImageRepo(BaseRepo):
     async def insert_advertisement_image(
         self,
         advertisement_id: int,
         url: str,
+        tg_image_hash: str,
     ):
         stmt = insert(AdvertisementImage).values(
             advertisement_id=advertisement_id,
             url=url,
+            tg_image_hash=tg_image_hash,
         )
         await self.session.execute(stmt)
         await self.session.commit()

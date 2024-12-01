@@ -20,5 +20,6 @@ class User(Base, IntIdMixin):
     tg_username: Mapped[str] = mapped_column(String, unique=True)
     tg_chat_id: Mapped[int] = mapped_column(BIGINT, nullable=True)
     role: Mapped["UserRole"] = mapped_column(ENUM(UserRole), default=UserRole.REALTOR)
+    profile_image: Mapped[str] = mapped_column(nullable=True)
 
     advertisement = relationship("Advertisement", back_populates="user")

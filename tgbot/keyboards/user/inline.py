@@ -1,5 +1,8 @@
+from typing import Optional
+
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from infrastructure.database.models import Category, District
+
+from infrastructure.database.models import Advertisement, Category, District
 
 
 def realtor_start_kb(realtor_chat_id: int):
@@ -57,5 +60,40 @@ def repair_type_kb(repair_types: dict):
     kb = InlineKeyboardBuilder()
     for key, value in repair_types.items():
         kb.button(text=value, callback_data=f"repair_type:{key}")
+    kb.adjust(2)
+    return kb.as_markup()
+
+
+def realtor_advertisements_kb(
+    advertisements: list["Advertisement"],
+    for_admin: bool = False,
+):
+    kb = InlineKeyboardBuilder()
+    for idx, advertisement in enumerate(advertisements, start=1):
+        callback = (
+            f"realtor_advertisement:{advertisement.id}"
+            if not for_admin
+            else f"rg_realtor_advertisement:{advertisement.id}"
+        )
+        kb.button(
+            text=f"{idx}. {advertisement.name}",
+            callback_data=callback,
+        )
+    kb.button(text="На главную", callback_data="return_home")
+    kb.adjust(1)
+    return kb.as_markup()
+
+
+def return_home_kb():
+    kb = InlineKeyboardBuilder()
+    kb.button(text="На главную", callback_data="return_home")
+    return kb.as_markup()
+
+
+def advertisement_actions_kb(advertisement_id: int):
+    kb = InlineKeyboardBuilder()
+    kb.button(text="Изменить", callback_data=f"advertisement_update:{advertisement_id}")
+    kb.button(text="Удалить", callback_data=f"advertisement_delete:{advertisement_id}")
+    kb.button(text="На главную", callback_data="return_home")
     kb.adjust(2)
     return kb.as_markup()

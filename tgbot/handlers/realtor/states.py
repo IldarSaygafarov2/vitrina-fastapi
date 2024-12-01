@@ -310,7 +310,7 @@ async def get_price(
     F.data.startswith("is_studio"),
     AdvertisementCreationState.is_studio,
 )
-async def get_is_studio (
+async def get_is_studio(
     call: CallbackQuery,
     repo: "RequestsRepo",
     state: FSMContext,
@@ -506,8 +506,6 @@ async def get_repair_type(
     category = state_data.get("category")
     district = state_data.get("district")
 
-
-
     title = state_data.get("title")
     description = state_data.get("description")
     address = state_data.get("address")
@@ -597,14 +595,18 @@ async def get_repair_type(
         await repo.advertisement_images.insert_advertisement_image(
             advertisement_id=new_advertisement.id,
             url=str(file_location),
+            tg_image_hash=photo_id,
         )
 
         with open(file_location, "wb") as f:
             shutil.copyfileobj(file, f)
 
-
     media_group: list[InputMediaPhoto] = [
-        InputMediaPhoto(media=img, caption=advertisement_message) if i == 0 else InputMediaPhoto(media=img)
+        (
+            InputMediaPhoto(media=img, caption=advertisement_message)
+            if i == 0
+            else InputMediaPhoto(media=img)
+        )
         for i, img in enumerate(photos)
     ]
 

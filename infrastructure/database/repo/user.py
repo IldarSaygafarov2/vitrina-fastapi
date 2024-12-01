@@ -1,9 +1,8 @@
-from .base import BaseRepo
+from sqlalchemy import insert, select, update, delete
 
 from infrastructure.database.models import User
 
-
-from sqlalchemy import select, insert, update
+from .base import BaseRepo
 
 
 class UserRepo(BaseRepo):
@@ -55,3 +54,24 @@ class UserRepo(BaseRepo):
         stmt = select(User).where(User.tg_username == username)
         result = await self.session.execute(stmt)
         return result.scalar_one()
+
+    async def get_realtors(self):
+        stmt = select(User).where(User.role == "REALTOR")
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+    async def get_user_by_id(self, user_id: int):
+        stmt = select(User).where(User.id == user_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
+
+    async def delete_user(self, user_id: int):
+        stmt = delete(User).where(User.id == user_id)
+        await self.session.execute(stmt)
+        await self.session.commit()
+
+    async def update_user(self, user_id: int, **data):
+        stmt = update(User).values(**data).where(User.id == user_id).returning(User)
+        updated = await self.session.execute(stmt)
+        await self.session.commit()
+        return updated.scalar_one()
