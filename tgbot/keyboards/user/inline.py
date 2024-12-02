@@ -1,7 +1,7 @@
 from typing import Optional
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
+from aiogram.types import InlineKeyboardButton
 from infrastructure.database.models import Advertisement, Category, District
 
 
@@ -96,4 +96,26 @@ def advertisement_actions_kb(advertisement_id: int):
     kb.button(text="Удалить", callback_data=f"advertisement_delete:{advertisement_id}")
     kb.button(text="На главную", callback_data="return_home")
     kb.adjust(2)
+    return kb.as_markup()
+
+
+def realtor_new_advertisement_kb(advertisement_id: int):
+    kb = InlineKeyboardBuilder()
+    kb.row(
+        InlineKeyboardButton(
+            text="Русский", callback_data=f"advertisement_lang:ru:{advertisement_id}"
+        ),
+        InlineKeyboardButton(
+            text="Узбекский", callback_data=f"advertisement_lang:uz:{advertisement_id}"
+        ),
+    )
+    kb.row(
+        InlineKeyboardButton(
+            text="Изменить", callback_data=f"advertisement_update:{advertisement_id}"
+        ),
+        InlineKeyboardButton(
+            text="Удалить", callback_data=f"advertisement_delete:{advertisement_id}"
+        ),
+    )
+    kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
     return kb.as_markup()

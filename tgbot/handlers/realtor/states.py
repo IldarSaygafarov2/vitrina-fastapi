@@ -9,8 +9,11 @@ from aiogram.types import CallbackQuery, Message, FSInputFile, InputMediaPhoto
 from backend.core.interfaces.category import CategoryDTO
 from infrastructure.database.models.advertisement import (
     OperationType,
+    OperationTypeUz,
     PropertyType,
+    PropertyTypeUz,
     RepairType,
+    RepairTypeUz,
 )
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.keyboards.user.inline import (
@@ -18,7 +21,9 @@ from tgbot.keyboards.user.inline import (
     districts_kb,
     is_studio_kb,
     property_type_kb,
+    realtor_new_advertisement_kb,
     repair_type_kb,
+    advertisement_actions_kb,
 )
 from tgbot.misc.user_states import AdvertisementCreationState
 from tgbot.templates.advertisement_creation import (
@@ -30,31 +35,23 @@ from tgbot.templates.advertisement_creation import (
     get_description_text,
     get_district_text,
     get_propety_type_text,
+    get_address_text_uz,
     get_title_text,
     is_studio_text,
     price_text,
     realtor_advertisement_completed_text,
 )
+from tgbot.misc.constants import (
+    OPERATION_TYPE_MAPPING,
+    PROPERTY_TYPE_MAPPING,
+    REPAIR_TYPE_MAPPING,
+    OPERATION_TYPE_MAPPING_UZ,
+    PROPERTY_TYPE_MAPPING_UZ,
+    REPAIR_TYPE_MAPPING_UZ,
+)
 
 router = Router()
 
-OPERATION_TYPE_MAPPING = {
-    "rent": "Аренда",
-    "buy": "Покупка",
-}
-PROPERTY_TYPE_MAPPING = {
-    "new": "Новостройка",
-    "old": "Вторичный фонд",
-}
-
-
-REPAIR_TYPE_MAPPING = {
-    "with": "С ремонтом",
-    "without": "Без ремонта",
-    "designed": "Дизайнерский ремонт",
-    "rough": "Черновая",
-    "pre_finished": "Предчистовая",
-}
 
 upload_dir = Path("media")
 upload_dir.mkdir(parents=True, exist_ok=True)
@@ -112,8 +109,6 @@ async def get_photos_quanity_set_get_photos(
 
     photos_qty_message = state_data.pop("photos_qty_message")
 
-    # await message.delete()
-
     photos_message = await photos_qty_message.edit_text(
         text=choose_photos_text(photos_quantity=message.text)
     )
@@ -166,15 +161,30 @@ async def get_title_set_description(
     state_data = await state.get_data()
     title_message = state_data.pop("title_message")
 
-    description_text = await title_message.edit_text(text=get_description_text())
+    title_message = await title_message.edit_text(text=get_title_text(lang="uz"))
 
-    await state.update_data(title=message.text, description_text=description_text)
+    await state.update_data(title=message.text, title_message=title_message)
+    await state.set_state(AdvertisementCreationState.title_uz)
+    await message.delete()
+
+
+@router.message(AdvertisementCreationState.title_uz)
+async def get_title_uz(
+    message: Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    data = await state.get_data()
+    title_message = data.pop("title_message")
+
+    description_text = await title_message.edit_text(text=get_description_text())
+    await state.update_data(title_uz=message.text, description_text=description_text)
     await state.set_state(AdvertisementCreationState.description)
     await message.delete()
 
 
 @router.message(AdvertisementCreationState.description)
-async def get_description_set_disctrict(
+async def get_description_set_description_uz(
     message: Message,
     repo: "RequestsRepo",
     state: FSMContext,
@@ -182,14 +192,34 @@ async def get_description_set_disctrict(
     current_data = await state.get_data()
     description_text = current_data.pop("description_text")
 
+    description_uz_text = await description_text.edit_text(
+        text=get_description_text(lang="uz"),
+    )
+
+    await state.update_data(
+        description=message.text,
+        description_uz_text=description_uz_text,
+    )
+    await state.set_state(AdvertisementCreationState.description_uz)
+    await message.delete()
+
+
+@router.message(AdvertisementCreationState.description_uz)
+async def get_description_uz(
+    message: Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    data = await state.get_data()
+    description_uz_text = data.pop("description_uz_text")
+
     districts = await repo.districts.get_districts()
 
-    districts_text = await description_text.edit_text(
+    districts_text = await description_uz_text.edit_text(
         text=get_district_text(),
         reply_markup=districts_kb(districts=districts),
     )
-
-    await state.update_data(description=message.text, districts_text=districts_text)
+    await state.update_data(description_uz=message.text, districts_text=districts_text)
     await state.set_state(AdvertisementCreationState.district)
     await message.delete()
 
@@ -229,17 +259,35 @@ async def get_address(
     cur_message = state_data.pop("cur_message")
 
     cur_message = await cur_message.edit_text(
-        text=get_propety_type_text(),
-        reply_markup=property_type_kb(),
+        text=get_address_text_uz(),
     )
 
     await state.update_data(address=message.text, cur_message=cur_message)
+    await state.set_state(AdvertisementCreationState.address_uz)
+    await message.delete()
+
+
+@router.message(AdvertisementCreationState.address_uz)
+async def get_address_uz(
+    message: Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    state_data = await state.get_data()
+    cur_message = state_data.pop("cur_message")
+
+    cur_message = await cur_message.edit_text(
+        text=get_propety_type_text(),
+        reply_markup=property_type_kb(),
+    )
+    await state.update_data(address_uz=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.property_type)
     await message.delete()
 
 
 @router.callback_query(
-    F.data.startswith("property_type"), AdvertisementCreationState.property_type
+    F.data.startswith("property_type"),
+    AdvertisementCreationState.property_type,
 )
 async def get_property_type(
     call: CallbackQuery,
@@ -507,8 +555,14 @@ async def get_repair_type(
     district = state_data.get("district")
 
     title = state_data.get("title")
+    title_uz = state_data.get("title_uz")
+
     description = state_data.get("description")
+    description_uz = state_data.get("description_uz")
+
     address = state_data.get("address")
+    address_uz = state_data.get("address_uz")
+
     property_type = state_data.get("property_type")
     creation_year = state_data.get("creation_year", 0)
     price = state_data.get("price")
@@ -526,18 +580,24 @@ async def get_repair_type(
     user = await repo.users.get_user_by_chat_id(user_chat_id)
 
     operation_type_status = OperationType(OPERATION_TYPE_MAPPING[operation_type])
+    operation_type_status_uz = OperationTypeUz(
+        OPERATION_TYPE_MAPPING_UZ[operation_type]
+    )
     property_type_status = PropertyType(PROPERTY_TYPE_MAPPING[property_type])
+    property_type_status_uz = PropertyTypeUz(PROPERTY_TYPE_MAPPING_UZ[property_type])
     repair_type_status = RepairType(REPAIR_TYPE_MAPPING[repair_type])
-
-    print(category.id, district.id, user.id)
+    repair_type_status_uz = RepairTypeUz(REPAIR_TYPE_MAPPING_UZ[repair_type])
 
     new_advertisement = await repo.advertisements.create_advertisement(
         operation_type=operation_type_status,
         category=category.id,
         district=district.id,
         title=title,
+        title_uz=title_uz,
         description=description,
+        description_uz=description_uz,
         address=address,
+        address_uz=address_uz,
         property_type=property_type_status,
         creation_year=int(creation_year),
         price=int(price),
@@ -551,30 +611,13 @@ async def get_repair_type(
         house_quadrature_from=int(house_quadrature_from),
         house_quadrature_to=int(house_quadrature_to),
         repair_type=repair_type_status,
+        operation_type_uz=operation_type_status_uz,
+        property_type_uz=property_type_status_uz,
+        repair_type_uz=repair_type_status_uz,
         user=user.id,
     )
 
-    advertisement_message = realtor_advertisement_completed_text(
-        title=title,
-        description=description,
-        address=address,
-        property_type=property_type,
-        creation_year=creation_year,
-        price=price,
-        is_studio=is_studio,
-        rooms_from=rooms_from,
-        rooms_to=rooms_to,
-        quadrature_from=quadrature_from,
-        quadrature_to=quadrature_to,
-        floor_from=floor_from,
-        floor_to=floor_to,
-        house_quadrature_from=house_quadrature_from,
-        house_quadrature_to=house_quadrature_to,
-        repair_type=repair_type,
-        operation_type=operation_type,
-        category=category,
-        district=district,
-    )
+    advertisement_message = realtor_advertisement_completed_text(new_advertisement)
 
     photos = state_data.get("photos")
     date_str = datetime.now().strftime("%Y-%m-%d")
@@ -610,4 +653,41 @@ async def get_repair_type(
         for i, img in enumerate(photos)
     ]
 
-    await call.message.answer_media_group(media=media_group)
+    await cur_message.delete()
+    advertisement_message = await call.message.answer_media_group(media=media_group)
+    await call.message.answer(
+        text="Выберите действие над этим объявлением",
+        reply_markup=advertisement_actions_kb(advertisement_id=new_advertisement.id),
+    )
+
+    # await state.update_data(advertisement_message=advertisement_message)
+
+
+# @router.callback_query(F.data.startswith("advertisement_lang"))
+# async def show_advertisement_by_lang(
+#     call: CallbackQuery,
+#     repo: "RequestsRepo",
+#     state: FSMContext,
+# ):
+#     await call.answer()
+
+#     state_data = await state.get_data()
+#     message = state_data.get("advertisement_message")
+#     _, lang, advertisement_id = call.data.split(":")
+#     advertisement_id = int(advertisement_id)
+#     advertisement = await repo.advertisements.get_advertisement_by_id(
+#         advertisement_id=advertisement_id
+#     )
+
+#     if lang == "ru":
+#         return await call.answer()
+
+#     advertisement_message = realtor_advertisement_completed_text(
+#         advertisement=advertisement
+#     )
+#     print(advertisement_message)
+#     call.message.edit_caption
+#     await message[0].edit_caption(
+#         caption=advertisement_message,
+#         # reply_markup=realtor_new_advertisement_kb(advertisement_id=advertisement_id),
+#     )

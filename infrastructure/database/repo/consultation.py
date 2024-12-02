@@ -1,6 +1,6 @@
 from .base import BaseRepo
 
-from sqlalchemy import insert
+from sqlalchemy import insert, select
 
 from infrastructure.database.models import ConsultationRequest
 
@@ -15,3 +15,8 @@ class ConsultationRepo(BaseRepo):
         result = await self.session.execute(stmt)
         await self.session.commit()
         return result.scalar_one()
+
+    async def get_consultations(self):
+        stmt = select(ConsultationRequest)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()

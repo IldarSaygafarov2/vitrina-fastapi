@@ -14,8 +14,11 @@ class AdvertisementRepo(BaseRepo):
         category: int,
         district: int,
         title: str,
+        title_uz: str,
         description: str,
+        description_uz: str,
         address: str,
+        address_uz: str,
         creation_year: int,
         price: int,
         is_studio: bool,
@@ -31,6 +34,9 @@ class AdvertisementRepo(BaseRepo):
         operation_type,
         property_type,
         repair_type,
+        operation_type_uz,
+        property_type_uz,
+        repair_type_uz,
     ):
         slug = generate_slug(title)
         stmt = (
@@ -41,8 +47,11 @@ class AdvertisementRepo(BaseRepo):
                 category_id=category,
                 district_id=district,
                 name=title,
+                name_uz=title_uz,
                 description=description,
+                description_uz=description_uz,
                 address=address,
+                address_uz=address_uz,
                 property_type=property_type,
                 creation_year=creation_year,
                 price=price,
@@ -57,11 +66,17 @@ class AdvertisementRepo(BaseRepo):
                 house_quadrature_to=house_quadrature_to,
                 user_id=user,
                 repair_type=repair_type,
+                operation_type_uz=operation_type_uz,
+                property_type_uz=property_type_uz,
+                repair_type_uz=repair_type_uz,
             )
             .on_conflict_do_update(
                 index_elements=[Advertisement.slug], set_=dict(slug=slug)
             )
-            .options(selectinload(Advertisement.category))
+            .options(
+                selectinload(Advertisement.category),
+                selectinload(Advertisement.district),
+            )
             .returning(Advertisement)
         )
         result = await self.session.execute(stmt)
@@ -72,6 +87,9 @@ class AdvertisementRepo(BaseRepo):
         stmt = select(Advertisement).limit(limit).offset(offset)
         result = await self.session.execute(stmt)
         return result.scalars().all()
+
+    async def get_filtered_advertisements(self, **filters):
+        stmt = select(Advertisement)
 
     async def get_advertisement_by_slug(self, advertisement_slug: str):
         stmt = (

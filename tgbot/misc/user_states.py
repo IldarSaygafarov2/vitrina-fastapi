@@ -4,10 +4,15 @@ from aiogram.fsm.state import State, StatesGroup
 class AdvertisementCreationState(StatesGroup):
     operation_type = State()
     category = State()
+
     title = State()
+    title_uz = State()
     description = State()
-    district = State()
+    description_uz = State()
     address = State()
+    address_uz = State()
+
+    district = State()
     property_type = State()
     creation_year = State()
     price = State()

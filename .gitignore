@@ -65,3 +65,5 @@ cache/
 .vscode/
 test.py
 media/
+
+token.json

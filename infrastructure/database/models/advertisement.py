@@ -56,29 +56,29 @@ class Advertisement(Base, IntIdMixin):
     property_type: Mapped["PropertyType"] = mapped_column(
         ENUM(PropertyType), default=PropertyType.NEW
     )
-    # property_type_uz: Mapped["PropertyTypeUz"] = mapped_column(
-    #     ENUM(PropertyTypeUz),
-    #     default=PropertyTypeUz.NEW,
-    #     nullable=True,
-    # )
+    property_type_uz: Mapped["PropertyTypeUz"] = mapped_column(
+        ENUM(PropertyTypeUz),
+        default=PropertyTypeUz.NEW,
+        nullable=True,
+    )
 
     operation_type: Mapped["OperationType"] = mapped_column(
         ENUM(OperationType), default=OperationType.RENT
     )
-    # operation_type_uz: Mapped["OperationTypeUz"] = mapped_column(
-    #     ENUM(OperationTypeUz),
-    #     default=OperationTypeUz.RENT,
-    #     nullable=True,
-    # )
+    operation_type_uz: Mapped["OperationTypeUz"] = mapped_column(
+        ENUM(OperationTypeUz),
+        default=OperationTypeUz.RENT,
+        nullable=True,
+    )
 
     repair_type: Mapped["RepairType"] = mapped_column(
         ENUM(RepairType), default=RepairType.WITH
     )
-    # repair_type_uz: Mapped["RepairTypeUz"] = mapped_column(
-    #     ENUM(RepairTypeUz),
-    #     default=RepairTypeUz.WITH,
-    #     nullable=True,
-    # )
+    repair_type_uz: Mapped["RepairTypeUz"] = mapped_column(
+        ENUM(RepairTypeUz),
+        default=RepairTypeUz.WITH,
+        nullable=True,
+    )
 
     district_id: Mapped[int] = mapped_column(
         ForeignKey("districts.id", ondelete="SET NULL"),

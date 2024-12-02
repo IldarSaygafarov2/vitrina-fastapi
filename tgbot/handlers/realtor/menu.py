@@ -13,6 +13,7 @@ from tgbot.keyboards.user.inline import (
     realtor_start_kb,
     return_home_kb,
     advertisement_actions_kb,
+    realtor_new_advertisement_kb,
 )
 from tgbot.keyboards.admin.inline import admin_start_kb
 from tgbot.misc.user_states import AdvertisementCreationState
