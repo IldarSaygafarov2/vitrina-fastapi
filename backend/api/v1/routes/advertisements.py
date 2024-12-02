@@ -7,7 +7,7 @@ from backend.app.dependencies import get_repo
 from backend.core.interfaces.advertisement import (
     AdvertisementDetailDTO,
     AdvertisementDTO,
-    PaginatedAdvertisementDTO
+    PaginatedAdvertisementDTO,
 )
 from infrastructure.database.repo.requests import RequestsRepo
 from backend.core.filters.advertisement import AdvertisementFilter
@@ -20,32 +20,46 @@ router = APIRouter(
 
 @router.get("/")
 async def get_advertisements(
-        filters: Annotated[AdvertisementFilter, Query()],
-        repo: Annotated[RequestsRepo, Depends(get_repo)],
+    filters: Annotated[AdvertisementFilter, Query()],
+    repo: Annotated[RequestsRepo, Depends(get_repo)],
 ) -> PaginatedAdvertisementDTO:
 
-    advertisements = await repo.advertisements.get_advertisements(
-        limit=filters.limit,
-        offset=filters.offset
-    )
-    advertisements = [AdvertisementDTO.model_validate(obj, from_attributes=True) for obj in advertisements]
+    filters = filters.model_dump()
+
+    limit = filters.pop("limit")
+    offset = filters.pop("offset")
+
+    filters = {k: v for k, v in filters.items() if v is not None}
+
+    if not filters:
+        advertisements = await repo.advertisements.get_advertisements(
+            limit=limit, offset=offset
+        )
+    else:
+        advertisements = await repo.advertisements.get_filtered_advertisements(
+            **filters
+        )
+
+    advertisements = [
+        AdvertisementDTO.model_validate(obj, from_attributes=True)
+        for obj in advertisements
+    ]
 
     total = await repo.advertisements.get_total_advertisements()
 
     return PaginatedAdvertisementDTO(
         total=total,
-        limit=filters.limit,
-        offset=filters.offset,
-        results=advertisements
+        limit=limit,
+        offset=offset,
+        results=advertisements,
     )
-
 
 
 @router.get("/{advertisement_id}")
 async def get_advertisement(
     advertisement_id: int,
     repo: Annotated[RequestsRepo, Depends(get_repo)],
-):
+) -> AdvertisementDetailDTO:
 
     advertisement = await repo.advertisements.get_advertisement_by_id(
         advertisement_id=advertisement_id

@@ -108,6 +108,8 @@ class Advertisement(Base, IntIdMixin):
     floor_to: Mapped[int]
     is_studio: Mapped[bool]
 
+    preview: Mapped[str] = mapped_column(nullable=True)
+
     images: Mapped[list["AdvertisementImage"]] = relationship(
         back_populates="advertisement"
     )

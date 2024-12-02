@@ -588,6 +588,24 @@ async def get_repair_type(
     repair_type_status = RepairType(REPAIR_TYPE_MAPPING[repair_type])
     repair_type_status_uz = RepairTypeUz(REPAIR_TYPE_MAPPING_UZ[repair_type])
 
+    photos = state_data.get("photos")
+    date_str = datetime.now().strftime("%Y-%m-%d")
+
+    advertisements_folder = upload_dir / "advertismenets" / date_str
+    advertisements_folder.mkdir(parents=True, exist_ok=True)
+    files_locations = []
+
+    for photo_id in photos:
+        file_obj = await call.bot.get_file(photo_id)
+        filename = file_obj.file_path.split("/")[-1]
+        file = await call.bot.download_file(file_obj.file_path)
+
+        file_location = advertisements_folder / filename
+        files_locations.append((file_location, photo_id))
+
+        with open(file_location, "wb") as f:
+            shutil.copyfileobj(file, f)
+
     new_advertisement = await repo.advertisements.create_advertisement(
         operation_type=operation_type_status,
         category=category.id,
@@ -596,6 +614,7 @@ async def get_repair_type(
         title_uz=title_uz,
         description=description,
         description_uz=description_uz,
+        preview=str(files_locations[0][0]),
         address=address,
         address_uz=address_uz,
         property_type=property_type_status,
@@ -619,30 +638,12 @@ async def get_repair_type(
 
     advertisement_message = realtor_advertisement_completed_text(new_advertisement)
 
-    photos = state_data.get("photos")
-    date_str = datetime.now().strftime("%Y-%m-%d")
-
-    advertisements_folder = upload_dir / "advertismenets" / date_str
-    advertisements_folder.mkdir(parents=True, exist_ok=True)
-
-    files_locations = []
-
-    for photo_id in photos:
-        file_obj = await call.bot.get_file(photo_id)
-        filename = file_obj.file_path.split("/")[-1]
-        file = await call.bot.download_file(file_obj.file_path)
-
-        file_location = advertisements_folder / filename
-        files_locations.append(file_location)
-
+    for file_location, photo_id in files_locations:
         await repo.advertisement_images.insert_advertisement_image(
             advertisement_id=new_advertisement.id,
             url=str(file_location),
             tg_image_hash=photo_id,
         )
-
-        with open(file_location, "wb") as f:
-            shutil.copyfileobj(file, f)
 
     media_group: list[InputMediaPhoto] = [
         (

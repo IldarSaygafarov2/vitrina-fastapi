@@ -31,6 +31,7 @@ class AdvertisementRepo(BaseRepo):
         house_quadrature_from: int,
         house_quadrature_to: int,
         user: int,
+        preview: str,
         operation_type,
         property_type,
         repair_type,
@@ -42,6 +43,7 @@ class AdvertisementRepo(BaseRepo):
         stmt = (
             insert(Advertisement)
             .values(
+                preview=preview,
                 slug=slug,
                 operation_type=operation_type,
                 category_id=category,
@@ -84,12 +86,21 @@ class AdvertisementRepo(BaseRepo):
         return result.scalar_one()
 
     async def get_advertisements(self, limit: int = 15, offset: int = 0):
-        stmt = select(Advertisement).limit(limit).offset(offset)
+        stmt = (
+            select(Advertisement)
+            .options(selectinload(Advertisement.images))
+            .limit(limit)
+            .offset(offset)
+        )
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
     async def get_filtered_advertisements(self, **filters):
-        stmt = select(Advertisement)
+        print(filters)
+
+        stmt = select(Advertisement).filter_by(**filters)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
 
     async def get_advertisement_by_slug(self, advertisement_slug: str):
         stmt = (

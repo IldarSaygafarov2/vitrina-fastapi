@@ -5,21 +5,21 @@ from pydantic import BaseModel, Field
 
 
 class AdvertisementOperationType(str, enum.Enum):
-    buy = 'buy'
-    rent = 'rent'
+    buy = "BUY"
+    rent = "RENT"
 
 
 class AdvertisementPropertyType(str, enum.Enum):
-    new = 'new'
-    old = 'old'
+    new = "NEW"
+    old = "OLD"
 
 
 class AdvertisementRepairType(str, enum.Enum):
-    WITH = 'with'
-    WITHOUT = 'without'
-    DESIGNED = 'designed'
-    ROUGH = 'rough'
-    PRE_FINISHED = 'pre_finished'
+    WITH = "WITH"
+    WITHOUT = "WITHOUT"
+    DESIGNED = "DESIGNED"
+    ROUGH = "ROUGH"
+    PRE_FINISHED = "PRE_FINISHED"
 
 
 class AdvertisementFilter(BaseModel):
@@ -35,9 +35,8 @@ class AdvertisementFilter(BaseModel):
     quadrature_from: Optional[int] = Field(None)
     quadrature_to: Optional[int] = Field(None)
     is_studio: Optional[bool] = Field(None)
-    category: Optional[int] = Field(None)
-    district: Optional[int] = Field(None)
+    category_id: Optional[int] = Field(None)
+    district_id: Optional[int] = Field(None)
 
     limit: Optional[int] = Field(15)
     offset: Optional[int] = Field(0)
-
