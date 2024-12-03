@@ -96,9 +96,8 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def get_filtered_advertisements(self, **filters):
-        print(filters)
-
         stmt = select(Advertisement).filter_by(**filters)
+
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
