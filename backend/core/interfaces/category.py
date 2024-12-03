@@ -11,3 +11,4 @@ class CategoryDTO(BaseModel):
 
 class CategoryCreateDTO(BaseModel):
     category_name: str
+    category_name_uz: str

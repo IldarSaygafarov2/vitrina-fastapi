@@ -27,7 +27,8 @@ async def create_district(
     repo: Annotated[RequestsRepo, Depends(get_repo)],
 ):
     district = await repo.districts.create_district(
-        district_name=district_data.district_name
+        district_name=district_data.district_name,
+        district_name_uz=district_data.district_name_uz,
     )
     return DistrictDTO.model_validate(district, from_attributes=True)
 

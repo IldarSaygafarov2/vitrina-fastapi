@@ -21,12 +21,13 @@ class DistrictRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create_district(self, district_name: str):
+    async def create_district(self, district_name: str, district_name_uz: str):
         slug = generate_slug(district_name)
         stmt = (
             insert(District)
             .values(
                 name=district_name,
+                name_uz=district_name_uz,
                 slug=slug,
             )
             .returning(District)

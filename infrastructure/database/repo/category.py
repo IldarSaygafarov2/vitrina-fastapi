@@ -25,12 +25,13 @@ class CategoryRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalar_one()
 
-    async def create_category(self, category_name: str):
+    async def create_category(self, category_name: str, category_name_uz: str):
         slug = generate_slug(category_name)
         stmt = (
             insert(Category)
             .values(
                 name=category_name,
+                name_uz=category_name_uz,
                 slug=slug,
             )
             .returning(Category)

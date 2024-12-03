@@ -27,7 +27,8 @@ async def create_category(
     repo: Annotated[RequestsRepo, Depends(get_repo)],
 ):
     new_category = await repo.categories.create_category(
-        category_name=category_data.category_name
+        category_name=category_data.category_name,
+        category_name_uz=category_data.category_name_uz,
     )
     return CategoryDTO.model_validate(new_category, from_attributes=True)
 
