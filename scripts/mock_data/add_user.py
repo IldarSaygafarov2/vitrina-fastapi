@@ -5,21 +5,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config.loader import load_config
 from infrastructure.database.models import User
 from infrastructure.database.setup import create_engine, create_session_pool
-
-
-print("addfsaf")
+from external.db_migrate import read_json
 
 
 async def add_mock_user(session: AsyncSession):
-    user = User(
-        first_name="Ildar",
-        lastname="Saygafarov",
-        phone_number="111111111",
-        tg_username="sayildar",
-        role="realtor",
-    )
+    users_json = read_json("external/users.json")
+    users = []
+    for item in users_json:
+        user = User(
+            first_name=item["first_name"],
+            lastname=item["last_name"],
+            phone_number=item["phone_number"],
+            tg_username=item["tg_username"],
+            role=item["user_type"],
+        )
+        users.append(user)
 
-    session.add_all([user])
+    session.add_all(users)
     await session.commit()
 
 

@@ -1,0 +1,30 @@
+[
+    {
+        "id": "1",
+        "name": "Квартиры",
+        "slug": "kvartiry",
+        "name_ru": "Квартиры",
+        "name_uz": "Kvartiralar"
+    },
+    {
+        "id": "2",
+        "name": "Коммерческая",
+        "slug": "kommercheskaya",
+        "name_ru": "Коммерческая",
+        "name_uz": "Tijorat"
+    },
+    {
+        "id": "3",
+        "name": "Новостройки",
+        "slug": "novostrojki",
+        "name_ru": "Новостройки",
+        "name_uz": "Yangi binolar"
+    },
+    {
+        "id": "4",
+        "name": "Дома",
+        "slug": "doma",
+        "name_ru": "Дома",
+        "name_uz": "Uylar"
+    }
+]

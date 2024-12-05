@@ -21,6 +21,11 @@ class DistrictRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_district_id_by_name(self, district_name: str):
+        stmt = select(District.id).where(District.name == district_name)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def create_district(self, district_name: str, district_name_uz: str):
         slug = generate_slug(district_name)
         stmt = (

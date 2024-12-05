@@ -1,0 +1,86 @@
+[
+    {
+        "id": "1",
+        "name": "Учтепинский район",
+        "slug": "uchtepinskij-rajon",
+        "name_ru": "Учтепинский район",
+        "name_uz": "Uchtepa tumani"
+    },
+    {
+        "id": "2",
+        "name": "Бектемирский район",
+        "slug": "bektemirskij-rajon",
+        "name_ru": "Бектемирский район",
+        "name_uz": "Bektemir tumani"
+    },
+    {
+        "id": "3",
+        "name": "Мирзо-Улугбекский район",
+        "slug": "mirzo-ulugbekskij-rajon",
+        "name_ru": "Мирзо-Улугбекский район",
+        "name_uz": "Mirzo Ulug'bek tumani"
+    },
+    {
+        "id": "4",
+        "name": "Мирабадский район",
+        "slug": "mirabadskij-rajon",
+        "name_ru": "Мирабадский район",
+        "name_uz": "Mirobod tumani"
+    },
+    {
+        "id": "5",
+        "name": "Сергелийский район",
+        "slug": "sergelijskij-rajon",
+        "name_ru": "Сергелийский район",
+        "name_uz": "Sergeli tumani"
+    },
+    {
+        "id": "6",
+        "name": "Алмзарский район",
+        "slug": "almzarskij-rajon",
+        "name_ru": "Алмзарский район",
+        "name_uz": "Olmazor tumani"
+    },
+    {
+        "id": "7",
+        "name": "Чиланзарский район",
+        "slug": "chilanzarskij-rajon",
+        "name_ru": "Чиланзарский район",
+        "name_uz": "Chilonzor tumani"
+    },
+    {
+        "id": "8",
+        "name": "Шайхантаурский район",
+        "slug": "shajhantaurskij-rajon",
+        "name_ru": "Шайхантаурский район",
+        "name_uz": "Shayxontavr tumani"
+    },
+    {
+        "id": "9",
+        "name": "Юнусабадский район",
+        "slug": "yunusabadskij-rajon",
+        "name_ru": "Юнусабадский район",
+        "name_uz": "Yunusobod tumani"
+    },
+    {
+        "id": "10",
+        "name": "Яккасарайский район",
+        "slug": "yakkasarajskij-rajon",
+        "name_ru": "Яккасарайский район",
+        "name_uz": "Yakkasaroy tumani"
+    },
+    {
+        "id": "11",
+        "name": "Яшнабадский район",
+        "slug": "yashnabadskij-rajon",
+        "name_ru": "Яшнабадский район",
+        "name_uz": "Yashnobod tumani"
+    },
+    {
+        "id": "12",
+        "name": "Янгихаётский район",
+        "slug": "yangihayotskij-rajon",
+        "name_ru": "Янгихаётский район",
+        "name_uz": "Yangixayot tumani"
+    }
+]

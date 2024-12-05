@@ -67,3 +67,5 @@ test.py
 media/
 
 token.json
+*.sqlite3
+*.csv

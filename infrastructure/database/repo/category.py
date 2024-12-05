@@ -20,6 +20,11 @@ class CategoryRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def get_category_id_by_name(self, category_name: str):
+        stmt = select(Category.id).where(Category.name == category_name)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
     async def get_category_by_slug(self, category_slug: str):
         stmt = select(Category).where(Category.slug == category_slug)
         result = await self.session.execute(stmt)

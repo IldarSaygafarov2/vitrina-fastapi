@@ -1,9 +1,13 @@
-from sqlalchemy import select, func
+import uuid
+
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
 from infrastructure.database.models import Advertisement, AdvertisementImage
 from infrastructure.utils.slugifier import generate_slug
+from backend.core.filters.advertisement import AdvertisementFilter
+
 from .base import BaseRepo
 
 
@@ -73,7 +77,8 @@ class AdvertisementRepo(BaseRepo):
                 repair_type_uz=repair_type_uz,
             )
             .on_conflict_do_update(
-                index_elements=[Advertisement.slug], set_=dict(slug=slug)
+                index_elements=[Advertisement.slug],
+                set_=dict(slug=f"{slug}-{uuid.uuid4()}"[:50]),
             )
             .options(
                 selectinload(Advertisement.category),
@@ -95,10 +100,48 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def get_filtered_advertisements(self, **filters):
-        stmt = select(Advertisement).filter_by(**filters)
+    async def get_filtered_advertisements(self, filter: AdvertisementFilter):
+        query = select(Advertisement)
 
-        result = await self.session.execute(stmt)
+        if filter.operation_type:
+            query = query.filter(Advertisement.operation_type == filter.operation_type)
+        if filter.property_type:
+            query = query.filter(Advertisement.property_type == filter.property_type)
+        if filter.repair_type:
+            query = query.filter(Advertisement.repair_type == filter.repair_type)
+        if filter.floor_from:
+            query = query.filter(Advertisement.floor_from >= filter.floor_from)
+        if filter.floor_to:
+            query = query.filter(Advertisement.floor_to <= filter.floor_to)
+        if filter.house_quadrature_from:
+            query = query.filter(
+                Advertisement.house_quadrature_from >= filter.house_quadrature_from
+            )
+        if filter.house_quadrature_to:
+            query = query.filter(
+                Advertisement.house_quadrature_to <= filter.house_quadrature_to
+            )
+        if filter.price_from:
+            query = query.filter(Advertisement.price >= filter.price_from)
+        if filter.price_to:
+            query = query.filter(Advertisement.price <= filter.price_to)
+        if filter.quadrature_from:
+            query = query.filter(
+                Advertisement.quadrature_from >= filter.quadrature_from
+            )
+        if filter.quadrature_to:
+            query = query.filter(Advertisement.quadrature_to <= filter.quadrature_to)
+        if filter.is_studio is not None:
+            query = query.filter(Advertisement.is_studio == filter.is_studio)
+        if filter.category_id:
+            query = query.filter(Advertisement.category_id == filter.category_id)
+        if filter.district_id:
+            query = query.filter(Advertisement.district_id == filter.district_id)
+
+        # Пагинация
+        query = query.offset(filter.offset).limit(filter.limit)
+        result = await self.session.execute(query)
+
         return result.scalars().all()
 
     async def get_advertisement_by_slug(self, advertisement_slug: str):

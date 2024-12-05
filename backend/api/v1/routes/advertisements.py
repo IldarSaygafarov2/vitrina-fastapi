@@ -23,22 +23,22 @@ async def get_advertisements(
     filters: Annotated[AdvertisementFilter, Query()],
     repo: Annotated[RequestsRepo, Depends(get_repo)],
 ) -> PaginatedAdvertisementDTO:
+    advertisements = await repo.advertisements.get_filtered_advertisements(filters)
+    # filters = filters.model_dump()
 
-    filters = filters.model_dump()
+    # limit = filters.pop("limit")
+    # offset = filters.pop("offset")
 
-    limit = filters.pop("limit")
-    offset = filters.pop("offset")
+    # filters = {k: v for k, v in filters.items() if v is not None}
 
-    filters = {k: v for k, v in filters.items() if v is not None}
-
-    if not filters:
-        advertisements = await repo.advertisements.get_advertisements(
-            limit=limit, offset=offset
-        )
-    else:
-        advertisements = await repo.advertisements.get_filtered_advertisements(
-            **filters
-        )
+    # if not filters:
+    #     advertisements = await repo.advertisements.get_advertisements(
+    #         limit=limit, offset=offset
+    #     )
+    # else:
+    #     advertisements = await repo.advertisements.get_filtered_advertisements(
+    #         **filters
+    #     )
 
     advertisements = [
         AdvertisementDTO.model_validate(obj, from_attributes=True)
@@ -49,8 +49,8 @@ async def get_advertisements(
 
     return PaginatedAdvertisementDTO(
         total=total,
-        limit=limit,
-        offset=offset,
+        limit=filters.limit,
+        offset=filters.offset,
         results=advertisements,
     )
 
