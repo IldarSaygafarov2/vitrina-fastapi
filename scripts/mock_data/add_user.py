@@ -15,6 +15,7 @@ async def add_mock_user(session: AsyncSession):
         user = User(
             first_name=item["first_name"],
             lastname=item["last_name"],
+            fullname=f'{item["first_name"]} {item["last_name"]}',
             phone_number=item["phone_number"],
             tg_username=item["tg_username"],
             role=item["user_type"],

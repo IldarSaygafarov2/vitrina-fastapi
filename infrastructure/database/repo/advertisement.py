@@ -1,47 +1,46 @@
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
+from backend.core.filters.advertisement import AdvertisementFilter
 from infrastructure.database.models import Advertisement, AdvertisementImage
 from infrastructure.utils.slugifier import generate_slug
-from backend.core.filters.advertisement import AdvertisementFilter
-
 from .base import BaseRepo
 
 
 class AdvertisementRepo(BaseRepo):
 
     async def create_advertisement(
-        self,
-        category: int,
-        district: int,
-        title: str,
-        title_uz: str,
-        description: str,
-        description_uz: str,
-        address: str,
-        address_uz: str,
-        creation_year: int,
-        price: int,
-        is_studio: bool,
-        rooms_from: int,
-        rooms_to: int,
-        quadrature_from: int,
-        quadrature_to: int,
-        floor_from: int,
-        floor_to: int,
-        house_quadrature_from: int,
-        house_quadrature_to: int,
-        user: int,
-        preview: str,
-        operation_type,
-        property_type,
-        repair_type,
-        operation_type_uz,
-        property_type_uz,
-        repair_type_uz,
+            self,
+            category: int,
+            district: int,
+            title: str,
+            title_uz: str,
+            description: str,
+            description_uz: str,
+            address: str,
+            address_uz: str,
+            creation_year: int,
+            price: int,
+            is_studio: bool,
+            rooms_from: int,
+            rooms_to: int,
+            quadrature_from: int,
+            quadrature_to: int,
+            floor_from: int,
+            floor_to: int,
+            house_quadrature_from: int,
+            house_quadrature_to: int,
+            user: int,
+            preview: str,
+            operation_type,
+            property_type,
+            repair_type,
+            operation_type_uz,
+            property_type_uz,
+            repair_type_uz,
     ):
         slug = generate_slug(title)
         stmt = (
@@ -194,13 +193,22 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+    async def update_advertisement_preview(self, advertisement_id: int, url: str):
+        stmt = (
+            update(Advertisement)
+            .values(preview=url)
+            .where(Advertisement.id == advertisement_id)
+        )
+        await self.session.execute(stmt)
+        await self.session.commit()
+
 
 class AdvertisementImageRepo(BaseRepo):
     async def insert_advertisement_image(
-        self,
-        advertisement_id: int,
-        url: str,
-        tg_image_hash: str,
+            self,
+            advertisement_id: int,
+            url: str,
+            tg_image_hash: str,
     ):
         stmt = insert(AdvertisementImage).values(
             advertisement_id=advertisement_id,

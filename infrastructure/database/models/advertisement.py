@@ -89,7 +89,7 @@ class Advertisement(Base, IntIdMixin):
         nullable=True,
     )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete='SET NULL'),
         nullable=True,
     )
 

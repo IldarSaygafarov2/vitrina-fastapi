@@ -1,11 +1,19 @@
-from pydantic import BaseModel
 from typing import Optional
+
+from pydantic import BaseModel
 
 
 class UserDTO(BaseModel):
     id: int
     first_name: Optional[str]
     lastname: Optional[str]
+    tg_username: Optional[str]
+    phone_number: Optional[str]
+
+
+class UserAdvertisementObjectDTO(BaseModel):
+    id: int
+    fullname: Optional[str]
     tg_username: Optional[str]
     phone_number: Optional[str]
 

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from backend.core.interfaces.category import CategoryDTO
 from backend.core.interfaces.district import DistrictDTO
-from backend.core.interfaces.user import UserDTO
+from backend.core.interfaces.user import UserDTO, UserAdvertisementObjectDTO
 
 
 class AdvertisementDTO(BaseModel):
@@ -47,7 +47,7 @@ class AdvertisementDetailDTO(BaseModel):
 
     category: Optional[CategoryDTO]
     district: Optional[DistrictDTO]
-    user: Optional[UserDTO]
+    user: Optional[UserAdvertisementObjectDTO]
     images: Optional[list["AdvertisementImageDTO"]]
 
 

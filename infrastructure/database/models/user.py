@@ -17,6 +17,7 @@ class User(Base, IntIdMixin):
     first_name: Mapped[str] = mapped_column(String(128))
     lastname: Mapped[str] = mapped_column(String(128))
     phone_number: Mapped[str] = mapped_column(String(15), unique=True)
+    fullname: Mapped[str] = mapped_column(String(128), nullable=True)
     tg_username: Mapped[str] = mapped_column(String, unique=True)
     tg_chat_id: Mapped[int] = mapped_column(BIGINT, nullable=True)
     role: Mapped["UserRole"] = mapped_column(ENUM(UserRole), default=UserRole.REALTOR)

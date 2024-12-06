@@ -38,5 +38,5 @@ class AdvertisementFilter(BaseModel):
     category_id: Optional[int] = Field(None)
     district_id: Optional[int] = Field(None)
 
-    limit: Optional[int] = Field(25)
+    limit: Optional[int] = Field(15)
     offset: Optional[int] = Field(0)

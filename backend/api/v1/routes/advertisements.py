@@ -1,16 +1,16 @@
-from typing import Annotated
+from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends, Query
 
 from backend.app.config import config
 from backend.app.dependencies import get_repo
+from backend.core.filters.advertisement import AdvertisementFilter
 from backend.core.interfaces.advertisement import (
     AdvertisementDetailDTO,
     AdvertisementDTO,
     PaginatedAdvertisementDTO,
 )
 from infrastructure.database.repo.requests import RequestsRepo
-from backend.core.filters.advertisement import AdvertisementFilter
 
 router = APIRouter(
     prefix=config.api_prefix.v1.advertisements,
@@ -24,21 +24,6 @@ async def get_advertisements(
     repo: Annotated[RequestsRepo, Depends(get_repo)],
 ) -> PaginatedAdvertisementDTO:
     advertisements = await repo.advertisements.get_filtered_advertisements(filters)
-    # filters = filters.model_dump()
-
-    # limit = filters.pop("limit")
-    # offset = filters.pop("offset")
-
-    # filters = {k: v for k, v in filters.items() if v is not None}
-
-    # if not filters:
-    #     advertisements = await repo.advertisements.get_advertisements(
-    #         limit=limit, offset=offset
-    #     )
-    # else:
-    #     advertisements = await repo.advertisements.get_filtered_advertisements(
-    #         **filters
-    #     )
 
     advertisements = [
         AdvertisementDTO.model_validate(obj, from_attributes=True)
@@ -59,7 +44,7 @@ async def get_advertisements(
 async def get_advertisement(
     advertisement_id: int,
     repo: Annotated[RequestsRepo, Depends(get_repo)],
-) -> AdvertisementDetailDTO:
+) -> Union[AdvertisementDetailDTO, dict]:
 
     advertisement = await repo.advertisements.get_advertisement_by_id(
         advertisement_id=advertisement_id
@@ -67,4 +52,5 @@ async def get_advertisement(
 
     if advertisement is None:
         return {"detail": "Advertisement not found"}
+
     return AdvertisementDetailDTO.model_validate(advertisement, from_attributes=True)

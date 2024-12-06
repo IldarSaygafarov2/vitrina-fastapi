@@ -20,6 +20,10 @@ async def add_images(session: AsyncSession):
 
     for adv in advertisements:
         for i in images[adv.name]:
+            await repo.advertisements.update_advertisement_preview(
+                advertisement_id=adv.id,
+                url=images[adv.name][0]['photo'],
+            )
             await repo.advertisement_images.insert_advertisement_image(
                 advertisement_id=adv.id, url=i["photo"], tg_image_hash=""
             )
