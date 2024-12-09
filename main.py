@@ -14,7 +14,7 @@ main_app.mount("/media", StaticFiles(directory="media"), name="media")
 
 main_app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*", "https://ivitrina-nedvizhimosti.com"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
