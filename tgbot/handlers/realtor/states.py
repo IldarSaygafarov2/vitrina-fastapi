@@ -4,7 +4,7 @@ from pathlib import Path
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message, FSInputFile, InputMediaPhoto
+from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto, Message
 
 from backend.core.interfaces.category import CategoryDTO
 from infrastructure.database.models.advertisement import (
@@ -17,13 +17,20 @@ from infrastructure.database.models.advertisement import (
 )
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.keyboards.user.inline import (
+    advertisement_actions_kb,
     categories_kb,
     districts_kb,
     is_studio_kb,
     property_type_kb,
-    realtor_new_advertisement_kb,
     repair_type_kb,
-    advertisement_actions_kb,
+)
+from tgbot.misc.constants import (
+    OPERATION_TYPE_MAPPING,
+    OPERATION_TYPE_MAPPING_UZ,
+    PROPERTY_TYPE_MAPPING,
+    PROPERTY_TYPE_MAPPING_UZ,
+    REPAIR_TYPE_MAPPING,
+    REPAIR_TYPE_MAPPING_UZ,
 )
 from tgbot.misc.user_states import AdvertisementCreationState
 from tgbot.templates.advertisement_creation import (
@@ -32,22 +39,14 @@ from tgbot.templates.advertisement_creation import (
     choose_photos_text,
     creation_year_text,
     get_address_text,
+    get_address_text_uz,
     get_description_text,
     get_district_text,
     get_propety_type_text,
-    get_address_text_uz,
     get_title_text,
     is_studio_text,
     price_text,
     realtor_advertisement_completed_text,
-)
-from tgbot.misc.constants import (
-    OPERATION_TYPE_MAPPING,
-    PROPERTY_TYPE_MAPPING,
-    REPAIR_TYPE_MAPPING,
-    OPERATION_TYPE_MAPPING_UZ,
-    PROPERTY_TYPE_MAPPING_UZ,
-    REPAIR_TYPE_MAPPING_UZ,
 )
 
 router = Router()
@@ -161,11 +160,10 @@ async def get_title_set_description(
     state_data = await state.get_data()
     title_message = state_data.pop("title_message")
 
-    title_message = await title_message.edit_text(text=get_title_text(lang="uz"))
+    title_message = await title_message.answer(text=get_title_text(lang="uz"))
 
     await state.update_data(title=message.text, title_message=title_message)
     await state.set_state(AdvertisementCreationState.title_uz)
-    await message.delete()
 
 
 @router.message(AdvertisementCreationState.title_uz)
@@ -177,10 +175,9 @@ async def get_title_uz(
     data = await state.get_data()
     title_message = data.pop("title_message")
 
-    description_text = await title_message.edit_text(text=get_description_text())
+    description_text = await title_message.answer(text=get_description_text())
     await state.update_data(title_uz=message.text, description_text=description_text)
     await state.set_state(AdvertisementCreationState.description)
-    await message.delete()
 
 
 @router.message(AdvertisementCreationState.description)
@@ -192,7 +189,7 @@ async def get_description_set_description_uz(
     current_data = await state.get_data()
     description_text = current_data.pop("description_text")
 
-    description_uz_text = await description_text.edit_text(
+    description_uz_text = await description_text.answer(
         text=get_description_text(lang="uz"),
     )
 
@@ -201,7 +198,6 @@ async def get_description_set_description_uz(
         description_uz_text=description_uz_text,
     )
     await state.set_state(AdvertisementCreationState.description_uz)
-    await message.delete()
 
 
 @router.message(AdvertisementCreationState.description_uz)
@@ -225,7 +221,8 @@ async def get_description_uz(
 
 
 @router.callback_query(
-    F.data.startswith("chosen_district"), AdvertisementCreationState.district
+    F.data.startswith("chosen_district"),
+    AdvertisementCreationState.district,
 )
 async def get_district_set_address(
     call: CallbackQuery,
@@ -240,7 +237,7 @@ async def get_district_set_address(
     district_id = int(call.data.split(":")[-1])
     district = await repo.districts.get_district_by_id(district_id=district_id)
 
-    cur_message = await current_message.edit_text(
+    cur_message = await current_message.answer(
         text=get_address_text(district_name=district.name),
         reply_markup=None,
     )
@@ -258,13 +255,12 @@ async def get_address(
     state_data = await state.get_data()
     cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.edit_text(
+    cur_message = await cur_message.answer(
         text=get_address_text_uz(),
     )
 
     await state.update_data(address=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.address_uz)
-    await message.delete()
 
 
 @router.message(AdvertisementCreationState.address_uz)

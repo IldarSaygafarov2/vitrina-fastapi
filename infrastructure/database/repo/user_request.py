@@ -29,6 +29,6 @@ class UserRequestRepo(BaseRepo):
         return result.scalar_one()
 
     async def get_users_requests(self):
-        stmt = select(UserRequest)
+        stmt = select(UserRequest).order_by(UserRequest.created_at)
         result = await self.session.execute(stmt)
         return result.scalars().all()

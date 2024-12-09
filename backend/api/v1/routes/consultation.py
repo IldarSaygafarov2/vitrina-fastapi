@@ -35,5 +35,5 @@ async def create_consultation(
                 cons.created_at.strftime("%Y:%m:%d %H:%M:%S"),
             ]
         )
-    google_sheet.update("Заявки на консультацию", *result)
+    google_sheet.update(worksheet_name="Заявки на консультацию", lists=result)
     return ConsultationDTO.model_validate(new, from_attributes=True)

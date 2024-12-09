@@ -17,6 +17,6 @@ class ConsultationRepo(BaseRepo):
         return result.scalar_one()
 
     async def get_consultations(self):
-        stmt = select(ConsultationRequest)
+        stmt = select(ConsultationRequest).order_by(ConsultationRequest.created_at)
         result = await self.session.execute(stmt)
         return result.scalars().all()

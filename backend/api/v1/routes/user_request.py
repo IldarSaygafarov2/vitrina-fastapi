@@ -3,12 +3,15 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from backend.app.config import config
-from backend.app.dependencies import get_repo, get_google_sheet
-from backend.core.interfaces.user_request import UserRequestDTO, UserRequestCreateDTO
+from backend.app.dependencies import get_google_sheet, get_repo
+from backend.core.interfaces.user_request import UserRequestCreateDTO, UserRequestDTO
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.googlesheets.main import GoogleSheet
 
-router = APIRouter(prefix=config.api_prefix.v1.request, tags=["Users requests"])
+router = APIRouter(
+    prefix=config.api_prefix.v1.request,
+    tags=["Users requests"],
+)
 
 
 @router.post("/add")
@@ -38,5 +41,5 @@ async def add_user_request(
             ]
         )
 
-    google_sheet.update(*reqs)
+    google_sheet.update(worksheet_name="Заявки пользователей", lists=reqs)
     return UserRequestDTO.model_validate(new_request, from_attributes=True)

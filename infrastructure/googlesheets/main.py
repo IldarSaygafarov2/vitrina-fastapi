@@ -16,9 +16,10 @@ class GoogleSheet:
         sheet = client.open_by_key(self.spreadsheet_id)
         return sheet
 
-    def update(self, worksheet_name: str, *lists):
+    def update(self, worksheet_name: str, lists):
         if worksheet_name == "Заявки пользователей":
             worksheet = self.sheet.worksheet(worksheet_name)
+            print(worksheet)
             worksheet.update(
                 [
                     [
@@ -35,6 +36,7 @@ class GoogleSheet:
             )
         elif worksheet_name == "Заявки на консультацию":
             worksheet = self.sheet.worksheet(worksheet_name)
+            print(worksheet)
             worksheet.update(
                 [["ФИО", "Номер телефона", "Дата"], *lists], f"A1:C{len(lists)+1}"
             )
