@@ -23,7 +23,13 @@ router.message.filter(RoleFilter(role="group_director"))
 
 
 @router.message(CommandStart())
-async def start(message: Message):
+async def start(message: Message, repo: "RequestsRepo"):
+    username = message.from_user.username
+    chat_id = message.from_user.id
+    await repo.users.update_user_chat_id(
+        tg_username=username,
+        tg_chat_id=chat_id,
+    )
     await message.answer(
         f"""Привет, руководитель группы
 
