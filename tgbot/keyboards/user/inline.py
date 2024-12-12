@@ -1,8 +1,13 @@
-from typing import Optional
-
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 from infrastructure.database.models import Advertisement, Category, District
+from tgbot.misc.constants import (
+    ADVERTISEMENT_UPDATE_FIELDS,
+    OPERATION_TYPE_MAPPING,
+    PROPERTY_TYPE_MAPPING,
+    REPAIR_TYPE_MAPPING,
+)
 
 
 def realtor_start_kb(realtor_chat_id: int):
@@ -23,20 +28,32 @@ def operation_type_kb():
     return kb.as_markup()
 
 
-def categories_kb(categories: list["Category"]):
+def categories_kb(categories: list["Category"], for_update: bool = False):
     kb = InlineKeyboardBuilder()
 
     for category in categories:
-        kb.button(text=category.name, callback_data=f"chosen_category:{category.id}")
+        callback = (
+            f"update_chosen_category:{category.id}"
+            if for_update
+            else f"chosen_category:{category.id}"
+        )
+        kb.button(text=category.name, callback_data=callback)
 
     kb.adjust(2)
     return kb.as_markup()
 
 
-def districts_kb(districts: list["District"]):
+def districts_kb(districts: list["District"], for_update: bool = False):
     kb = InlineKeyboardBuilder()
     for district in districts:
-        kb.button(text=district.name, callback_data=f"chosen_district:{district.id}")
+
+        callback = (
+            f"update_chosen_district:{district.id}"
+            if for_update
+            else f"chosen_district:{district.id}"
+        )
+
+        kb.button(text=district.name, callback_data=callback)
 
     kb.adjust(1)
     return kb.as_markup()
@@ -49,10 +66,16 @@ def property_type_kb():
     return kb.as_markup()
 
 
-def is_studio_kb():
+def is_studio_kb(for_update: bool = False):
     kb = InlineKeyboardBuilder()
-    kb.button(text="Да", callback_data="is_studio:yes")
-    kb.button(text="Нет", callback_data="is_studio:no")
+    kb.button(
+        text="Да",
+        callback_data="is_studio:yes" if not for_update else "update_is_studio:yes",
+    )
+    kb.button(
+        text="Нет",
+        callback_data="is_studio:no" if not for_update else "update_is_studio:no",
+    )
     return kb.as_markup()
 
 
@@ -118,4 +141,44 @@ def realtor_new_advertisement_kb(advertisement_id: int):
         ),
     )
     kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
+    return kb.as_markup()
+
+
+def advertisement_update_kb(advertisement_id: int):
+    kb = InlineKeyboardBuilder()
+    for key, value in ADVERTISEMENT_UPDATE_FIELDS.items():
+        kb.button(text=value, callback_data=f"{key}:{advertisement_id}")
+
+    kb.adjust(2)
+    kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
+    return kb.as_markup()
+
+
+def return_back_kb(callback: str):
+    kb = InlineKeyboardBuilder()
+    kb.button(text="Назад", callback_data=callback)
+    return kb.as_markup()
+
+
+def advertisement_choices_kb(
+    choice_type: str, callback_for_return: str | None = None, **kwargs
+):
+    kb = InlineKeyboardBuilder()
+
+    prefix = "update_"
+
+    if choice_type == "repair_type":
+        for key, value in REPAIR_TYPE_MAPPING.items():
+            kb.button(text=value, callback_data=f"{prefix}{choice_type}:{key}")
+    elif choice_type == "property_type":
+        for key, value in PROPERTY_TYPE_MAPPING.items():
+            kb.button(text=value, callback_data=f"{prefix}{choice_type}:{key}")
+    elif choice_type == "operation_type":
+        for key, value in OPERATION_TYPE_MAPPING.items():
+            kb.button(text=value, callback_data=f"{prefix}{choice_type}:{key}")
+
+    kb.adjust(2)
+    if callback_for_return is not None:
+        kb.row(InlineKeyboardButton(text="Назад", callback_data=callback_for_return))
+
     return kb.as_markup()

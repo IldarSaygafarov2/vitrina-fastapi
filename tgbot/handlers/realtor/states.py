@@ -22,6 +22,7 @@ from tgbot.keyboards.user.inline import (
     is_studio_kb,
     property_type_kb,
     repair_type_kb,
+    advertisement_update_kb,
 )
 from tgbot.keyboards.admin.inline import advertisement_moderation_kb
 from tgbot.misc.constants import (
@@ -31,6 +32,7 @@ from tgbot.misc.constants import (
     PROPERTY_TYPE_MAPPING_UZ,
     REPAIR_TYPE_MAPPING,
     REPAIR_TYPE_MAPPING_UZ,
+    ADVERTISEMENT_UPDATE_FIELDS,
 )
 from tgbot.misc.user_states import AdvertisementCreationState
 from tgbot.templates.advertisement_creation import (
@@ -653,13 +655,16 @@ async def get_repair_type(
     await cur_message.delete()
     advertisement_message = await call.message.answer_media_group(media=media_group)
 
-    group_directors = await repo.users.get_users_by_role(role='GROUP_DIRECTOR')
+    group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
 
     for director in group_directors:
         if director.tg_chat_id:
             await call.bot.send_media_group(director.tg_chat_id, media=media_group)
-            await call.bot.send_message(director.tg_chat_id, f"Объявление прошло модерацию?",
-                                        reply_markup=advertisement_moderation_kb(new_advertisement.id))
+            await call.bot.send_message(
+                director.tg_chat_id,
+                f"Объявление прошло модерацию?",
+                reply_markup=advertisement_moderation_kb(new_advertisement.id),
+            )
 
     await call.message.answer(
         text="Выберите действие над этим объявлением",

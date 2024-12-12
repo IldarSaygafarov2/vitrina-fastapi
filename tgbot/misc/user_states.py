@@ -37,3 +37,15 @@ class AdvertisementCreationState(StatesGroup):
 
 class AdvertisementModerationState(StatesGroup):
     message = State()
+
+
+class AdvertisementUpdateState(StatesGroup):
+    name = State()
+    description = State()
+    address = State()
+    price = State()
+    quadrature = State()
+    rooms = State()
+    creation_year = State()
+    house_quadrature = State()
+    floor = State()

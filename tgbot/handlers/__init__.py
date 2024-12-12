@@ -4,6 +4,7 @@ from .common.menu import router as common_menu_router
 from .common.start import router as common_user_router
 from .realtor.menu import router as realtor_router
 from .realtor.states import router as realtor_states_router
+from .realtor.advertisement_update import router as update_router
 
 routers_list = [
     admin_router,
@@ -12,6 +13,7 @@ routers_list = [
     realtor_router,
     realtor_states_router,
     common_menu_router,
+    update_router,
 ]
 
 
