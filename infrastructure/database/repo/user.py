@@ -55,8 +55,8 @@ class UserRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalar_one()
 
-    async def get_realtors(self):
-        stmt = select(User).where(User.role == "REALTOR")
+    async def get_users_by_role(self, role: str):
+        stmt = select(User).where(User.role == role)
         result = await self.session.execute(stmt)
         return result.scalars().all()
 

@@ -15,8 +15,9 @@ from tgbot.keyboards.admin.inline import (
 )
 from tgbot.keyboards.user.inline import realtor_advertisements_kb, return_home_kb
 from tgbot.misc.realtor_states import RealtorCreationState, RealtorUpdatingState
-from tgbot.templates.realtor_texts import get_realtor_info
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
+from tgbot.templates.realtor_texts import get_realtor_info
+from tgbot.misc.user_states import AdvertisementModerationState
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -41,8 +42,8 @@ async def start(message: Message, repo: "RequestsRepo"):
 
 @router.callback_query(F.data == "rg_realtors")
 async def get_realtors(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
+        call: CallbackQuery,
+        repo: "RequestsRepo",
 ):
     await call.answer()
 
@@ -54,12 +55,12 @@ async def get_realtors(
 
 @router.callback_query(F.data == "rg_realtors_all")
 async def get_all_realtors(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
+        call: CallbackQuery,
+        repo: "RequestsRepo",
 ):
     await call.answer()
 
-    realtors = await repo.users.get_realtors()
+    realtors = await repo.users.get_users_by_role(role='REALTOR')
     await call.message.edit_text(
         text="Список риелторов",
         reply_markup=realtors_kb(realtors=realtors),
@@ -68,9 +69,9 @@ async def get_all_realtors(
 
 @router.callback_query(F.data == "rg_realtors_add")
 async def add_new_realtor(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -80,9 +81,9 @@ async def add_new_realtor(
 
 @router.callback_query(F.data.startswith("get_realtor"))
 async def get_realtor(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -100,9 +101,9 @@ async def get_realtor(
 
 @router.callback_query(F.data.startswith("delete_realtor"))
 async def delete_reltor(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     realtor_id = int(call.data.split(":")[-1])
@@ -116,15 +117,15 @@ async def delete_reltor(
 
 @router.callback_query(F.data.startswith("confirm_delete"))
 async def confirm_realtor_delete(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     realtor_id = int(call.data.split(":")[-1])
     await repo.users.delete_user(user_id=realtor_id)
 
-    realtors = await repo.users.get_realtors()
+    realtors = await repo.users.get_users_by_role(role='REALTOR')
     await call.message.edit_text(
         text="Риелтор успешно удален",
         reply_markup=realtors_kb(realtors=realtors),
@@ -133,9 +134,9 @@ async def confirm_realtor_delete(
 
 @router.callback_query(F.data.startswith("realtor_advertisements"))
 async def get_realtor_advertisements(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -156,9 +157,9 @@ async def get_realtor_advertisements(
 
 @router.callback_query(F.data.startswith("rg_realtor_advertisement"))
 async def get_realtor_advertisements(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -174,9 +175,9 @@ async def get_realtor_advertisements(
 
 @router.callback_query(F.data.startswith("edit_realtor"))
 async def edit_realtor_data(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -191,9 +192,9 @@ async def edit_realtor_data(
 
 @router.callback_query(F.data.startswith("update_name"))
 async def update_name(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -211,9 +212,9 @@ async def update_name(
 
 @router.message(RealtorUpdatingState.first_name)
 async def update_name(
-    message: Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     realtor_id = data.pop("realtor_id")
@@ -231,9 +232,9 @@ async def update_name(
 
 @router.callback_query(F.data.startswith("update_lastname"))
 async def update_lastname(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     realtor_id = int(call.data.split(":")[-1])
@@ -250,9 +251,9 @@ async def update_lastname(
 
 @router.message(RealtorUpdatingState.lastname)
 async def update_lastname(
-    message: Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     realtor_id = data.pop("realtor_id")
@@ -270,9 +271,9 @@ async def update_lastname(
 
 @router.callback_query(F.data.startswith("update_phone_number"))
 async def update_phone_number(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     realtor_id = int(call.data.split(":")[-1])
@@ -289,9 +290,9 @@ async def update_phone_number(
 
 @router.message(RealtorUpdatingState.phone_number)
 async def update_phone_number(
-    message: Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     realtor_id = data.pop("realtor_id")
@@ -311,9 +312,9 @@ async def update_phone_number(
 
 @router.callback_query(F.data.startswith("update_tg_username"))
 async def update_tg_username(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     realtor_id = int(call.data.split(":")[-1])
@@ -330,9 +331,9 @@ async def update_tg_username(
 
 @router.message(RealtorUpdatingState.tg_username)
 async def update_tg_username(
-    message: Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     realtor_id = data.pop("realtor_id")
@@ -348,5 +349,66 @@ async def update_tg_username(
     await message.delete()
 
 
-# rg_districts
-# rg_categories
+@router.callback_query(F.data.startswith('moderation_confirm'))
+async def process_moderation_confirm(
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
+):
+    await call.answer()
+
+    advertisement_id = int(call.data.split(':')[-1])
+
+    advertisement = await repo.advertisements.update_advertisement(
+        advertisement_id=advertisement_id,
+        is_moderated=True
+    )
+    user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
+    await call.message.edit_text('Спасибо!')
+    await call.bot.send_message(
+        chat_id=user.tg_chat_id,
+        text='Объявление прошло модерацию'
+    )
+
+
+@router.callback_query(F.data.startswith('moderation_deny'))
+async def process_moderation_deny(
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
+):
+    await call.answer()
+
+    advertisement_id = int(call.data.split(':')[-1])
+
+    advertisement = await repo.advertisements.update_advertisement(
+        advertisement_id=advertisement_id,
+        is_moderated=False
+    )
+    user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
+
+    await state.update_data(user=user, advertisement=advertisement)
+    await state.set_state(AdvertisementModerationState.message)
+
+    await call.message.answer('Напишите причину, почему данное объявление не прошло модерацию')
+
+
+@router.message(AdvertisementModerationState.message)
+async def process_moderation_deny_message(
+        message: Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
+):
+    data = await state.get_data()
+    user = data.pop('user')
+    advertisement = data.pop('advertisement')
+
+    await message.bot.send_message(
+        chat_id=user.tg_chat_id,
+        text=f'Объявление <b>{advertisement.name}</b> не прошло модерацию'
+    )
+    await message.bot.send_message(
+        chat_id=user.tg_chat_id,
+        text=message.text
+    )
+    await state.clear()

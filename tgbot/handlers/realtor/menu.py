@@ -40,9 +40,9 @@ async def start(message: Message, repo: RequestsRepo):
 
 @router.callback_query(F.data.startswith("create_advertisement"))
 async def create_advertisement(
-    call: CallbackQuery,
-    repo: RequestsRepo,
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: RequestsRepo,
+        state: FSMContext,
 ):
     await call.answer()
     await state.set_state(AdvertisementCreationState.operation_type)
@@ -54,10 +54,9 @@ async def create_advertisement(
 
 @router.callback_query(F.data.startswith("show_realtors_advertisement"))
 async def show_realtor_advertisements(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
+        call: CallbackQuery,
+        repo: "RequestsRepo",
 ):
-
     await call.answer()
 
     realtor_chat_id = int(call.data.split(":")[-1])
@@ -72,8 +71,8 @@ async def show_realtor_advertisements(
 
 @router.callback_query(F.data.startswith("realtor_advertisement"))
 async def get_realtor_advertisement_detail(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
+        call: CallbackQuery,
+        repo: "RequestsRepo",
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])

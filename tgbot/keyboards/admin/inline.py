@@ -82,3 +82,11 @@ def realtor_fields_kb(realtor_id: int):
 
     kb.adjust(2)
     return kb.as_markup()
+
+
+def advertisement_moderation_kb(advertisement_id: int):
+    kb = InlineKeyboardBuilder()
+    kb.button(text='Да ✔', callback_data=f'moderation_confirm:{advertisement_id}')
+    kb.button(text='Нет ❌', callback_data=f'moderation_deny:{advertisement_id}')
+    return kb.as_markup()
+

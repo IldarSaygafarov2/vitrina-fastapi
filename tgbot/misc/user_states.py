@@ -33,3 +33,7 @@ class AdvertisementCreationState(StatesGroup):
 
     photos_quantity = State()
     photos = State()
+
+
+class AdvertisementModerationState(StatesGroup):
+    message = State()

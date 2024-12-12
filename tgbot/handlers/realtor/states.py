@@ -4,9 +4,8 @@ from pathlib import Path
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto, Message
+from aiogram.types import CallbackQuery, InputMediaPhoto, Message
 
-from backend.core.interfaces.category import CategoryDTO
 from infrastructure.database.models.advertisement import (
     OperationType,
     OperationTypeUz,
@@ -24,6 +23,7 @@ from tgbot.keyboards.user.inline import (
     property_type_kb,
     repair_type_kb,
 )
+from tgbot.keyboards.admin.inline import advertisement_moderation_kb
 from tgbot.misc.constants import (
     OPERATION_TYPE_MAPPING,
     OPERATION_TYPE_MAPPING_UZ,
@@ -587,7 +587,7 @@ async def get_repair_type(
     photos = state_data.get("photos")
     date_str = datetime.now().strftime("%Y-%m-%d")
 
-    advertisements_folder = upload_dir / "advertismenets" / date_str
+    advertisements_folder = upload_dir / "advertisements" / date_str
     advertisements_folder.mkdir(parents=True, exist_ok=True)
     files_locations = []
 
@@ -652,39 +652,16 @@ async def get_repair_type(
 
     await cur_message.delete()
     advertisement_message = await call.message.answer_media_group(media=media_group)
+
+    group_directors = await repo.users.get_users_by_role(role='GROUP_DIRECTOR')
+
+    for director in group_directors:
+        if director.tg_chat_id:
+            await call.bot.send_media_group(director.tg_chat_id, media=media_group)
+            await call.bot.send_message(director.tg_chat_id, f"Объявление прошло модерацию?",
+                                        reply_markup=advertisement_moderation_kb(new_advertisement.id))
+
     await call.message.answer(
         text="Выберите действие над этим объявлением",
         reply_markup=advertisement_actions_kb(advertisement_id=new_advertisement.id),
     )
-
-    # await state.update_data(advertisement_message=advertisement_message)
-
-
-# @router.callback_query(F.data.startswith("advertisement_lang"))
-# async def show_advertisement_by_lang(
-#     call: CallbackQuery,
-#     repo: "RequestsRepo",
-#     state: FSMContext,
-# ):
-#     await call.answer()
-
-#     state_data = await state.get_data()
-#     message = state_data.get("advertisement_message")
-#     _, lang, advertisement_id = call.data.split(":")
-#     advertisement_id = int(advertisement_id)
-#     advertisement = await repo.advertisements.get_advertisement_by_id(
-#         advertisement_id=advertisement_id
-#     )
-
-#     if lang == "ru":
-#         return await call.answer()
-
-#     advertisement_message = realtor_advertisement_completed_text(
-#         advertisement=advertisement
-#     )
-#     print(advertisement_message)
-#     call.message.edit_caption
-#     await message[0].edit_caption(
-#         caption=advertisement_message,
-#         # reply_markup=realtor_new_advertisement_kb(advertisement_id=advertisement_id),
-#     )

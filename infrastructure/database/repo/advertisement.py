@@ -95,50 +95,51 @@ class AdvertisementRepo(BaseRepo):
             .options(selectinload(Advertisement.images))
             .limit(limit)
             .offset(offset)
+            .filter_by(is_moderated=True)
         )
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def get_filtered_advertisements(self, filter: AdvertisementFilter):
+    async def get_filtered_advertisements(self, _filter: AdvertisementFilter):
         query = select(Advertisement)
 
-        if filter.operation_type:
-            query = query.filter(Advertisement.operation_type == filter.operation_type)
-        if filter.property_type:
-            query = query.filter(Advertisement.property_type == filter.property_type)
-        if filter.repair_type:
-            query = query.filter(Advertisement.repair_type == filter.repair_type)
-        if filter.floor_from:
-            query = query.filter(Advertisement.floor_from >= filter.floor_from)
-        if filter.floor_to:
-            query = query.filter(Advertisement.floor_to <= filter.floor_to)
-        if filter.house_quadrature_from:
+        if _filter.operation_type:
+            query = query.filter(Advertisement.operation_type == _filter.operation_type)
+        if _filter.property_type:
+            query = query.filter(Advertisement.property_type == _filter.property_type)
+        if _filter.repair_type:
+            query = query.filter(Advertisement.repair_type == _filter.repair_type)
+        if _filter.floor_from:
+            query = query.filter(Advertisement.floor_from >= _filter.floor_from)
+        if _filter.floor_to:
+            query = query.filter(Advertisement.floor_to <= _filter.floor_to)
+        if _filter.house_quadrature_from:
             query = query.filter(
-                Advertisement.house_quadrature_from >= filter.house_quadrature_from
+                Advertisement.house_quadrature_from >= _filter.house_quadrature_from
             )
-        if filter.house_quadrature_to:
+        if _filter.house_quadrature_to:
             query = query.filter(
-                Advertisement.house_quadrature_to <= filter.house_quadrature_to
+                Advertisement.house_quadrature_to <= _filter.house_quadrature_to
             )
-        if filter.price_from:
-            query = query.filter(Advertisement.price >= filter.price_from)
-        if filter.price_to:
-            query = query.filter(Advertisement.price <= filter.price_to)
-        if filter.quadrature_from:
+        if _filter.price_from:
+            query = query.filter(Advertisement.price >= _filter.price_from)
+        if _filter.price_to:
+            query = query.filter(Advertisement.price <= _filter.price_to)
+        if _filter.quadrature_from:
             query = query.filter(
-                Advertisement.quadrature_from >= filter.quadrature_from
+                Advertisement.quadrature_from >= _filter.quadrature_from
             )
-        if filter.quadrature_to:
-            query = query.filter(Advertisement.quadrature_to <= filter.quadrature_to)
-        if filter.is_studio is not None:
-            query = query.filter(Advertisement.is_studio == filter.is_studio)
-        if filter.category_id:
-            query = query.filter(Advertisement.category_id == filter.category_id)
-        if filter.district_id:
-            query = query.filter(Advertisement.district_id == filter.district_id)
+        if _filter.quadrature_to:
+            query = query.filter(Advertisement.quadrature_to <= _filter.quadrature_to)
+        if _filter.is_studio is not None:
+            query = query.filter(Advertisement.is_studio == _filter.is_studio)
+        if _filter.category_id:
+            query = query.filter(Advertisement.category_id == _filter.category_id)
+        if _filter.district_id:
+            query = query.filter(Advertisement.district_id == _filter.district_id)
 
         # Пагинация
-        query = query.offset(filter.offset).limit(filter.limit)
+        query = query.offset(_filter.offset).limit(_filter.limit)
         result = await self.session.execute(query)
 
         return result.scalars().all()
@@ -201,6 +202,18 @@ class AdvertisementRepo(BaseRepo):
         )
         await self.session.execute(stmt)
         await self.session.commit()
+
+    async def update_advertisement(self, advertisement_id: int, **fields):
+        stmt = (
+            update(Advertisement)
+            .values(**fields)
+            .where(Advertisement.id == advertisement_id)
+            .options(selectinload(Advertisement.images))
+            .returning(Advertisement)
+        )
+        updated = await self.session.execute(stmt)
+        await self.session.commit()
+        return updated.scalar_one()
 
 
 class AdvertisementImageRepo(BaseRepo):
