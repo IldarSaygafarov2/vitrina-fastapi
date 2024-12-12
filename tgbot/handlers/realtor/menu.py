@@ -1,18 +1,15 @@
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InputMedia, InputMediaPhoto, Message
-from aiogram.utils.media_group import MediaGroupBuilder
+from aiogram.types import CallbackQuery, Message
 
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
-from tgbot.keyboards.admin.inline import admin_start_kb
 from tgbot.keyboards.user.inline import (
     advertisement_actions_kb,
     operation_type_kb,
     realtor_advertisements_kb,
     realtor_start_kb,
-    return_home_kb,
 )
 from tgbot.misc.user_states import AdvertisementCreationState
 from tgbot.templates.advertisement_creation import (
@@ -89,18 +86,6 @@ async def get_realtor_advertisement_detail(
         advertisement=advertisement
     )
 
-    # media_group: list[InputMediaPhoto] = [
-    #     (
-    #         InputMediaPhoto(media=img.tg_image_hash, caption=advertisement_message)
-    #         if i == 0
-    #         else InputMediaPhoto(media=img.tg_image_hash)
-    #     )
-    #     for i, img in enumerate(advertisement.images)
-    # ]
-    # await call.message.answer_media_group(
-    #     media=media_group,
-    #     reply_markup=return_home_kb(),
-    # )
     await call.message.edit_text(text=advertisement_message)
     await call.message.answer(
         text="Выберите действие над этим объявлением",
