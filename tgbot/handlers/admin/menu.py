@@ -368,6 +368,7 @@ async def process_moderation_confirm(
     await call.bot.send_message(
         chat_id=user.tg_chat_id, text="Объявление прошло модерацию"
     )
+    await call.message.delete()
 
 
 @router.callback_query(F.data.startswith("moderation_deny"))
@@ -388,8 +389,9 @@ async def process_moderation_deny(
     await state.update_data(user=user, advertisement=advertisement)
     await state.set_state(AdvertisementModerationState.message)
 
-    await call.message.answer(
-        "Напишите причину, почему данное объявление не прошло модерацию"
+    await call.message.edit_text(
+        "Напишите причину, почему данное объявление не прошло модерацию",
+        reply_markup=None,
     )
 
 
