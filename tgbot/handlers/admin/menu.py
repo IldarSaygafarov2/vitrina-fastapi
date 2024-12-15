@@ -21,6 +21,7 @@ from tgbot.templates.realtor_texts import get_realtor_info
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
+router.callback_query.filter(RoleFilter(role="group_director"))
 
 
 @router.message(CommandStart())
