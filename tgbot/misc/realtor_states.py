@@ -6,6 +6,7 @@ class RealtorCreationState(StatesGroup):
     lastname = State()
     phone_number = State()
     tg_username = State()
+    photo = State()
 
 
 class RealtorUpdatingState(StatesGroup):
@@ -13,3 +14,4 @@ class RealtorUpdatingState(StatesGroup):
     lastname = State()
     phone_number = State()
     tg_username = State()
+    photo = State()

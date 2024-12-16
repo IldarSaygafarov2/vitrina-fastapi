@@ -78,9 +78,11 @@ def realtor_fields_kb(realtor_id: int):
     kb.button(text="Фамилия", callback_data=f"update_lastname:{realtor_id}")
     kb.button(text="Номер телефона", callback_data=f"update_phone_number:{realtor_id}")
     kb.button(text="Юзернейм", callback_data=f"update_tg_username:{realtor_id}")
-    kb.button(text="На главную", callback_data="return_home")
+    kb.button(text="Фото", callback_data=f"update_realtor_photo:{realtor_id}")
 
     kb.adjust(2)
+
+    kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
     return kb.as_markup()
 
 

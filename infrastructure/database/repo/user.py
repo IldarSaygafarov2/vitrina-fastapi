@@ -12,6 +12,8 @@ class UserRepo(BaseRepo):
         lastname: str,
         phone_number: str,
         tg_username: str,
+        profile_image: str,
+        profile_image_hash: str,
         role: str,
     ):
         stmt = (
@@ -21,6 +23,8 @@ class UserRepo(BaseRepo):
                 lastname=lastname,
                 phone_number=phone_number,
                 tg_username=tg_username,
+                profile_image=profile_image,
+                profile_image_hash=profile_image_hash,
                 role=role,
             )
             .returning(User)

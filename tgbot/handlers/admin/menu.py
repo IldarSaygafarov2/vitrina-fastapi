@@ -1,7 +1,11 @@
+import os
+from pathlib import Path
+import shutil
+
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, ContentType, Message
 
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
@@ -22,6 +26,9 @@ from tgbot.templates.realtor_texts import get_realtor_info
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
 router.callback_query.filter(RoleFilter(role="group_director"))
+
+upload_dir = Path("media")
+upload_dir.mkdir(parents=True, exist_ok=True)
 
 
 @router.message(CommandStart())
@@ -94,8 +101,15 @@ async def get_realtor(
 
     realtor_info = get_realtor_info(realtor)
 
-    await call.message.edit_text(
-        text=realtor_info,
+    profile_image = (
+        realtor.profile_image_hash
+        if realtor.profile_image_hash
+        else "https://cdn.vectorstock.com/i/500p/08/19/gray-photo-placeholder-icon-design-ui-vector-35850819.jpg"
+    )
+    await call.message.delete()
+    await call.message.answer_photo(
+        photo=profile_image,
+        caption=realtor_info,
         reply_markup=manage_realtor_kb(realtor_id=realtor_id),
     )
 
@@ -148,7 +162,8 @@ async def get_realtor_advertisements(
         user_id=realtor_id
     )
 
-    await call.message.edit_text(
+    await call.message.delete()
+    await call.message.answer(
         text=f"Объявления риелтора: <b>{realtor.first_name} {realtor.lastname}</b>",
         reply_markup=realtor_advertisements_kb(
             advertisements=advertisements, for_admin=True
@@ -185,8 +200,8 @@ async def edit_realtor_data(
     realtor_id = int(call.data.split(":")[-1])
     realtor = await repo.users.get_user_by_id(user_id=realtor_id)
 
-    await call.message.edit_text(
-        text=get_realtor_info(realtor),
+    await call.message.edit_caption(
+        caption=get_realtor_info(realtor),
         reply_markup=realtor_fields_kb(realtor_id),
     )
 
@@ -202,8 +217,8 @@ async def update_name(
     realtor_id = int(call.data.split(":")[-1])
     realtor = await repo.users.get_user_by_id(user_id=realtor_id)
 
-    cur_message = await call.message.edit_text(
-        text=f"Имя риелтора: <b>{realtor.first_name}</b>\nВведите новое имя риелтора:",
+    cur_message = await call.message.edit_caption(
+        caption=f"Имя риелтора: <b>{realtor.first_name}</b>\nВведите новое имя риелтора:",
         reply_markup=None,
     )
 
@@ -222,8 +237,8 @@ async def update_name(
     cur_message = data.pop("realtor_message")
 
     updated = await repo.users.update_user(user_id=realtor_id, first_name=message.text)
-    await cur_message.edit_text(
-        text=get_realtor_info(updated),
+    await cur_message.edit_caption(
+        caption=get_realtor_info(updated),
         reply_markup=realtor_fields_kb(realtor_id),
     )
 
@@ -241,8 +256,8 @@ async def update_lastname(
     realtor_id = int(call.data.split(":")[-1])
     realtor = await repo.users.get_user_by_id(user_id=realtor_id)
 
-    cur_message = await call.message.edit_text(
-        text=f"Фамилия риелтора: <b>{realtor.first_name}</b>\nВведите новую фамилию риелтора:",
+    cur_message = await call.message.edit_caption(
+        caption=f"Фамилия риелтора: <b>{realtor.first_name}</b>\nВведите новую фамилию риелтора:",
         reply_markup=None,
     )
 
@@ -261,8 +276,8 @@ async def update_lastname(
     cur_message = data.pop("realtor_message")
 
     updated = await repo.users.update_user(user_id=realtor_id, lastname=message.text)
-    await cur_message.edit_text(
-        text=get_realtor_info(updated),
+    await cur_message.edit_caption(
+        caption=get_realtor_info(updated),
         reply_markup=realtor_fields_kb(realtor_id),
     )
 
@@ -280,8 +295,8 @@ async def update_phone_number(
     realtor_id = int(call.data.split(":")[-1])
     realtor = await repo.users.get_user_by_id(user_id=realtor_id)
 
-    cur_message = await call.message.edit_text(
-        text=f"Номер телефона риелтора: <b>{realtor.first_name}</b>\nВведите новый номер телефона риелтора:",
+    cur_message = await call.message.edit_caption(
+        caption=f"Номер телефона риелтора: <b>{realtor.first_name}</b>\nВведите новый номер телефона риелтора:",
         reply_markup=None,
     )
 
@@ -302,8 +317,8 @@ async def update_phone_number(
     updated = await repo.users.update_user(
         user_id=realtor_id, phone_number=message.text
     )
-    await cur_message.edit_text(
-        text=get_realtor_info(updated),
+    await cur_message.edit_caption(
+        caption=get_realtor_info(updated),
         reply_markup=realtor_fields_kb(realtor_id),
     )
 
@@ -321,8 +336,8 @@ async def update_tg_username(
     realtor_id = int(call.data.split(":")[-1])
     realtor = await repo.users.get_user_by_id(user_id=realtor_id)
 
-    cur_message = await call.message.edit_text(
-        text=f"Юзернейм риелтора: <b>{realtor.first_name}</b>\nВведите новый юзернейм риелтора:",
+    cur_message = await call.message.edit_caption(
+        caption=f"Юзернейм риелтора: <b>{realtor.first_name}</b>\nВведите новый юзернейм риелтора:",
         reply_markup=None,
     )
 
@@ -341,13 +356,71 @@ async def update_tg_username(
     cur_message = data.pop("realtor_message")
 
     updated = await repo.users.update_user(user_id=realtor_id, tg_username=message.text)
-    await cur_message.edit_text(
-        text=get_realtor_info(updated),
+    await cur_message.edit_caption(
+        caption=get_realtor_info(updated),
         reply_markup=realtor_fields_kb(realtor_id),
     )
 
     await state.clear()
     await message.delete()
+
+
+@router.callback_query(F.data.startswith("update_realtor_photo"))
+async def update_profile_image(
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    await call.answer()
+    realtor_id = int(call.data.split(":")[-1])
+    cur_message = await call.message.edit_caption(
+        caption="Отправьте новую фотографию профиля", reply_markup=None
+    )
+    await state.set_state(RealtorUpdatingState.photo)
+    await state.update_data(realtor_id=realtor_id, cur_message=cur_message)
+
+
+@router.message(RealtorUpdatingState.photo, F.content_type == ContentType.PHOTO)
+async def update_profile_image(
+    message: Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    data = await state.get_data()
+    realtor_id = data.get("realtor_id")
+    realtor = await repo.users.get_user_by_id(user_id=realtor_id)
+    cur_message = data.get("cur_message")
+
+    os.remove(realtor.profile_image)
+
+    photo_id = message.photo[-1].file_id
+    file_obj = await message.bot.get_file(photo_id)
+    filename = file_obj.file_path.split("/")[-1]
+    file = await message.bot.download_file(file_obj.file_path)
+
+    user_image_folder = upload_dir / "users"
+    user_image_folder.mkdir(parents=True, exist_ok=True)
+
+    file_location = user_image_folder / filename
+
+    with open(file_location, "wb") as f:
+        shutil.copyfileobj(file, f)
+
+    updated = await repo.users.update_user(
+        user_id=realtor_id,
+        profile_image=str(file_location),
+        profile_image_hash=photo_id,
+    )
+
+    await cur_message.delete()
+    await state.clear()
+    await message.delete()
+
+    await message.answer_photo(
+        photo=photo_id,
+        caption=get_realtor_info(updated),
+        reply_markup=realtor_fields_kb(realtor_id),
+    )
 
 
 @router.callback_query(F.data.startswith("moderation_confirm"))

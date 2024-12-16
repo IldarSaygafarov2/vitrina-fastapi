@@ -1,14 +1,21 @@
+from pathlib import Path
+import shutil
+
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message, ContentType
 
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
+from tgbot.keyboards.admin.inline import manage_realtor_kb
 from tgbot.misc.realtor_states import RealtorCreationState
-from tgbot.keyboards.admin.inline import admin_start_kb, manage_realtor_kb
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
+
+
+upload_dir = Path("media")
+upload_dir.mkdir(parents=True, exist_ok=True)
 
 
 @router.message(RealtorCreationState.first_name)
@@ -53,14 +60,42 @@ async def get_tg_username_set_profile_image(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
+
+    await state.set_state(RealtorCreationState.photo)
+    await state.update_data(tg_username=message.text)
+
+    await message.answer("Отправьте фото агента")
+
+
+@router.message(RealtorCreationState.photo, F.content_type == ContentType.PHOTO)
+async def get_profile_image_create_user(
+    message: Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
     data = await state.get_data()
-    tg_username = message.text
+
+    photo_id = message.photo[-1].file_id
+
+    file_obj = await message.bot.get_file(photo_id)
+    filename = file_obj.file_path.split("/")[-1]
+    file = await message.bot.download_file(file_obj.file_path)
+
+    user_image_folder = upload_dir / "users"
+    user_image_folder.mkdir(parents=True, exist_ok=True)
+
+    file_location = user_image_folder / filename
+
+    with open(file_location, "wb") as f:
+        shutil.copyfileobj(file, f)
 
     user = await repo.users.create_user(
         first_name=data["first_name"],
         lastname=data["lastname"],
         phone_number=data["phone_number"],
-        tg_username=tg_username,
+        tg_username=data["tg_username"],
+        profile_image=str(file_location),
+        profile_image_hash=photo_id,
         role="REALTOR",
     )
 
@@ -73,11 +108,9 @@ async def get_tg_username_set_profile_image(
 Юзернейм: <b>{user.tg_username}</b>
     """
 
-    await message.answer(
-        text=user_message,
+    await message.bot.send_photo(
+        chat_id=message.chat.id,
+        photo=photo_id,
+        caption=user_message,
         reply_markup=manage_realtor_kb(realtor_id=user.id),
     )
-    # await message.answer(
-    #     text="Выберите действие ниже",
-    #     reply_markup=admin_start_kb(),
-    # )

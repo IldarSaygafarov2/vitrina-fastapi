@@ -1,9 +1,10 @@
-from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
-from tgbot.keyboards.user.inline import realtor_start_kb
-from tgbot.keyboards.admin.inline import admin_start_kb
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, Message, ContentType
+
 from infrastructure.database.repo.requests import RequestsRepo
+from tgbot.keyboards.admin.inline import admin_start_kb
+from tgbot.keyboards.user.inline import realtor_start_kb
 
 router = Router()
 
@@ -28,7 +29,18 @@ async def return_home(
             reply_markup=realtor_start_kb(realtor_chat_id=chat_id),
         )
     if user.role.value == "group_director":
-        await call.message.edit_text(
+        if call.message.content_type == ContentType.PHOTO:
+            await call.message.delete()
+            return await call.bot.send_message(
+                chat_id,
+                text=f"""Привет, руководитель группы
+
+Выберите действие снизу    
+    """,
+                reply_markup=admin_start_kb(),
+            )
+
+        return await call.message.edit_text(
             f"""Привет, руководитель группы
 
 Выберите действие снизу    

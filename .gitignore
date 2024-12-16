@@ -69,3 +69,4 @@ media/
 token.json
 *.sqlite3
 *.csv
+.DS_Store
