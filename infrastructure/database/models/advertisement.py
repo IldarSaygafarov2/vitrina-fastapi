@@ -48,7 +48,6 @@ class Advertisement(Base, IntIdMixin):
     name: Mapped[str] = mapped_column(String, index=True)
     name_uz: Mapped[str] = mapped_column(String, nullable=True)
 
-    slug: Mapped[str] = mapped_column(String, index=True, unique=True)
     house_quadrature_from: Mapped[int] = mapped_column(default=0)
     house_quadrature_to: Mapped[int] = mapped_column(default=0)
     creation_year: Mapped[int] = mapped_column(default=0)
@@ -89,7 +88,7 @@ class Advertisement(Base, IntIdMixin):
         nullable=True,
     )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete='SET NULL'),
+        ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
     )
 

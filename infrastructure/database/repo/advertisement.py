@@ -6,7 +6,6 @@ from sqlalchemy.orm import selectinload
 
 from backend.core.filters.advertisement import AdvertisementFilter
 from infrastructure.database.models import Advertisement, AdvertisementImage
-from infrastructure.utils.slugifier import generate_slug
 from .base import BaseRepo
 
 
@@ -42,12 +41,10 @@ class AdvertisementRepo(BaseRepo):
         property_type_uz,
         repair_type_uz,
     ):
-        slug = generate_slug(title)
         stmt = (
             insert(Advertisement)
             .values(
                 preview=preview,
-                slug=slug,
                 operation_type=operation_type,
                 category_id=category,
                 district_id=district,
@@ -74,10 +71,6 @@ class AdvertisementRepo(BaseRepo):
                 operation_type_uz=operation_type_uz,
                 property_type_uz=property_type_uz,
                 repair_type_uz=repair_type_uz,
-            )
-            .on_conflict_do_update(
-                index_elements=[Advertisement.slug],
-                set_=dict(slug=f"{slug}-{uuid.uuid4()}"[:50]),
             )
             .options(
                 selectinload(Advertisement.category),
@@ -143,19 +136,6 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(query)
 
         return result.scalars().all()
-
-    async def get_advertisement_by_slug(self, advertisement_slug: str):
-        stmt = (
-            select(Advertisement)
-            .options(
-                selectinload(
-                    Advertisement.category, Advertisement.district, Advertisement.user
-                )
-            )
-            .where(Advertisement.slug == advertisement_slug)
-        )
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
 
     async def get_advertisement_by_id(self, advertisement_id: int):
         stmt = (

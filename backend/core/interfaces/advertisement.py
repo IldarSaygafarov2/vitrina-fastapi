@@ -11,7 +11,6 @@ class AdvertisementDTO(BaseModel):
     id: int
     name: str
     name_uz: Optional[str]
-    slug: str
     price: int
     address: str
     address_uz: Optional[str]
@@ -28,7 +27,6 @@ class AdvertisementDetailDTO(BaseModel):
     id: int
     name: str
     name_uz: str
-    slug: str
     price: int
     address: str
     address_uz: str
