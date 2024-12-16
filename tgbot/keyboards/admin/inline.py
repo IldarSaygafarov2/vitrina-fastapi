@@ -91,3 +91,13 @@ def advertisement_moderation_kb(advertisement_id: int):
     kb.button(text="Да ✔", callback_data=f"moderation_confirm:{advertisement_id}")
     kb.button(text="Нет ❌", callback_data=f"moderation_deny:{advertisement_id}")
     return kb.as_markup()
+
+
+def delete_advertisement_kb(advertisement_id: int):
+    kb = InlineKeyboardBuilder()
+    kb.button(
+        text="Удалить", callback_data=f"rg_advertisement_delete:{advertisement_id}"
+    )
+    kb.button(text="На главную", callback_data="return_home")
+    kb.adjust(1)
+    return kb.as_markup()

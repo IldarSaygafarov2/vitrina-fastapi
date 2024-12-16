@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
@@ -94,7 +94,7 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def get_filtered_advertisements(self, _filter: AdvertisementFilter):
-        query = select(Advertisement)
+        query = select(Advertisement).filter(Advertisement.is_moderated == True)
 
         if _filter.operation_type:
             query = query.filter(Advertisement.operation_type == _filter.operation_type)
@@ -199,6 +199,11 @@ class AdvertisementRepo(BaseRepo):
         updated = await self.session.execute(stmt)
         await self.session.commit()
         return updated.scalar_one()
+
+    async def delete_advertisement(self, advertisement_id: int):
+        stmt = delete(Advertisement).where(Advertisement.id == advertisement_id)
+        await self.session.execute(stmt)
+        await self.session.commit()
 
 
 class AdvertisementImageRepo(BaseRepo):

@@ -21,6 +21,7 @@ class AdvertisementDTO(BaseModel):
     floor_from: int
     floor_to: int
     preview: Optional[str] = None
+    is_moderated: Optional[bool]
 
 
 class AdvertisementDetailDTO(BaseModel):

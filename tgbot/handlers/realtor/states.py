@@ -658,13 +658,17 @@ async def get_repair_type(
     group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
 
     for director in group_directors:
-        if director.tg_chat_id:
-            await call.bot.send_media_group(director.tg_chat_id, media=media_group)
-            await call.bot.send_message(
-                director.tg_chat_id,
-                f"Объявление прошло модерацию?",
-                reply_markup=advertisement_moderation_kb(new_advertisement.id),
-            )
+        try:
+            if director.tg_chat_id:
+                print("sent_to", director.tg_username)
+                await call.bot.send_media_group(director.tg_chat_id, media=media_group)
+                await call.bot.send_message(
+                    director.tg_chat_id,
+                    f"Объявление прошло модерацию?",
+                    reply_markup=advertisement_moderation_kb(new_advertisement.id),
+                )
+        except Exception as e:
+            print(e)
 
     await call.message.answer(
         text="Выберите действие над этим объявлением",

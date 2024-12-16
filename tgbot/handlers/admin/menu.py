@@ -12,6 +12,7 @@ from tgbot.filters.role import RoleFilter
 from tgbot.keyboards.admin.inline import (
     admin_start_kb,
     confirm_realtor_delete_kb,
+    delete_advertisement_kb,
     manage_realtor_kb,
     realtor_fields_kb,
     realtors_actions_kb,
@@ -172,7 +173,7 @@ async def get_realtor_advertisements(
 
 
 @router.callback_query(F.data.startswith("rg_realtor_advertisement"))
-async def get_realtor_advertisements(
+async def get_realtor_advertisement(
     call: CallbackQuery,
     repo: "RequestsRepo",
     state: FSMContext,
@@ -185,7 +186,7 @@ async def get_realtor_advertisements(
 
     await call.message.edit_text(
         text=advertisement_message,
-        reply_markup=return_home_kb(),
+        reply_markup=delete_advertisement_kb(advertisement_id),
     )
 
 
@@ -484,3 +485,24 @@ async def process_moderation_deny_message(
     )
     await message.bot.send_message(chat_id=user.tg_chat_id, text=message.text)
     await state.clear()
+
+
+@router.callback_query(F.data.startswith("rg_advertisement_delete"))
+async def delete_realtor_advertisement(
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    await call.answer()
+
+    advertisement_id = int(call.data.split(":")[-1])
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+    user_id = advertisement.user_id
+
+    user = await repo.users.get_user_by_id(user_id)
+
+    await call.bot.send_message(
+        user.tg_chat_id, f"Объявление {advertisement.name} было удалено"
+    )
+    await call.message.answer("Объявление успешно удалено")
+    await repo.advertisements.delete_advertisement(advertisement_id)
