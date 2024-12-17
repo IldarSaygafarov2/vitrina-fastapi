@@ -392,7 +392,8 @@ async def update_profile_image(
     realtor = await repo.users.get_user_by_id(user_id=realtor_id)
     cur_message = data.get("cur_message")
 
-    os.remove(realtor.profile_image)
+    if realtor.profile_image:
+        os.remove(realtor.profile_image)
 
     photo_id = message.photo[-1].file_id
     file_obj = await message.bot.get_file(photo_id)
