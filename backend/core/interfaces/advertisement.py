@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel
@@ -22,6 +23,7 @@ class AdvertisementDTO(BaseModel):
     floor_to: int
     preview: Optional[str] = None
     is_moderated: Optional[bool]
+    created_at: Optional[datetime]
 
 
 class AdvertisementDetailDTO(BaseModel):

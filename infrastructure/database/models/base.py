@@ -8,8 +8,12 @@ from sqlalchemy.orm import DeclarativeBase, mapped_column
 from infrastructure.utils.text_converter import camel_case_to_snake_case
 
 created_at = Annotated[
-    datetime,
-    mapped_column(TIMESTAMP(timezone=True), server_default=func.now()),
+    TIMESTAMP,
+    mapped_column(
+        TIMESTAMP(timezone=True),
+        server_default=func.now(),
+        nullable=True,
+    ),
 ]
 
 

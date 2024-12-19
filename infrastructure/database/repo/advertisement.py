@@ -1,11 +1,12 @@
 import uuid
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import delete, func, select, update, desc
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
 from backend.core.filters.advertisement import AdvertisementFilter
 from infrastructure.database.models import Advertisement, AdvertisementImage
+
 from .base import BaseRepo
 
 
@@ -94,7 +95,11 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def get_filtered_advertisements(self, _filter: AdvertisementFilter):
-        query = select(Advertisement).filter(Advertisement.is_moderated == True)
+        query = (
+            select(Advertisement)
+            .filter(Advertisement.is_moderated == True)
+            .order_by(desc(Advertisement.created_at))
+        )
 
         if _filter.operation_type:
             query = query.filter(Advertisement.operation_type == _filter.operation_type)
@@ -157,7 +162,9 @@ class AdvertisementRepo(BaseRepo):
         return result.scalar_one_or_none()
 
     async def get_total_advertisements(self):
-        stmt = select(func.count(Advertisement.id))
+        stmt = select(func.count(Advertisement.id)).where(
+            Advertisement.is_moderated == True
+        )
         result = await self.session.execute(stmt)
         return result.scalar_one()
 

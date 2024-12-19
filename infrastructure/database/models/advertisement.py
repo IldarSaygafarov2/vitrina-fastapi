@@ -4,7 +4,7 @@ from sqlalchemy import ForeignKey, String, false
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base
+from .base import Base, created_at
 from .mixins.id_int_pk import IntIdMixin
 
 
@@ -116,6 +116,8 @@ class Advertisement(Base, IntIdMixin):
     category = relationship("Category", back_populates="advertisement")
     district = relationship("District", back_populates="advertisement")
     user = relationship("User", back_populates="advertisement")
+
+    created_at: Mapped[created_at]
 
 
 class AdvertisementImage(Base, IntIdMixin):
