@@ -661,6 +661,10 @@ async def get_repair_type(
         try:
             if director.tg_chat_id:
                 print("sent_to", director.tg_username)
+                await call.bot.send_message(
+                    director.tg_chat_id,
+                    f"Риелтор: {new_advertisement.user.tg_username} добавил новое объявление",
+                )
                 await call.bot.send_media_group(director.tg_chat_id, media=media_group)
                 await call.bot.send_message(
                     director.tg_chat_id,
