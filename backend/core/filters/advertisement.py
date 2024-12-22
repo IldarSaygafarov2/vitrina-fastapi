@@ -34,6 +34,7 @@ class AdvertisementFilter(BaseModel):
     price_to: Optional[int] = Field(None)
     quadrature_from: Optional[int] = Field(None)
     quadrature_to: Optional[int] = Field(None)
+    rooms: Optional[str] = Field(None)
     is_studio: Optional[bool] = Field(None)
     category_id: Optional[int] = Field(None)
     district_id: Optional[int] = Field(None)

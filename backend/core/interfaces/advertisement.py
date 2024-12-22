@@ -25,6 +25,10 @@ class AdvertisementDTO(BaseModel):
     is_moderated: Optional[bool]
     created_at: Optional[datetime]
 
+    @property
+    def get_rooms(self):
+        return self, list(range(self.rooms_qty_from, self.rooms_qty_to + 1))
+
 
 class AdvertisementDetailDTO(BaseModel):
     id: int

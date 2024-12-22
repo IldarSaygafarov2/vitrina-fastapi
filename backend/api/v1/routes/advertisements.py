@@ -1,3 +1,4 @@
+from pprint import pprint
 from typing import Annotated, Union
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -31,6 +32,19 @@ async def get_advertisements(
         for obj in advertisements
     ]
 
+    advertisements_rooms = [adv.get_rooms for adv in advertisements]
+    print(len(advertisements_rooms))
+    # pprint(advertisements_rooms)
+    temp = []
+    if filters.rooms:
+        rooms_list = [int(room) for room in filters.rooms.split(",")]
+
+        for room in rooms_list:
+            for i in advertisements_rooms:
+                if room not in i[1]:
+                    continue
+                temp.append(i[0])
+
     result = []
 
     for obj in advertisements:
@@ -46,7 +60,7 @@ async def get_advertisements(
         total=total,
         limit=filters.limit,
         offset=filters.offset,
-        results=result,
+        results=result if not filters.rooms else temp,
     )
 
 
