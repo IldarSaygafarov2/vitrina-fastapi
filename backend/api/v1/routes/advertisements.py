@@ -66,13 +66,13 @@ async def get_advertisement(
         advertisement, from_attributes=True
     )
 
-    images = []
+    # images = []
 
-    for image in advertisement.images:
-        image.url = f"{request.base_url}{image.url}"
-        images.append(image)
+    # for image in advertisement.images:
+    #     image.url = f"{request.base_url}{image.url}"
+    #     images.append(image)
 
-    advertisement.images = images
+    # advertisement.images = images
 
     if advertisement is None:
         return {"detail": "Advertisement not found"}
