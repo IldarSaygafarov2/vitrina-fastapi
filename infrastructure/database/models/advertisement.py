@@ -4,6 +4,8 @@ from sqlalchemy import ForeignKey, String, false
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from infrastructure.utils.helpers import generate_code
+
 from .base import Base, created_at
 from .mixins.id_int_pk import IntIdMixin
 
@@ -47,6 +49,10 @@ class RepairTypeUz(str, enum.Enum):
 class Advertisement(Base, IntIdMixin):
     name: Mapped[str] = mapped_column(String, index=True)
     name_uz: Mapped[str] = mapped_column(String, nullable=True)
+
+    unique_id: Mapped[str] = mapped_column(
+        String(6), nullable=True, default=generate_code()
+    )
 
     house_quadrature_from: Mapped[int] = mapped_column(default=0)
     house_quadrature_to: Mapped[int] = mapped_column(default=0)

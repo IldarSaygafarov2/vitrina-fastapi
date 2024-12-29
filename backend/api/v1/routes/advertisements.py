@@ -21,7 +21,6 @@ router = APIRouter(
 
 @router.get("/")
 async def get_advertisements(
-    request: Request,
     filters: Annotated[AdvertisementFilter, Query()],
     repo: Annotated[RequestsRepo, Depends(get_repo)],
 ) -> PaginatedAdvertisementDTO:
@@ -33,8 +32,6 @@ async def get_advertisements(
     ]
 
     advertisements_rooms = [adv.get_rooms for adv in advertisements]
-    print(len(advertisements_rooms))
-    # pprint(advertisements_rooms)
     temp = []
     if filters.rooms:
         rooms_list = [int(room) for room in filters.rooms.split(",")]
@@ -45,22 +42,13 @@ async def get_advertisements(
                     continue
                 temp.append(i[0])
 
-    result = []
-
-    for obj in advertisements:
-        if obj.preview is not None:
-            obj.preview = f"{request.base_url}{obj.preview}"
-        else:
-            obj.preview = ""
-        result.append(obj)
-
     total = await repo.advertisements.get_total_advertisements()
 
     return PaginatedAdvertisementDTO(
         total=total,
         limit=filters.limit,
         offset=filters.offset,
-        results=result if not filters.rooms else temp,
+        results=advertisements if not filters.rooms else temp,
     )
 
 

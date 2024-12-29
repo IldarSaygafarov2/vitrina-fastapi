@@ -10,6 +10,7 @@ from backend.core.interfaces.user import UserDTO, UserAdvertisementObjectDTO
 
 class AdvertisementDTO(BaseModel):
     id: int
+    unique_id: str
     name: str
     name_uz: Optional[str]
     price: int

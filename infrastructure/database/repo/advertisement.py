@@ -1,6 +1,7 @@
+import random
 import uuid
 
-from sqlalchemy import delete, func, select, update, desc
+from sqlalchemy import delete, desc, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
@@ -211,6 +212,24 @@ class AdvertisementRepo(BaseRepo):
         stmt = delete(Advertisement).where(Advertisement.id == advertisement_id)
         await self.session.execute(stmt)
         await self.session.commit()
+
+    async def get_all_advertisements(self):
+        stmt = select(Advertisement)
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+    async def update_advertisement_unique_id(
+        self, advertisement_id: int, unique_id: str
+    ):
+        stmt = (
+            update(Advertisement)
+            .values(unique_id=unique_id)
+            .where(Advertisement.id == advertisement_id)
+            .returning(Advertisement)
+        )
+        updated = await self.session.execute(stmt)
+        await self.session.commit()
+        return updated.scalar_one()
 
 
 class AdvertisementImageRepo(BaseRepo):
