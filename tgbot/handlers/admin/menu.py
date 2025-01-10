@@ -125,7 +125,7 @@ async def delete_reltor(
     realtor_id = int(call.data.split(":")[-1])
     realtor = await repo.users.get_user_by_id(user_id=realtor_id)
 
-    await call.message.edit_text(
+    await call.message.answer(
         text=f"Вы действительно хотите удалить риелтора: <b>{realtor.first_name} {realtor.lastname}</b>",
         reply_markup=confirm_realtor_delete_kb(realtor_id=realtor_id),
     )
