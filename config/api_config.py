@@ -9,7 +9,7 @@ class RunConfig:
     api_port: int
 
     @staticmethod
-    def from_env(env: Env) -> 'RunConfig':
+    def from_env(env: Env) -> "RunConfig":
         return RunConfig(
             api_host=env.str("API_HOST"),
             api_port=env.int("API_PORT"),
@@ -18,17 +18,17 @@ class RunConfig:
 
 @dataclass
 class ApiV1Prefix:
-    prefix: str = '/v1'
-    districts: str = '/districts'
-    categories: str = '/categories'
-    advertisements: str = '/advertisements'
-    users: str = '/users'
-    request: str = '/request'
-    consultation: str = '/consultation'
+    prefix: str = "/v1"
+    districts: str = "/districts"
+    categories: str = "/categories"
+    advertisements: str = "/advertisements"
+    users: str = "/users"
+    request: str = "/request"
+    consultation: str = "/consultation"
+    agents: str = "/agents"
 
 
 @dataclass
 class ApiPrefix:
-    prefix: str = '/api'
+    prefix: str = "/api"
     v1: ApiV1Prefix = field(default_factory=ApiV1Prefix)
-   
