@@ -105,7 +105,6 @@ class AdvertisementRepo(BaseRepo):
 
         if _filter.rooms:
             rooms = [int(i) for i in _filter.rooms.split(",")]
-
             query = query.filter(Advertisement.rooms_quantity.in_(rooms))
         if _filter.operation_type:
             query = query.filter(Advertisement.operation_type == _filter.operation_type)

@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from backend.api import router as api_router
 from backend.app.config import config
 
-main_app = FastAPI()
+main_app = FastAPI(debug=True)
 main_app.include_router(api_router)
 
 main_app.mount("/media", StaticFiles(directory="media"), name="media")
