@@ -16,8 +16,7 @@ class AdvertisementDTO(BaseModel):
     price: int
     address: str
     address_uz: Optional[str]
-    rooms_qty_from: int
-    rooms_qty_to: int
+    rooms_quantity: int
     quadrature_from: int
     quadrature_to: int
     floor_from: int
@@ -25,10 +24,6 @@ class AdvertisementDTO(BaseModel):
     preview: Optional[str] = None
     is_moderated: Optional[bool]
     created_at: Optional[datetime]
-
-    @property
-    def get_rooms(self):
-        return self, list(range(self.rooms_qty_from, self.rooms_qty_to + 1))
 
 
 class AdvertisementDetailDTO(BaseModel):
@@ -38,8 +33,7 @@ class AdvertisementDetailDTO(BaseModel):
     price: int
     address: str
     address_uz: str
-    rooms_qty_from: int
-    rooms_qty_to: int
+    rooms_quantity: int
     quadrature_from: int
     quadrature_to: int
     floor_from: int

@@ -79,7 +79,7 @@ def realtor_advertisement_completed_text(
     advertisement: "Advertisement",
     lang: str = "ru",
 ):
-    rooms_from_to = f"<b>Кол-во комнат</b> от <i>{advertisement.rooms_qty_from}</i> до <i>{advertisement.rooms_qty_to}</i>"
+    rooms_from_to = f"<b>Кол-во комнат</b>  <i>{advertisement.rooms_quantity}</i>"
     creation_year = (
         f"\n<b>Год постройки: </b><i>{advertisement.creation_year}</i>"
         if advertisement.creation_year

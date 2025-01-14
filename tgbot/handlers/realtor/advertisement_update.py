@@ -471,7 +471,7 @@ async def update_rooms(
         advertisement_id=advertisement_id
     )
 
-    current = f"{advertisement.rooms_qty_from}, {advertisement.rooms_qty_to}"
+    current = f"{advertisement.rooms_quantity}"
 
     await call.message.edit_text(
         text=update_rooms_text(current=current),
@@ -489,12 +489,11 @@ async def get_new_rooms_qty(
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
-    rooms_from, rooms_to = message.text.split(", ")
+
+    rooms_quantity = int(message.text)
 
     updated = await repo.advertisements.update_advertisement(
-        advertisement_id=advertisement_id,
-        rooms_qty_from=int(rooms_from),
-        rooms_qty_to=int(rooms_to),
+        advertisement_id=advertisement_id, rooms_quantity=rooms_quantity
     )
     await message.answer(
         text=realtor_advertisement_completed_text(updated),

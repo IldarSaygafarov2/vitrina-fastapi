@@ -31,24 +31,13 @@ async def get_advertisements(
         for obj in advertisements
     ]
 
-    advertisements_rooms = [adv.get_rooms for adv in advertisements]
-    temp = []
-    if filters.rooms:
-        rooms_list = [int(room) for room in filters.rooms.split(",")]
-
-        for room in rooms_list:
-            for i in advertisements_rooms:
-                if room not in i[1]:
-                    continue
-                temp.append(i[0])
-
     total = await repo.advertisements.get_total_advertisements()
 
     return PaginatedAdvertisementDTO(
         total=total,
         limit=filters.limit,
         offset=filters.offset,
-        results=advertisements if not filters.rooms else temp,
+        results=advertisements,
     )
 
 
@@ -65,14 +54,6 @@ async def get_advertisement(
     advertisement = AdvertisementDetailDTO.model_validate(
         advertisement, from_attributes=True
     )
-
-    # images = []
-
-    # for image in advertisement.images:
-    #     image.url = f"{request.base_url}{image.url}"
-    #     images.append(image)
-
-    # advertisement.images = images
 
     if advertisement is None:
         return {"detail": "Advertisement not found"}

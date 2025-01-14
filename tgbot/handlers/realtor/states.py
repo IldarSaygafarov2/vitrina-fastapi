@@ -25,6 +25,7 @@ from tgbot.keyboards.user.inline import (
     advertisement_update_kb,
 )
 from tgbot.keyboards.admin.inline import advertisement_moderation_kb
+from infrastructure.utils.helpers import generate_code
 from tgbot.misc.constants import (
     OPERATION_TYPE_MAPPING,
     OPERATION_TYPE_MAPPING_UZ,
@@ -74,7 +75,7 @@ async def get_operation_type_set_category(
 
     categories = await repo.categories.get_categories()
 
-    await call.message.edit_text(
+    await call.message.answer(
         text=choose_category_text(operation_type=operation_type_text),
         reply_markup=categories_kb(categories=categories),
     )
@@ -92,7 +93,7 @@ async def get_category_set_photos_quantity(
 
     category = await repo.categories.get_category_by_id(category_id=category_id)
 
-    message = await call.message.edit_text(
+    message = await call.message.answer(
         text=choose_photos_quantity_text(category_name=category.name),
     )
 
@@ -113,7 +114,6 @@ async def get_photos_quanity_set_get_photos(
     photos_message = await photos_qty_message.edit_text(
         text=choose_photos_text(photos_quantity=message.text)
     )
-    await message.delete()
 
     await state.update_data(
         photos_quantity=int(message.text),
@@ -130,7 +130,7 @@ async def get_photos_set_title(
     state: FSMContext,
 ):
     current_state = await state.get_data()
-    current_message = current_state.pop("photos_message")
+    # current_message = current_state.pop("photos_message")
     current_state["photos"].append(message.photo[-1].file_id)
 
     try:
@@ -139,7 +139,7 @@ async def get_photos_set_title(
         pass
 
     if current_state["photos_quantity"] == len(current_state["photos"]):
-        await current_message.delete()
+        # await current_message.delete()
 
         cur_message = await message.answer(
             text=get_title_text(),
@@ -213,13 +213,12 @@ async def get_description_uz(
 
     districts = await repo.districts.get_districts()
 
-    districts_text = await description_uz_text.edit_text(
+    districts_text = await description_uz_text.answer(
         text=get_district_text(),
         reply_markup=districts_kb(districts=districts),
     )
     await state.update_data(description_uz=message.text, districts_text=districts_text)
     await state.set_state(AdvertisementCreationState.district)
-    await message.delete()
 
 
 @router.callback_query(
@@ -274,13 +273,12 @@ async def get_address_uz(
     state_data = await state.get_data()
     cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.edit_text(
+    cur_message = await cur_message.answer(
         text=get_propety_type_text(),
         reply_markup=property_type_kb(),
     )
     await state.update_data(address_uz=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.property_type)
-    await message.delete()
 
 
 @router.callback_query(
@@ -301,14 +299,14 @@ async def get_property_type(
     property_type_name = PROPERTY_TYPE_MAPPING[property_type]
 
     if property_type == "new":
-        cur_message = await cur_message.edit_text(
+        cur_message = await cur_message.answer(
             text=creation_year_text(property_type=property_type_name),
         )
         await state.update_data(property_type=property_type, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.creation_year)
 
     if property_type == "old":
-        cur_message = await cur_message.edit_text(
+        cur_message = await cur_message.answer(
             text=price_text(property_type=property_type_name)
         )
         await state.update_data(property_type=property_type, cur_message=cur_message)
@@ -324,13 +322,12 @@ async def get_creation_year(
     state_data = await state.get_data()
     cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.edit_text(
+    cur_message = await cur_message.answer(
         text="Напишите цену для данного объявления",
     )
 
     await state.update_data(creation_year=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.price)
-    await message.delete()
 
 
 @router.message(AdvertisementCreationState.price)
@@ -342,14 +339,13 @@ async def get_price(
     state_data = await state.get_data()
     cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.edit_text(
+    cur_message = await cur_message.answer(
         text=is_studio_text(),
         reply_markup=is_studio_kb(),
     )
 
     await state.update_data(price=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.is_studio)
-    await message.delete()
 
 
 @router.callback_query(
@@ -370,37 +366,20 @@ async def get_is_studio(
     is_studio = True if is_studio_state == "yes" else False
 
     if is_studio:
-        cur_message = await cur_message.edit_text(
+        cur_message = await cur_message.answer(
             text="Квадратура от: ", reply_markup=None
         )
         await state.update_data(is_studio=is_studio, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.quadrature_from)
     else:
-        cur_message = await cur_message.edit_text(
-            text="Количество комнат от: ", reply_markup=None
+        cur_message = await cur_message.answer(
+            text="Количество комнат: ", reply_markup=None
         )
         await state.update_data(is_studio=is_studio, cur_message=cur_message)
-        await state.set_state(AdvertisementCreationState.rooms_from)
+        await state.set_state(AdvertisementCreationState.rooms_quantity)
 
 
-@router.message(AdvertisementCreationState.rooms_from)
-async def get_rooms_from(
-    message: Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
-):
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
-
-    cur_message = await cur_message.edit_text(
-        text="Количество комнат до:",
-    )
-    await state.update_data(rooms_from=message.text, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.rooms_to)
-    await message.delete()
-
-
-@router.message(AdvertisementCreationState.rooms_to)
+@router.message(AdvertisementCreationState.rooms_quantity)
 async def get_rooms_to(
     message: Message,
     repo: "RequestsRepo",
@@ -412,19 +391,18 @@ async def get_rooms_to(
     category = state_data.get("category")
 
     if category.slug == "doma":
-        cur_message = await cur_message.edit_text(
+        cur_message = await cur_message.answer(
             text="Площадь участка от: ",
         )
-        await state.update_data(rooms_to=message.text, cur_message=cur_message)
+        await state.update_data(rooms_quantity=message.text, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.house_quadrature_from)
-        return await message.delete()
+        return
 
-    cur_message = await cur_message.edit_text(
+    cur_message = await cur_message.answer(
         text="Квадратура от: ",
     )
-    await state.update_data(rooms_to=message.text, cur_message=cur_message)
+    await state.update_data(rooms_quantity=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.quadrature_from)
-    await message.delete()
 
 
 @router.message(AdvertisementCreationState.house_quadrature_from)
@@ -436,12 +414,11 @@ async def get_house_quadrature_from(
     state_data = await state.get_data()
     cur_message = state_data.get("cur_message")
 
-    cur_message = await cur_message.edit_text(
+    cur_message = await cur_message.answer(
         text="Площадь участка до: ",
     )
     await state.update_data(house_quadrature_from=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.house_quadrature_to)
-    await message.delete()
 
 
 @router.message(AdvertisementCreationState.house_quadrature_to)
@@ -453,12 +430,11 @@ async def get_house_quadrature_to(
     state_data = await state.get_data()
     cur_message = state_data.get("cur_message")
 
-    cur_message = await cur_message.edit_text(
+    cur_message = await cur_message.answer(
         text="Квадратура от: ",
     )
     await state.update_data(house_quadrature_to=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.quadrature_from)
-    await message.delete()
 
 
 @router.message(AdvertisementCreationState.quadrature_from)
@@ -470,13 +446,12 @@ async def get_quadrature_from(
     state_data = await state.get_data()
     cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.edit_text(
+    cur_message = await cur_message.answer(
         text="Квадратура до: ",
     )
 
     await state.update_data(quadrature_from=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.quadrature_to)
-    await message.delete()
 
 
 @router.message(AdvertisementCreationState.quadrature_to)
@@ -489,13 +464,12 @@ async def get_quadrature_to(
     state_data = await state.get_data()
     cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.edit_text(
+    cur_message = await cur_message.answer(
         text="Этаж от: ",
     )
 
     await state.update_data(quadrature_to=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.floor_from)
-    await message.delete()
 
 
 @router.message(AdvertisementCreationState.floor_from)
@@ -507,12 +481,11 @@ async def get_floor_from(
     state_data = await state.get_data()
     cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.edit_text(
+    cur_message = await cur_message.answer(
         text="Этаж до:",
     )
     await state.update_data(floor_from=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.floor_to)
-    await message.delete()
 
 
 @router.message(AdvertisementCreationState.floor_to)
@@ -524,13 +497,12 @@ async def get_floor_to(
     state_data = await state.get_data()
     cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.edit_text(
+    cur_message = await cur_message.answer(
         text="Укажите тип ремонта",
         reply_markup=repair_type_kb(REPAIR_TYPE_MAPPING),
     )
     await state.update_data(floor_to=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.repair_type)
-    await message.delete()
 
 
 @router.callback_query(
@@ -544,6 +516,7 @@ async def get_repair_type(
 ):
     await call.answer()
 
+    unique_id = generate_code()
     _, repair_type = call.data.split(":")
     state_data = await state.get_data()
     cur_message = state_data.pop("cur_message")
@@ -565,8 +538,8 @@ async def get_repair_type(
     creation_year = state_data.get("creation_year", 0)
     price = state_data.get("price")
     is_studio = state_data.get("is_studio")
-    rooms_from = state_data.get("rooms_from", 0)
-    rooms_to = state_data.get("rooms_to", 0)
+
+    rooms_quantity = state_data.get("rooms_quantity")
     quadrature_from = state_data.get("quadrature_from")
     quadrature_to = state_data.get("quadrature_to")
     floor_from = state_data.get("floor_from")
@@ -605,6 +578,7 @@ async def get_repair_type(
             shutil.copyfileobj(file, f)
 
     new_advertisement = await repo.advertisements.create_advertisement(
+        unique_id=unique_id,
         operation_type=operation_type_status,
         category=category.id,
         district=district.id,
@@ -619,8 +593,7 @@ async def get_repair_type(
         creation_year=int(creation_year),
         price=int(price),
         is_studio=is_studio,
-        rooms_from=int(rooms_from),
-        rooms_to=int(rooms_to),
+        rooms_quantity=int(rooms_quantity),
         quadrature_from=int(quadrature_from),
         quadrature_to=int(quadrature_to),
         floor_from=int(floor_from),

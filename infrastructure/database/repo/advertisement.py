@@ -26,8 +26,7 @@ class AdvertisementRepo(BaseRepo):
         creation_year: int,
         price: int,
         is_studio: bool,
-        rooms_from: int,
-        rooms_to: int,
+        rooms_quantity: int,
         quadrature_from: int,
         quadrature_to: int,
         floor_from: int,
@@ -42,10 +41,12 @@ class AdvertisementRepo(BaseRepo):
         operation_type_uz,
         property_type_uz,
         repair_type_uz,
+        unique_id,
     ):
         stmt = (
             insert(Advertisement)
             .values(
+                unique_id=unique_id,
                 preview=preview,
                 operation_type=operation_type,
                 category_id=category,
@@ -60,8 +61,7 @@ class AdvertisementRepo(BaseRepo):
                 creation_year=creation_year,
                 price=price,
                 is_studio=is_studio,
-                rooms_qty_from=rooms_from,
-                rooms_qty_to=rooms_to,
+                rooms_quantity=rooms_quantity,
                 quadrature_from=quadrature_from,
                 quadrature_to=quadrature_to,
                 floor_from=floor_from,
@@ -96,12 +96,17 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def get_filtered_advertisements(self, _filter: AdvertisementFilter):
+
         query = (
             select(Advertisement)
             .filter(Advertisement.is_moderated == True)
             .order_by(desc(Advertisement.created_at))
         )
 
+        if _filter.rooms:
+            rooms = [int(i) for i in _filter.rooms.split(",")]
+
+            query = query.filter(Advertisement.rooms_quantity.in_(rooms))
         if _filter.operation_type:
             query = query.filter(Advertisement.operation_type == _filter.operation_type)
         if _filter.property_type:
