@@ -16,7 +16,7 @@ class AdvertisementDTO(BaseModel):
     price: int
     address: str
     address_uz: Optional[str]
-    rooms_quantity: int
+    rooms_quantity: Optional[int] = 0
     quadrature_from: int
     quadrature_to: int
     floor_from: int
@@ -33,7 +33,7 @@ class AdvertisementDetailDTO(BaseModel):
     price: int
     address: str
     address_uz: str
-    rooms_quantity: int
+    rooms_quantity: Optional[int] = 0
     quadrature_from: int
     quadrature_to: int
     floor_from: int
