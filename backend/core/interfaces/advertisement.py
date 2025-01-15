@@ -28,6 +28,7 @@ class AdvertisementDTO(BaseModel):
 
 class AdvertisementDetailDTO(BaseModel):
     id: int
+    unique_id: str
     name: str
     name_uz: str
     price: int
