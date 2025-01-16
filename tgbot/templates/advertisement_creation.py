@@ -131,6 +131,6 @@ def realtor_advertisement_completed_text(
 <b>Цена: </b><i>{advertisement.price}</i>{house_quadrature}
 {rooms_from_to if not advertisement.is_studio else f'<b>Кол-во комнат: </b> Студия'}
 <b>Квадратура: </b><i>{advertisement.quadrature}</i>
-<b>Этаж: </b>от <i>{advertisement.floor_from}</i> до <i>{advertisement.floor_to}</i>
+<b>Этаж: </b><i>{advertisement.floor_from}</i> из <i>{advertisement.floor_to}</i>
 <b>Ремонт: </b><i>{repair_type}</i>
 """

@@ -408,12 +408,12 @@ async def get_new_quadrature(
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
-    quadrature_from, quadrature_to = message.text.split(", ")
+
+    quadrature = message.text
 
     updated = await repo.advertisements.update_advertisement(
         advertisement_id=advertisement_id,
-        quadrature_from=int(quadrature_from),
-        quadrature_to=int(quadrature_to),
+        quadrature=int(quadrature),
     )
     await message.answer(
         text=realtor_advertisement_completed_text(updated),
