@@ -21,6 +21,7 @@ class AdvertisementCreationState(StatesGroup):
 
     quadrature_from = State()
     quadrature_to = State()
+    quadrature = State()
 
     # rooms_from = State()
     # rooms_to = State()

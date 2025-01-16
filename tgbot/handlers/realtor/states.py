@@ -130,7 +130,6 @@ async def get_photos_set_title(
     state: FSMContext,
 ):
     current_state = await state.get_data()
-    # current_message = current_state.pop("photos_message")
     current_state["photos"].append(message.photo[-1].file_id)
 
     try:
@@ -139,7 +138,6 @@ async def get_photos_set_title(
         pass
 
     if current_state["photos_quantity"] == len(current_state["photos"]):
-        # await current_message.delete()
 
         cur_message = await message.answer(
             text=get_title_text(),
@@ -366,11 +364,9 @@ async def get_is_studio(
     is_studio = True if is_studio_state == "yes" else False
 
     if is_studio:
-        cur_message = await cur_message.answer(
-            text="Квадратура от: ", reply_markup=None
-        )
+        cur_message = await cur_message.answer(text="Квадратура: ", reply_markup=None)
         await state.update_data(is_studio=is_studio, cur_message=cur_message)
-        await state.set_state(AdvertisementCreationState.quadrature_from)
+        await state.set_state(AdvertisementCreationState.quadrature)
     else:
         cur_message = await cur_message.answer(
             text="Количество комнат: ", reply_markup=None
@@ -399,10 +395,10 @@ async def get_rooms_to(
         return
 
     cur_message = await cur_message.answer(
-        text="Квадратура от: ",
+        text="Квадратура: ",
     )
     await state.update_data(rooms_quantity=message.text, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.quadrature_from)
+    await state.set_state(AdvertisementCreationState.quadrature)
 
 
 @router.message(AdvertisementCreationState.house_quadrature_from)
@@ -431,31 +427,14 @@ async def get_house_quadrature_to(
     cur_message = state_data.get("cur_message")
 
     cur_message = await cur_message.answer(
-        text="Квадратура от: ",
+        text="Квадратура: ",
     )
     await state.update_data(house_quadrature_to=message.text, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.quadrature_from)
+    await state.set_state(AdvertisementCreationState.quadrature)
 
 
-@router.message(AdvertisementCreationState.quadrature_from)
-async def get_quadrature_from(
-    message: Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
-):
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
-
-    cur_message = await cur_message.answer(
-        text="Квадратура до: ",
-    )
-
-    await state.update_data(quadrature_from=message.text, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.quadrature_to)
-
-
-@router.message(AdvertisementCreationState.quadrature_to)
-async def get_quadrature_to(
+@router.message(AdvertisementCreationState.quadrature)
+async def get_quadrature(
     message: Message,
     repo: "RequestsRepo",
     state: FSMContext,
@@ -468,7 +447,7 @@ async def get_quadrature_to(
         text="Этаж от: ",
     )
 
-    await state.update_data(quadrature_to=message.text, cur_message=cur_message)
+    await state.update_data(quadrature=message.text, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.floor_from)
 
 
@@ -540,8 +519,9 @@ async def get_repair_type(
     is_studio = state_data.get("is_studio")
 
     rooms_quantity = state_data.get("rooms_quantity")
-    quadrature_from = state_data.get("quadrature_from")
-    quadrature_to = state_data.get("quadrature_to")
+
+    quadrature = state_data.get("quadrature")
+
     floor_from = state_data.get("floor_from")
     floor_to = state_data.get("floor_to")
     house_quadrature_from = state_data.get("house_quadrature_from", 0)
@@ -594,8 +574,7 @@ async def get_repair_type(
         price=int(price),
         is_studio=is_studio,
         rooms_quantity=int(rooms_quantity),
-        quadrature_from=int(quadrature_from),
-        quadrature_to=int(quadrature_to),
+        quadrature=int(quadrature),
         floor_from=int(floor_from),
         floor_to=int(floor_to),
         house_quadrature_from=int(house_quadrature_from),

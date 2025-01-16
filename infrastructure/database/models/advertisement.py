@@ -106,8 +106,11 @@ class Advertisement(Base, IntIdMixin):
 
     price: Mapped[int]
     rooms_quantity: Mapped[int] = mapped_column(nullable=True)
-    quadrature_from: Mapped[int]
-    quadrature_to: Mapped[int]
+    quadrature_from: Mapped[int] = mapped_column(nullable=True)
+    quadrature_to: Mapped[int] = mapped_column(nullable=True)
+
+    quadrature: Mapped[int] = mapped_column(nullable=True)
+
     floor_from: Mapped[int]
     floor_to: Mapped[int]
     is_studio: Mapped[bool]
