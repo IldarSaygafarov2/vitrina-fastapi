@@ -11,6 +11,7 @@ class AdvertisementCreationState(StatesGroup):
     description_uz = State()
     address = State()
     address_uz = State()
+    owner_phone_number = State()
 
     district = State()
     property_type = State()
@@ -19,12 +20,8 @@ class AdvertisementCreationState(StatesGroup):
     is_studio = State()
     repair_type = State()
 
-    quadrature_from = State()
-    quadrature_to = State()
     quadrature = State()
 
-    # rooms_from = State()
-    # rooms_to = State()
     rooms_quantity = State()
 
     floor_from = State()
@@ -51,3 +48,4 @@ class AdvertisementUpdateState(StatesGroup):
     creation_year = State()
     house_quadrature = State()
     floor = State()
+    owner_phone_number = State()

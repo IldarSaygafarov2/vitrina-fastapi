@@ -35,6 +35,7 @@ REPAIR_TYPE_MAPPING_UZ = {
 
 ADVERTISEMENT_UPDATE_FIELDS = [
     ("update_advertisement_name", "Название"),
+    ("update_advertisement_owner_phone_number", "Номер собственника"),
     ("update_advertisement_operation_type", "Тип операции"),
     ("update_advertisement_gallery", "Фотки"),
     ("update_advertisement_description", "Описание"),

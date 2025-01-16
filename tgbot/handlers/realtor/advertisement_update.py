@@ -28,6 +28,7 @@ from tgbot.templates.advertisement_updating import (
     update_house_quadrature_text,
     update_floor_text,
     update_is_studio_text,
+    update_owner_phone_number_text,
 )
 
 
@@ -81,6 +82,41 @@ async def get_new_name(
     updated = await repo.advertisements.update_advertisement(
         advertisement_id=data["advertisement_id"],
         name=text,
+    )
+    await message.answer(
+        realtor_advertisement_completed_text(updated),
+        reply_markup=advertisement_update_kb(advertisement_id=data["advertisement_id"]),
+    )
+
+
+@router.callback_query(F.data.startswith("update_advertisement_owner_phone_number"))
+async def update_advertisement_owner_phone_number(
+    call: types.CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    await call.answer()
+
+    advertisement_id = int(call.data.split(":")[-1])
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+
+    await call.message.answer(
+        text=update_owner_phone_number_text(current=advertisement.owner_phone_number),
+        reply_markup=return_back_kb(f"advertisement_update:{advertisement_id}"),
+    )
+    await state.update_data(advertisement_id=advertisement_id)
+    await state.set_state(AdvertisementUpdateState.owner_phone_number)
+
+
+@router.message(AdvertisementUpdateState.owner_phone_number)
+async def update_advertisement_owner_phone_number(
+    message: types.Message, repo: "RequestsRepo", state: FSMContext
+):
+    data = await state.get_data()
+    advertisement_id = data.get("advertisement_id")
+    updated = await repo.advertisements.update_advertisement(
+        advertisement_id=advertisement_id,
+        owner_phone_number=message.text,
     )
     await message.answer(
         realtor_advertisement_completed_text(updated),

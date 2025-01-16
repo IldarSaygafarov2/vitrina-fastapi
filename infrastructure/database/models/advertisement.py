@@ -54,6 +54,8 @@ class Advertisement(Base, IntIdMixin):
         String(6), nullable=True, default=generate_code()
     )
 
+    owner_phone_number: Mapped[str] = mapped_column(nullable=True)
+
     house_quadrature_from: Mapped[int] = mapped_column(default=0)
     house_quadrature_to: Mapped[int] = mapped_column(default=0)
     creation_year: Mapped[int] = mapped_column(default=0)

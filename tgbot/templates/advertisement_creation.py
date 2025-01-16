@@ -126,6 +126,7 @@ def realtor_advertisement_completed_text(
 <b>Описание: </b><i>{description}</i>
 <b>Район: </b><i>{district}</i>
 <b>Адрес: </b><i>{address}</i>
+<b>Номер собственника: </b><i>{advertisement.owner_phone_number}</i>
 <b>Категория недвижимости: </b><i>{category}</i>
 <b>Тип недвижимости: </b><i>{property_type}</i>{creation_year}
 <b>Цена: </b><i>{advertisement.price}</i>{house_quadrature}

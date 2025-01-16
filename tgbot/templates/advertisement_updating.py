@@ -119,6 +119,14 @@ def update_creation_date_text(current: str):
 """
 
 
+def update_owner_phone_number_text(current: str):
+    return f"""Текущее значение:
+{current}
+
+Новое значение:
+"""
+
+
 def update_is_studio_text(current: str):
     return f"""Текущее значение:
 {current}

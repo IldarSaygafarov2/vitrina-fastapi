@@ -209,13 +209,32 @@ async def get_description_uz(
     data = await state.get_data()
     description_uz_text = data.pop("description_uz_text")
 
+    districts_text = await description_uz_text.answer(
+        text="""
+        Напишите номер телефона собственника
+        
+        пример: +998901231212
+        """,
+        # reply_markup=districts_kb(districts=districts),
+    )
+    await state.update_data(description_uz=message.text, districts_text=districts_text)
+    await state.set_state(AdvertisementCreationState.owner_phone_number)
+
+
+@router.message(AdvertisementCreationState.owner_phone_number)
+async def get_owner_phone_number(
+    message: Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+
     districts = await repo.districts.get_districts()
 
-    districts_text = await description_uz_text.answer(
+    await message.answer(
         text=get_district_text(),
         reply_markup=districts_kb(districts=districts),
     )
-    await state.update_data(description_uz=message.text, districts_text=districts_text)
+    await state.update_data(owner_phone_number=message.text)
     await state.set_state(AdvertisementCreationState.district)
 
 
@@ -541,6 +560,7 @@ async def get_repair_type(
 
     photos = state_data.get("photos")
     date_str = datetime.now().strftime("%Y-%m-%d")
+    owner_phone_number = state_data.get("owner_phone_number")
 
     advertisements_folder = upload_dir / "advertisements" / date_str
     advertisements_folder.mkdir(parents=True, exist_ok=True)
@@ -573,7 +593,7 @@ async def get_repair_type(
         creation_year=int(creation_year),
         price=int(price),
         is_studio=is_studio,
-        rooms_quantity=int(rooms_quantity),
+        rooms_quantity=int(rooms_quantity) if rooms_quantity is not None else 0,
         quadrature=int(quadrature),
         floor_from=int(floor_from),
         floor_to=int(floor_to),
@@ -584,6 +604,7 @@ async def get_repair_type(
         property_type_uz=property_type_status_uz,
         repair_type_uz=repair_type_status_uz,
         user=user.id,
+        owner_phone_number=owner_phone_number,
     )
 
     advertisement_message = realtor_advertisement_completed_text(new_advertisement)

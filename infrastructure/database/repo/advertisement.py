@@ -41,6 +41,7 @@ class AdvertisementRepo(BaseRepo):
         property_type_uz,
         repair_type_uz,
         unique_id,
+        owner_phone_number: str,
     ):
         stmt = (
             insert(Advertisement)
@@ -71,6 +72,7 @@ class AdvertisementRepo(BaseRepo):
                 operation_type_uz=operation_type_uz,
                 property_type_uz=property_type_uz,
                 repair_type_uz=repair_type_uz,
+                owner_phone_number=owner_phone_number,
             )
             .options(
                 selectinload(Advertisement.category),
