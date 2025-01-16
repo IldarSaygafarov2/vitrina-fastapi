@@ -78,6 +78,7 @@ def is_studio_text():
 def realtor_advertisement_completed_text(
     advertisement: "Advertisement",
     lang: str = "ru",
+    hide_owner_phone: bool = False,
 ):
     rooms_from_to = f"<b>Кол-во комнат</b>  <i>{advertisement.rooms_quantity}</i>"
     creation_year = (
@@ -118,6 +119,11 @@ def realtor_advertisement_completed_text(
         if lang == "ru"
         else advertisement.repair_type_uz.value
     )
+    owner_phone_number = (
+        "\n<b>Номер собственника: </b><i>{advertisement.owner_phone_number}</i>"
+        if not hide_owner_phone
+        else ""
+    )
 
     return f"""
 <b>№</b> <i>{advertisement.unique_id}</i>
@@ -125,8 +131,7 @@ def realtor_advertisement_completed_text(
 <b>Тип объявления: </b><i>{operation_type}</i>
 <b>Описание: </b><i>{description}</i>
 <b>Район: </b><i>{district}</i>
-<b>Адрес: </b><i>{address}</i>
-<b>Номер собственника: </b><i>{advertisement.owner_phone_number}</i>
+<b>Адрес: </b><i>{address}</i>{owner_phone_number}
 <b>Категория недвижимости: </b><i>{category}</i>
 <b>Тип недвижимости: </b><i>{property_type}</i>{creation_year}
 <b>Цена: </b><i>{advertisement.price}</i>{house_quadrature}

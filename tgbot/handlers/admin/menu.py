@@ -1,11 +1,11 @@
 import os
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, ContentType, Message
+from aiogram.types import CallbackQuery, ContentType, Message, InputMediaPhoto
 
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
@@ -23,6 +23,7 @@ from tgbot.misc.realtor_states import RealtorCreationState, RealtorUpdatingState
 from tgbot.misc.user_states import AdvertisementModerationState
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.realtor_texts import get_realtor_info
+from config.loader import load_config
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -30,6 +31,8 @@ router.callback_query.filter(RoleFilter(role="group_director"))
 
 upload_dir = Path("media")
 upload_dir.mkdir(parents=True, exist_ok=True)
+
+config = load_config()
 
 
 @router.message(CommandStart())
@@ -182,9 +185,34 @@ async def get_realtor_advertisement(
 
     advertisement_id = int(call.data.split(":")[-1])
     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
-    advertisement_message = realtor_advertisement_completed_text(advertisement)
+    advertisement_message = realtor_advertisement_completed_text(
+        advertisement, hide_owner_phone=True
+    )
+    photos = [obj.tg_image_hash for obj in advertisement.images]
 
-    await call.message.edit_text(
+    if all(photos):
+        media_group: list[InputMediaPhoto] = [
+            (
+                InputMediaPhoto(media=img, caption=advertisement_message)
+                if i == 0
+                else InputMediaPhoto(media=img)
+            )
+            for i, img in enumerate(photos)
+        ]
+    else:
+        media_group = []
+
+    if media_group:
+        await call.message.answer_media_group(
+            media=media_group,
+            reply_markup=delete_advertisement_kb(advertisement_id),
+        )
+        return await call.message.answer(
+            text="Выберите действие над объявлением",
+            reply_markup=delete_advertisement_kb(advertisement_id),
+        )
+
+    return await call.message.edit_text(
         text=advertisement_message,
         reply_markup=delete_advertisement_kb(advertisement_id),
     )
@@ -438,11 +466,36 @@ async def process_moderation_confirm(
     advertisement = await repo.advertisements.update_advertisement(
         advertisement_id=advertisement_id, is_moderated=True
     )
+    advertisement_message = realtor_advertisement_completed_text(
+        advertisement=advertisement, hide_owner_phone=True
+    )
+    photos = [obj.tg_image_hash for obj in advertisement.images]
+    media_group: list[InputMediaPhoto] = [
+        (
+            InputMediaPhoto(media=img, caption=advertisement_message)
+            if i == 0
+            else InputMediaPhoto(media=img)
+        )
+        for i, img in enumerate(photos)
+    ]
+
     user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
-    await call.message.edit_text("Спасибо!")
+
+    if advertisement.operation_type.value == "Аренда":
+        chat_id = config.tg_bot.rent_channel_name
+    else:
+        chat_id = config.tg_bot.buy_channel_name
+
+    await call.bot.send_media_group(
+        chat_id=chat_id,
+        media=media_group,
+    )
+    await call.message.edit_text("Спасибо! Объявление отправлено в канал")
+
     await call.bot.send_message(
         chat_id=user.tg_chat_id, text="Объявление прошло модерацию"
     )
+
     await call.message.delete()
 
 
