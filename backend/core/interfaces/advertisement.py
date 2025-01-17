@@ -17,8 +17,9 @@ class AdvertisementDTO(BaseModel):
     address: str
     address_uz: Optional[str]
     rooms_quantity: Optional[int] = 0
-    quadrature_from: int
-    quadrature_to: int
+    quadrature_from: Optional[int] = 0
+    quadrature_to: Optional[int] = 0
+    quadrature: Optional[int]
     floor_from: int
     floor_to: int
     preview: Optional[str] = None
@@ -35,8 +36,9 @@ class AdvertisementDetailDTO(BaseModel):
     address: str
     address_uz: str
     rooms_quantity: Optional[int] = 0
-    quadrature_from: int
-    quadrature_to: int
+    quadrature_from: Optional[int] = 0
+    quadrature_to: Optional[int] = 0
+    quadrature: Optional[int]
     floor_from: int
     floor_to: int
     repair_type: str
