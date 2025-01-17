@@ -120,7 +120,7 @@ def realtor_advertisement_completed_text(
         else advertisement.repair_type_uz.value
     )
     owner_phone_number = (
-        "\n<b>Номер собственника: </b><i>{advertisement.owner_phone_number}</i>"
+        f"\n<b>Номер собственника: </b><i>{advertisement.owner_phone_number}</i>"
         if not hide_owner_phone
         else ""
     )
