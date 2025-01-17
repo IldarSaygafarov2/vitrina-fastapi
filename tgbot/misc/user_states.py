@@ -49,3 +49,4 @@ class AdvertisementUpdateState(StatesGroup):
     house_quadrature = State()
     floor = State()
     owner_phone_number = State()
+    image = State()

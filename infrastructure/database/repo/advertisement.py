@@ -250,3 +250,19 @@ class AdvertisementImageRepo(BaseRepo):
         )
         await self.session.execute(stmt)
         await self.session.commit()
+
+    async def get_image_by_id(self, image_id: int):
+        stmt = select(AdvertisementImage).where(AdvertisementImage.id == image_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
+
+    async def update_image(self, image_id: int, url: str, tg_image_hash: str):
+        stmt = (
+            update(AdvertisementImage)
+            .values(url=url, tg_image_hash=tg_image_hash)
+            .where(AdvertisementImage.id == image_id)
+            .returning(AdvertisementImage)
+        )
+        result = await self.session.execute(stmt)
+        await self.session.commit()
+        return result.scalar_one()

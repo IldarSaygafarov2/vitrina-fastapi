@@ -1,36 +1,38 @@
+import shutil
+from pathlib import Path
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.keyboards.user.inline import (
-    advertisement_update_kb,
-    return_back_kb,
     advertisement_choices_kb,
-    districts_kb,
+    advertisement_images_kb,
+    advertisement_update_kb,
     categories_kb,
+    districts_kb,
     is_studio_kb,
+    return_back_kb,
 )
 from tgbot.misc.user_states import AdvertisementUpdateState
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.advertisement_updating import (
+    update_address_text,
+    update_category_text,
+    update_creation_date_text,
+    update_description_text,
+    update_district_text,
+    update_floor_text,
+    update_house_quadrature_text,
+    update_is_studio_text,
     update_name_text,
     update_operation_type_text,
-    update_description_text,
-    update_address_text,
+    update_owner_phone_number_text,
     update_price_text,
     update_property_type_text,
-    update_district_text,
-    update_repair_type_text,
-    update_category_text,
     update_quadrature_text,
+    update_repair_type_text,
     update_rooms_text,
-    update_creation_date_text,
-    update_house_quadrature_text,
-    update_floor_text,
-    update_is_studio_text,
-    update_owner_phone_number_text,
 )
-
 
 router = Router()
 
@@ -45,7 +47,7 @@ async def process_advertisement_update(
     advertisement_id = int(call.data.split(":")[-1])
 
     await call.message.edit_text(
-        text="Выберите поле, кооторое хотите изменить",
+        text="Выберите поле, которое хотите изменить",
         reply_markup=advertisement_update_kb(advertisement_id=advertisement_id),
     )
 
@@ -169,6 +171,30 @@ async def update_gallery(
     state: FSMContext,
 ):
     await call.answer()
+    advertisement_id = int(call.data.split(":")[-1])
+    advertisement = await repo.advertisements.get_advertisement_by_id(
+        advertisement_id=advertisement_id
+    )
+    images = advertisement.images
+    photos = [obj.tg_image_hash for obj in images if obj.tg_image_hash]
+    if not photos:
+        photos = [obj.url for obj in images]
+
+    media_group: list[types.InputMediaPhoto] = [
+        (
+            types.InputMediaPhoto(media=img)
+            if i == 0
+            else types.InputMediaPhoto(media=img)
+        )
+        for i, img in enumerate(photos)
+    ]
+
+    await call.message.answer_media_group(media=media_group)
+    await call.message.answer(
+        text="Выберите фотографию которую хотите обновить",
+        reply_markup=advertisement_images_kb(images),
+    )
+    await state.update_data(advertisement_id=advertisement_id)
 
 
 @router.callback_query(F.data.startswith("update_advertisement_description"))
@@ -708,4 +734,83 @@ async def get_new_floor(
     await message.answer(
         text=realtor_advertisement_completed_text(updated),
         reply_markup=advertisement_update_kb(advertisement_id),
+    )
+
+
+@router.callback_query(F.data.startswith("adv_img"))
+async def update_image(
+    call: types.CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    await call.answer()
+
+    image_id = int(call.data.split(":")[-1])
+
+    image_obj = await repo.advertisement_images.get_image_by_id(image_id=image_id)
+
+    media_image_obj = types.InputMediaPhoto(media=image_obj.tg_image_hash)
+
+    await call.message.answer_media_group(media=[media_image_obj])
+    await call.message.answer(
+        text="отправьте новую фотографию",
+        reply_markup=None,
+    )
+    await state.update_data(image_id=image_id)
+    await state.set_state(AdvertisementUpdateState.image)
+
+
+@router.message(AdvertisementUpdateState.image)
+async def get_new_image(
+    message: types.Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    state_data = await state.get_data()
+    image_id = state_data.get("image_id")
+    advertisement_id = state_data.get("advertisement_id")
+
+    advertisement = await repo.advertisements.get_advertisement_by_id(
+        advertisement_id=advertisement_id
+    )
+    image = await repo.advertisement_images.get_image_by_id(image_id=image_id)
+
+    # adding new image
+    new_image_id = message.photo[-1].file_id
+    current_image_dir = "/".join(image.url.split("/")[:-1])
+    file_obj = await message.bot.get_file(new_image_id)
+    filename = file_obj.file_path.split("/")[-1]
+    file = await message.bot.download_file(file_obj.file_path)
+    file_location = Path(current_image_dir) / filename
+
+    with open(file_location, "wb") as f:
+        shutil.copyfileobj(file, f)
+
+    # updating existing image
+    await repo.advertisement_images.update_image(
+        image_id=image_id,
+        url=str(file_location),
+        tg_image_hash=new_image_id,
+    )
+
+    # advertisement message
+    advertisement_message = realtor_advertisement_completed_text(advertisement)
+    images = advertisement.images
+    photos = [obj.tg_image_hash for obj in images if obj.tg_image_hash]
+    if not photos:
+        photos = [obj.url for obj in images]
+
+    media_group: list[types.InputMediaPhoto] = [
+        (
+            types.InputMediaPhoto(media=img, caption=advertisement_message)
+            if i == 0
+            else types.InputMediaPhoto(media=img)
+        )
+        for i, img in enumerate(photos)
+    ]
+
+    await message.answer_media_group(media=media_group)
+    await message.answer(
+        text="Фотография была обновлена\nВыберите поле, которое хотите изменить",
+        reply_markup=advertisement_update_kb(advertisement_id=advertisement_id),
     )

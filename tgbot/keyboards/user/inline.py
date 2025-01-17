@@ -1,7 +1,13 @@
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from infrastructure.database.models import Advertisement, Category, District
+from infrastructure.database.models import (
+    Advertisement,
+    Category,
+    District,
+    AdvertisementImage,
+)
+
 from tgbot.misc.constants import (
     ADVERTISEMENT_UPDATE_FIELDS,
     OPERATION_TYPE_MAPPING,
@@ -181,4 +187,14 @@ def advertisement_choices_kb(
     if callback_for_return is not None:
         kb.row(InlineKeyboardButton(text="Назад", callback_data=callback_for_return))
 
+    return kb.as_markup()
+
+
+def advertisement_images_kb(images: list[AdvertisementImage]):
+    kb = InlineKeyboardBuilder()
+
+    for idx, image in enumerate(images, start=1):
+        kb.button(text=f"{idx}", callback_data=f"adv_img:{image.id}")
+
+    kb.adjust(2)
     return kb.as_markup()

@@ -31,10 +31,15 @@ async def get_advertisements(
         for obj in advertisements
     ]
 
+    filters_dict = filters.model_dump()
+    filters_dict.pop("limit")
+    filters_dict.pop("offset")
+    filters_dict = list(filter(lambda obj: obj is not None, filters_dict.values()))
+
     total = await repo.advertisements.get_total_advertisements()
 
     return PaginatedAdvertisementDTO(
-        total=total,
+        total=total if not len(filters_dict) else len(advertisements),
         limit=filters.limit,
         offset=filters.offset,
         results=advertisements,
