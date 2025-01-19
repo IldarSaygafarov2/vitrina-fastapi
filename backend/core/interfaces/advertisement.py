@@ -47,6 +47,7 @@ class AdvertisementDetailDTO(BaseModel):
     property_type_uz: str
     description: str
     description_uz: str
+    creation_year: Optional[int]
 
     category: Optional[CategoryDTO]
     district: Optional[DistrictDTO]
