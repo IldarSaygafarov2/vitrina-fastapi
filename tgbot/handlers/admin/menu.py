@@ -5,8 +5,9 @@ from pathlib import Path
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, ContentType, Message, InputMediaPhoto
+from aiogram.types import CallbackQuery, ContentType, InputMediaPhoto, Message
 
+from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
 from tgbot.keyboards.admin.inline import (
@@ -22,8 +23,11 @@ from tgbot.keyboards.user.inline import realtor_advertisements_kb, return_home_k
 from tgbot.misc.realtor_states import RealtorCreationState, RealtorUpdatingState
 from tgbot.misc.user_states import AdvertisementModerationState
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
+from tgbot.templates.messages import (
+    rent_channel_advertisement_message,
+    buy_channel_advertisement_message,
+)
 from tgbot.templates.realtor_texts import get_realtor_info
-from config.loader import load_config
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -466,10 +470,18 @@ async def process_moderation_confirm(
     advertisement = await repo.advertisements.update_advertisement(
         advertisement_id=advertisement_id, is_moderated=True
     )
-    advertisement_message = realtor_advertisement_completed_text(
-        advertisement=advertisement, hide_owner_phone=True
-    )
+
     photos = [obj.tg_image_hash for obj in advertisement.images]
+
+    user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
+
+    if advertisement.operation_type.value == "Аренда":
+        chat_id = config.tg_bot.rent_channel_name
+        advertisement_message = rent_channel_advertisement_message(advertisement)
+    else:
+        chat_id = config.tg_bot.buy_channel_name
+        advertisement_message = buy_channel_advertisement_message(advertisement)
+
     media_group: list[InputMediaPhoto] = [
         (
             InputMediaPhoto(media=img, caption=advertisement_message)
@@ -478,18 +490,13 @@ async def process_moderation_confirm(
         )
         for i, img in enumerate(photos)
     ]
-
-    user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
-
-    if advertisement.operation_type.value == "Аренда":
-        chat_id = config.tg_bot.rent_channel_name
-    else:
-        chat_id = config.tg_bot.buy_channel_name
-
-    await call.bot.send_media_group(
-        chat_id=chat_id,
-        media=media_group,
-    )
+    try:
+        await call.bot.send_media_group(
+            chat_id=chat_id,
+            media=media_group,
+        )
+    except Exception as e:
+        pass
     await call.message.edit_text("Спасибо! Объявление отправлено в канал")
 
     await call.bot.send_message(
