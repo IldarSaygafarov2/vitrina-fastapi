@@ -14,6 +14,8 @@ class UserDTO(BaseModel):
 class UserAdvertisementObjectDTO(BaseModel):
     id: int
     fullname: Optional[str]
+    first_name: Optional[str]
+    lastname: Optional[str]
     tg_username: Optional[str]
     phone_number: Optional[str]
     profile_image: Optional[str]
