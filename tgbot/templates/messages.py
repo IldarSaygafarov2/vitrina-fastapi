@@ -19,6 +19,8 @@ ID: {advertisement.unique_id}
 
 🔹Цена - {advertisement.price}$
 
+Комиссия агентства - 50%
+
 @{advertisement.user.tg_username}
 {advertisement.user.phone_number} {advertisement.user.first_name}
 
