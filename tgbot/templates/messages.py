@@ -5,12 +5,10 @@ def rent_channel_advertisement_message(advertisement: Advertisement):
     return f"""
 🔹Аренда 🔹
 
-
 🔹Адрес: {advertisement.district.name} {advertisement.address}
 🔹Комнат - {advertisement.rooms_quantity}
 🔹Этаж - {advertisement.floor_from} из {advertisement.floor_to}
 🔹Площадь - {advertisement.quadrature} м2
-
 
 🔹Описание - {advertisement.repair_type.value}
 {advertisement.description}
@@ -26,7 +24,6 @@ ID: {advertisement.unique_id}
 
 А если вы хотите купить квартиру, переходите в канал с Продажей 👇
 @ivitrinauz
-
 """
 
 
