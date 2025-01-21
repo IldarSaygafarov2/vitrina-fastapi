@@ -6,7 +6,7 @@ def rent_channel_advertisement_message(advertisement: Advertisement):
 🔹Аренда 🔹
 
 
-🔹Адрес: {advertisement.address}
+🔹Адрес: {advertisement.district.name} {advertisement.address}
 🔹Комнат - {advertisement.rooms_quantity}
 🔹Этаж - {advertisement.floor_from} из {advertisement.floor_to}
 🔹Площадь - {advertisement.quadrature} м2
