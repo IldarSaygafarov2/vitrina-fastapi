@@ -15,25 +15,25 @@ from infrastructure.database.models.advertisement import (
     RepairTypeUz,
 )
 from infrastructure.database.repo.requests import RequestsRepo
+from infrastructure.utils.helpers import generate_code
+from tgbot.keyboards.admin.inline import advertisement_moderation_kb
 from tgbot.keyboards.user.inline import (
     advertisement_actions_kb,
+    advertisement_update_kb,
     categories_kb,
     districts_kb,
     is_studio_kb,
     property_type_kb,
     repair_type_kb,
-    advertisement_update_kb,
 )
-from tgbot.keyboards.admin.inline import advertisement_moderation_kb
-from infrastructure.utils.helpers import generate_code
 from tgbot.misc.constants import (
+    ADVERTISEMENT_UPDATE_FIELDS,
     OPERATION_TYPE_MAPPING,
     OPERATION_TYPE_MAPPING_UZ,
     PROPERTY_TYPE_MAPPING,
     PROPERTY_TYPE_MAPPING_UZ,
     REPAIR_TYPE_MAPPING,
     REPAIR_TYPE_MAPPING_UZ,
-    ADVERTISEMENT_UPDATE_FIELDS,
 )
 from tgbot.misc.user_states import AdvertisementCreationState
 from tgbot.templates.advertisement_creation import (
@@ -51,6 +51,7 @@ from tgbot.templates.advertisement_creation import (
     price_text,
     realtor_advertisement_completed_text,
 )
+from tgbot.utils.helpers import filter_digits
 
 router = Router()
 
@@ -94,10 +95,26 @@ async def get_category_set_photos_quantity(
     category = await repo.categories.get_category_by_id(category_id=category_id)
 
     message = await call.message.answer(
-        text=choose_photos_quantity_text(category_name=category.name),
+        text="""Отправьте заставку объявления
+Фотография будет отображаться на странице списка объявлений
+(Не добавляйте фотографии унитазов, ванной комнаты, и других непрезентабельных комнат)
+        """
     )
 
     await state.update_data(category=category, photos_qty_message=message)
+    # await state.set_state(AdvertisementCreationState.photos_quantity)
+    await state.set_state(AdvertisementCreationState.preview)
+
+
+@router.message(AdvertisementCreationState.preview)
+async def get_preview(
+    message: Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    photo_id = message.photo[-1].file_id
+    await message.answer("Напишите сколько фотографий будет у объявления")
+    await state.update_data(preview_file_id=photo_id)
     await state.set_state(AdvertisementCreationState.photos_quantity)
 
 
@@ -111,7 +128,7 @@ async def get_photos_quanity_set_get_photos(
 
     photos_qty_message = state_data.pop("photos_qty_message")
 
-    photos_message = await photos_qty_message.edit_text(
+    photos_message = await photos_qty_message.answer(
         text=choose_photos_text(photos_quantity=message.text)
     )
 
@@ -234,7 +251,9 @@ async def get_owner_phone_number(
         text=get_district_text(),
         reply_markup=districts_kb(districts=districts),
     )
-    await state.update_data(owner_phone_number=message.text)
+    phone_number = filter_digits(message.text)
+
+    await state.update_data(owner_phone_number=phone_number)
     await state.set_state(AdvertisementCreationState.district)
 
 
@@ -343,7 +362,10 @@ async def get_creation_year(
         text="Напишите цену для данного объявления",
     )
 
-    await state.update_data(creation_year=message.text, cur_message=cur_message)
+    creation_year = filter_digits(message.text)
+    print(f"{creation_year=}")
+
+    await state.update_data(creation_year=creation_year, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.price)
 
 
@@ -361,7 +383,9 @@ async def get_price(
         reply_markup=is_studio_kb(),
     )
 
-    await state.update_data(price=message.text, cur_message=cur_message)
+    price = filter_digits(message.text)
+
+    await state.update_data(price=price, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.is_studio)
 
 
@@ -416,7 +440,9 @@ async def get_rooms_to(
     cur_message = await cur_message.answer(
         text="Квадратура: ",
     )
-    await state.update_data(rooms_quantity=message.text, cur_message=cur_message)
+
+    rooms = filter_digits(message.text)
+    await state.update_data(rooms_quantity=rooms, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.quadrature)
 
 
@@ -432,7 +458,13 @@ async def get_house_quadrature_from(
     cur_message = await cur_message.answer(
         text="Площадь участка до: ",
     )
-    await state.update_data(house_quadrature_from=message.text, cur_message=cur_message)
+
+    house_quadrature_from = filter_digits(message.text)
+
+    await state.update_data(
+        house_quadrature_from=house_quadrature_from,
+        cur_message=cur_message,
+    )
     await state.set_state(AdvertisementCreationState.house_quadrature_to)
 
 
@@ -448,7 +480,13 @@ async def get_house_quadrature_to(
     cur_message = await cur_message.answer(
         text="Квадратура: ",
     )
-    await state.update_data(house_quadrature_to=message.text, cur_message=cur_message)
+
+    house_quadrature_to = filter_digits(message.text)
+
+    await state.update_data(
+        house_quadrature_to=house_quadrature_to,
+        cur_message=cur_message,
+    )
     await state.set_state(AdvertisementCreationState.quadrature)
 
 
@@ -466,7 +504,9 @@ async def get_quadrature(
         text="Этаж от: ",
     )
 
-    await state.update_data(quadrature=message.text, cur_message=cur_message)
+    quadrature = filter_digits(message.text)
+
+    await state.update_data(quadrature=quadrature, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.floor_from)
 
 
@@ -482,7 +522,10 @@ async def get_floor_from(
     cur_message = await cur_message.answer(
         text="Этаж до:",
     )
-    await state.update_data(floor_from=message.text, cur_message=cur_message)
+
+    floor_from = filter_digits(message.text)
+
+    await state.update_data(floor_from=floor_from, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.floor_to)
 
 
@@ -499,7 +542,10 @@ async def get_floor_to(
         text="Укажите тип ремонта",
         reply_markup=repair_type_kb(REPAIR_TYPE_MAPPING),
     )
-    await state.update_data(floor_to=message.text, cur_message=cur_message)
+
+    floor_to = filter_digits(message.text)
+
+    await state.update_data(floor_to=floor_to, cur_message=cur_message)
     await state.set_state(AdvertisementCreationState.repair_type)
 
 
@@ -566,6 +612,16 @@ async def get_repair_type(
     advertisements_folder.mkdir(parents=True, exist_ok=True)
     files_locations = []
 
+    # preview
+    preview_file_id = state_data.get("preview_file_id")
+    preview_file_obj = await call.bot.get_file(preview_file_id)
+    preview_filename = preview_file_obj.file_path.split("/")[-1]
+    preview_file = await call.bot.download_file(preview_file_obj.file_path)
+    preview_file_location = advertisements_folder / preview_filename
+    with open(preview_file_location, "wb") as f:
+        shutil.copyfileobj(preview_file, f)
+
+    # other photos
     for photo_id in photos:
         file_obj = await call.bot.get_file(photo_id)
         filename = file_obj.file_path.split("/")[-1]
@@ -586,7 +642,7 @@ async def get_repair_type(
         title_uz=title_uz,
         description=description,
         description_uz=description_uz,
-        preview=str(files_locations[0][0]),
+        preview=str(preview_file_location),
         address=address,
         address_uz=address_uz,
         property_type=property_type_status,
@@ -608,6 +664,11 @@ async def get_repair_type(
     )
 
     advertisement_message = realtor_advertisement_completed_text(new_advertisement)
+
+    # await repo.advertisements.update_advertisement_preview(
+    #     advertisement_id=new_advertisement.id,
+    #     url=str(preview_file_location),
+    # )
 
     for file_location, photo_id in files_locations:
         await repo.advertisement_images.insert_advertisement_image(

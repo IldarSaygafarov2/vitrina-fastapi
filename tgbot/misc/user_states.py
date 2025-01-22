@@ -5,6 +5,9 @@ class AdvertisementCreationState(StatesGroup):
     operation_type = State()
     category = State()
 
+    preview = State()
+    preview_process = State()
+
     title = State()
     title_uz = State()
     description = State()
