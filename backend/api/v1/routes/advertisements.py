@@ -60,6 +60,11 @@ async def get_advertisement(
         advertisement, from_attributes=True
     )
 
+    advertisement.images = sorted(
+        [i.model_dump() for i in advertisement.images],
+        key=lambda l: l["id"],
+    )
+
     if advertisement is None:
         return {"detail": "Advertisement not found"}
 

@@ -3,7 +3,7 @@ from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
 from infrastructure.googlesheets.main import GoogleSheet
 
-engine = create_engine(config.db)
+engine = create_engine(config.db, echo=True)
 session_pool = create_session_pool(engine)
 
 
