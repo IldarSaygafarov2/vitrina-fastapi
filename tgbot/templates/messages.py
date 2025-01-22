@@ -3,7 +3,7 @@ from infrastructure.database.models import Advertisement
 
 def rent_channel_advertisement_message(advertisement: Advertisement):
     return f"""
-{advertisement.name}
+🔹{advertisement.name}
 
 🔹Адрес: {advertisement.district.name} {advertisement.address}
 🔹Комнат - {advertisement.rooms_quantity}
