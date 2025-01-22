@@ -105,7 +105,7 @@ def realtor_advertisements_kb(
             else f"rg_realtor_advertisement:{advertisement.id}"
         )
         kb.button(
-            text=f"{idx}. {advertisement.name}. {advertisement.unique_id}",
+            text=f"{idx}. {advertisement.unique_id}. {advertisement.name}.",
             callback_data=callback,
         )
     kb.button(text="На главную", callback_data="return_home")
