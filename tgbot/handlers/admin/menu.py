@@ -269,7 +269,7 @@ async def update_realtor_director(
     directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
 
     await call.message.edit_caption(
-        caption="Выберите директора",
+        caption="Выберите руководителя",
         reply_markup=directors_kb(
             directors=directors, current_director=current_director
         ),
