@@ -79,13 +79,14 @@ def realtor_fields_kb(realtor_id: int, is_superadmin: bool = False):
     kb.button(text="Номер телефона", callback_data=f"update_phone_number:{realtor_id}")
     kb.button(text="Юзернейм", callback_data=f"update_tg_username:{realtor_id}")
     kb.button(text="Фото", callback_data=f"update_realtor_photo:{realtor_id}")
-    if is_superadmin:
-        kb.button(
-            text="Привязать к директору",
-            callback_data=f"update_realtor_director:{realtor_id}",
-        )
-
     kb.adjust(2)
+    if is_superadmin:
+        kb.row(
+            InlineKeyboardButton(
+                text="Привязать к руководителю",
+                callback_data=f"update_realtor_director:{realtor_id}",
+            )
+        )
 
     kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
     return kb.as_markup()
