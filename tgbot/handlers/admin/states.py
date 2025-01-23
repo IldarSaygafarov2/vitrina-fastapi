@@ -24,7 +24,9 @@ async def get_first_name_set_lastname(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    await state.update_data(first_name=message.text)
+    chat_id = message.from_user.id
+
+    await state.update_data(first_name=message.text, chat_id=chat_id)
     await state.set_state(RealtorCreationState.lastname)
 
     await message.answer(text="Напишите фамилию")
@@ -97,6 +99,7 @@ async def get_profile_image_create_user(
         profile_image=str(file_location),
         profile_image_hash=photo_id,
         role="REALTOR",
+        added_by=data["chat_id"],
     )
 
     user_message = f"""

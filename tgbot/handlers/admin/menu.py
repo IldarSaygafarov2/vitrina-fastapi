@@ -18,6 +18,7 @@ from tgbot.keyboards.admin.inline import (
     realtor_fields_kb,
     realtors_actions_kb,
     realtors_kb,
+    directors_kb,
 )
 from tgbot.keyboards.user.inline import realtor_advertisements_kb, return_home_kb
 from tgbot.misc.realtor_states import RealtorCreationState, RealtorUpdatingState
@@ -76,7 +77,15 @@ async def get_all_realtors(
 ):
     await call.answer()
 
-    realtors = await repo.users.get_users_by_role(role="REALTOR")
+    director = await repo.users.get_user_by_chat_id(tg_chat_id=call.from_user.id)
+    print(director.is_superadmin)
+    if not director.is_superadmin:
+        realtors = await repo.users.get_director_agents(
+            director_chat_id=call.from_user.id
+        )
+    else:
+        realtors = await repo.users.get_users_by_role(role="REALTOR")
+
     await call.message.edit_text(
         text="Список риелторов",
         reply_markup=realtors_kb(realtors=realtors),
@@ -230,12 +239,63 @@ async def edit_realtor_data(
 ):
     await call.answer()
 
+    director = await repo.users.get_user_by_chat_id(tg_chat_id=call.from_user.id)
+
     realtor_id = int(call.data.split(":")[-1])
     realtor = await repo.users.get_user_by_id(user_id=realtor_id)
 
     await call.message.edit_caption(
         caption=get_realtor_info(realtor),
-        reply_markup=realtor_fields_kb(realtor_id),
+        reply_markup=realtor_fields_kb(
+            realtor_id, is_superadmin=director.is_superadmin
+        ),
+    )
+
+
+@router.callback_query(F.data.startswith("update_realtor_director"))
+async def update_realtor_director(
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    await call.answer()
+
+    realtor_id = int(call.data.split(":")[-1])
+
+    current_director = await repo.users.get_user_by_chat_id(
+        tg_chat_id=call.from_user.id
+    )
+
+    directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
+
+    await call.message.edit_caption(
+        caption="Выберите директора",
+        reply_markup=directors_kb(
+            directors=directors, current_director=current_director
+        ),
+    )
+    await state.update_data(realtor_id=realtor_id, current_director=current_director)
+
+
+@router.callback_query(F.data.startswith("select_director"))
+async def select_director_for_agent(
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    await call.answer()
+    data = await state.get_data()
+    call_data = call.data.split(":")
+    director_chat_id = call_data[-1]
+
+    updated = await repo.users.update_user(
+        user_id=data["realtor_id"],
+        added_by=int(director_chat_id),
+    )
+    print(get_realtor_info(updated))
+    await call.message.edit_caption(
+        caption=get_realtor_info(updated),
+        reply_markup=realtors_actions_kb(),
     )
 
 

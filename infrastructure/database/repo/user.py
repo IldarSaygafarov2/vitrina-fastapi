@@ -15,6 +15,7 @@ class UserRepo(BaseRepo):
         profile_image: str,
         profile_image_hash: str,
         role: str,
+        added_by: int,
     ):
         stmt = (
             insert(User)
@@ -26,6 +27,7 @@ class UserRepo(BaseRepo):
                 profile_image=profile_image,
                 profile_image_hash=profile_image_hash,
                 role=role,
+                added_by=added_by,
             )
             .returning(User)
         )
@@ -79,3 +81,12 @@ class UserRepo(BaseRepo):
         updated = await self.session.execute(stmt)
         await self.session.commit()
         return updated.scalar_one()
+
+    async def get_director_agents(self, director_chat_id: int):
+        stmt = (
+            select(User)
+            .where(User.added_by == director_chat_id)
+            .where(User.role == "REALTOR")
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()

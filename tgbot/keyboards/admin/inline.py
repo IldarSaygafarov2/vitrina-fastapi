@@ -72,17 +72,38 @@ def return_kb(callback: str):
     return kb.as_markup()
 
 
-def realtor_fields_kb(realtor_id: int):
+def realtor_fields_kb(realtor_id: int, is_superadmin: bool = False):
     kb = InlineKeyboardBuilder()
     kb.button(text="Имя", callback_data=f"update_name:{realtor_id}")
     kb.button(text="Фамилия", callback_data=f"update_lastname:{realtor_id}")
     kb.button(text="Номер телефона", callback_data=f"update_phone_number:{realtor_id}")
     kb.button(text="Юзернейм", callback_data=f"update_tg_username:{realtor_id}")
     kb.button(text="Фото", callback_data=f"update_realtor_photo:{realtor_id}")
+    if is_superadmin:
+        kb.button(
+            text="Привязать к директору",
+            callback_data=f"update_realtor_director:{realtor_id}",
+        )
 
     kb.adjust(2)
 
     kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
+    return kb.as_markup()
+
+
+def directors_kb(directors: list["User"], current_director: "User"):
+    kb = InlineKeyboardBuilder()
+    for idx, director in enumerate(directors, start=1):
+        if not director.tg_chat_id == current_director.tg_chat_id:
+            fullname = f"{director.first_name} {director.lastname}"
+            kb.button(
+                text=f"{idx}. {fullname}",
+                callback_data=f"select_director:{director.tg_chat_id}",
+            )
+
+    kb.button(text="На главную", callback_data="return_home")
+
+    kb.adjust(1)
     return kb.as_markup()
 
 

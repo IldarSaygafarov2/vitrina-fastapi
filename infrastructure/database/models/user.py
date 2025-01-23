@@ -24,6 +24,7 @@ class User(Base, IntIdMixin):
     profile_image: Mapped[str] = mapped_column(nullable=True)
     profile_image_hash: Mapped[str] = mapped_column(nullable=True)
 
-    added_by: Mapped[int] = mapped_column(nullable=True)
+    added_by: Mapped[int] = mapped_column(BIGINT, nullable=True)
+    is_superadmin: Mapped[bool] = mapped_column(nullable=True)
 
     advertisement = relationship("Advertisement", back_populates="user")

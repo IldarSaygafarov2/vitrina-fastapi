@@ -693,7 +693,11 @@ async def get_repair_type(
 
     for director in group_directors:
         try:
-            if director.tg_chat_id:
+            print(director.tg_chat_id, new_advertisement.user.added_by)
+            if (
+                director.tg_chat_id
+                and director.tg_chat_id == new_advertisement.user.added_by
+            ):
                 print("sent_to", director.tg_username)
                 realtor_fullname = f"{new_advertisement.user.first_name} {new_advertisement.user.lastname}"
                 print(realtor_fullname)
