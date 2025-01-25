@@ -198,9 +198,7 @@ async def get_realtor_advertisement(
 
     advertisement_id = int(call.data.split(":")[-1])
     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
-    advertisement_message = realtor_advertisement_completed_text(
-        advertisement, hide_owner_phone=True
-    )
+    advertisement_message = realtor_advertisement_completed_text(advertisement)
     photos = [obj.tg_image_hash for obj in advertisement.images]
 
     if all(photos):
