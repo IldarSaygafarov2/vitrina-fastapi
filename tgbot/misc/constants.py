@@ -35,12 +35,15 @@ REPAIR_TYPE_MAPPING_UZ = {
 
 ADVERTISEMENT_UPDATE_FIELDS = [
     ("update_advertisement_name", "Название"),
+    ("uz_update_advertisement_name", "Название на узбекском"),
     ("update_advertisement_owner_phone_number", "Номер собственника"),
     ("update_advertisement_operation_type", "Тип операции"),
     ("update_advertisement_gallery", "Фотки"),
     ("update_advertisement_description", "Описание"),
+    ("uz_update_advertisement_description", "Описание на узбекском"),
     ("update_advertisement_district", "Район"),
     ("update_advertisement_address", "Адрес"),
+    ("uz_update_advertisement_address", "Адрес на узбекском"),
     ("update_advertisement_property_category", "Категория недвижимости"),
     ("update_advertisement_property_type", "Тип недвижимости"),
     ("update_advertisement_price", "Цена"),

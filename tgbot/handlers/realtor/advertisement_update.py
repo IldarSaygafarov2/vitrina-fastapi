@@ -59,6 +59,7 @@ async def update_advertisement_name(
     state: FSMContext,
 ):
     await call.answer()
+    print("working")
 
     advertisement_id = int(call.data.split(":")[-1])
     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
@@ -70,6 +71,11 @@ async def update_advertisement_name(
         reply_markup=return_back_kb(f"advertisement_update:{advertisement_id}"),
     )
     await state.update_data(advertisement_id=advertisement_id)
+
+
+# update_advertisement_name_uz
+# update_advertisement_description_uz
+# update_advertisement_address_uz
 
 
 @router.message(AdvertisementUpdateState.name)
@@ -87,6 +93,45 @@ async def get_new_name(
     )
     await message.answer(
         realtor_advertisement_completed_text(updated),
+        reply_markup=advertisement_update_kb(advertisement_id=data["advertisement_id"]),
+    )
+
+
+@router.callback_query(F.data.startswith("uz_update_advertisement_name"))
+async def update_advertisement_name_uz(
+    call: types.CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    await call.answer()
+
+    advertisement_id = int(call.data.split(":")[-1])
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+
+    await state.set_state(AdvertisementUpdateState.name_uz)
+
+    await call.message.edit_text(
+        text=update_name_text(current=advertisement.name_uz),
+        reply_markup=return_back_kb(f"advertisement_update:{advertisement_id}"),
+    )
+    await state.update_data(advertisement_id=advertisement_id)
+
+
+@router.message(AdvertisementUpdateState.name_uz)
+async def get_new_name_uz(
+    message: types.Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    data = await state.get_data()
+    text = message.text
+
+    updated = await repo.advertisements.update_advertisement(
+        advertisement_id=data["advertisement_id"],
+        name_uz=text,
+    )
+    await message.answer(
+        realtor_advertisement_completed_text(updated, lang="uz"),
         reply_markup=advertisement_update_kb(advertisement_id=data["advertisement_id"]),
     )
 
@@ -236,6 +281,45 @@ async def get_new_description(
     )
 
 
+@router.callback_query(F.data.startswith("uz_update_advertisement_description"))
+async def update_description(
+    call: types.CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    await call.answer()
+
+    advertisement_id = int(call.data.split(":")[-1])
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+
+    await call.message.edit_text(
+        text=update_description_text(current=advertisement.description_uz),
+        reply_markup=return_back_kb(f"advertisement_update:{advertisement_id}"),
+    )
+
+    await state.set_state(AdvertisementUpdateState.description_uz)
+    await state.update_data(advertisement_id=advertisement_id)
+
+
+@router.message(AdvertisementUpdateState.description_uz)
+async def get_new_description(
+    message: types.Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    data = await state.get_data()
+    advertisement_id = data.get("advertisement_id")
+
+    updated = await repo.advertisements.update_advertisement(
+        advertisement_id=advertisement_id,
+        description_uz=message.text,
+    )
+    await message.answer(
+        text=realtor_advertisement_completed_text(updated, lang="uz"),
+        reply_markup=advertisement_update_kb(advertisement_id),
+    )
+
+
 @router.callback_query(F.data.startswith("update_advertisement_district"))
 async def update_district(
     call: types.CallbackQuery,
@@ -312,6 +396,44 @@ async def get_new_address(
     )
     await message.answer(
         text=realtor_advertisement_completed_text(updated),
+        reply_markup=advertisement_update_kb(advertisement_id),
+    )
+
+
+@router.callback_query(F.data.startswith("uz_update_advertisement_address"))
+async def update_address(
+    call: types.CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    await call.answer()
+    advertisement_id = int(call.data.split(":")[-1])
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+
+    await call.message.edit_text(
+        text=update_address_text(current=advertisement.address_uz),
+        reply_markup=return_back_kb(f"advertisement_update:{advertisement_id}"),
+    )
+    await state.update_data(advertisement_id=advertisement_id)
+    await state.set_state(AdvertisementUpdateState.address_uz)
+
+
+@router.message(AdvertisementUpdateState.address_uz)
+async def get_new_address(
+    message: types.Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    data = await state.get_data()
+    advertisement_id = data.get("advertisement_id")
+
+    updated = await repo.advertisements.update_advertisement(
+        advertisement_id=advertisement_id,
+        address_uz=message.text,
+    )
+
+    await message.answer(
+        text=realtor_advertisement_completed_text(updated, lang="uz"),
         reply_markup=advertisement_update_kb(advertisement_id),
     )
 

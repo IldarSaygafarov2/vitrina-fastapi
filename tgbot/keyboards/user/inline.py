@@ -160,6 +160,22 @@ def advertisement_update_kb(advertisement_id: int):
     return kb.as_markup()
 
 
+def multilang_field_for_update_kb(advertisement_id: int, field: str):
+    kb = InlineKeyboardBuilder()
+    kb.row(
+        InlineKeyboardButton(
+            text="Русский",
+            callback_data=f"update_{field}:ru:{advertisement_id}",
+        ),
+        InlineKeyboardButton(
+            text="Узбекский",
+            callback_data=f"update_{field}:uz:{advertisement_id}",
+        ),
+    )
+    kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
+    return kb.as_markup()
+
+
 def return_back_kb(callback: str):
     kb = InlineKeyboardBuilder()
     kb.button(text="Назад", callback_data=callback)

@@ -93,50 +93,64 @@ def realtor_advertisement_completed_text(
         else ""
     )
 
-    name = advertisement.name if lang == "ru" else advertisement.name_uz
-    description = (
-        advertisement.description if lang == "ru" else advertisement.description_uz
+    # name = advertisement.name
+    description_uz = (
+        f"\n<b>Описание на узбекском: </b><i>{advertisement.description_uz}</i>"
+        if lang == "uz"
+        else ""
     )
-    operation_type = (
-        advertisement.operation_type.value
-        if lang == "ru"
-        else advertisement.operation_type_uz.value
-    )
-    district = (
-        advertisement.district.name if lang == "ru" else advertisement.district.name_uz
-    )
-    category = (
-        advertisement.category.name if lang == "ru" else advertisement.category.name_uz
-    )
-    address = advertisement.address if lang == "ru" else advertisement.address_uz
-    property_type = (
-        advertisement.property_type.value
-        if lang == "ru"
-        else advertisement.property_type_uz.value
-    )
-    repair_type = (
-        advertisement.repair_type.value
-        if lang == "ru"
-        else advertisement.repair_type_uz.value
-    )
+    # operation_type = (
+    #     advertisement.operation_type.value
+    #     if lang == "ru"
+    #     else advertisement.operation_type_uz.value
+    # )
+    # district = (
+    #     advertisement.district.name if lang == "ru" else advertisement.district.name_uz
+    # )
+    # category = (
+    #     advertisement.category.name if lang == "ru" else advertisement.category.name_uz
+    # )
+    # address = advertisement.address if lang == "ru" else advertisement.address_uz
+    # property_type = (
+    #     advertisement.property_type.value
+    #     if lang == "ru"
+    #     else advertisement.property_type_uz.value
+    # )
+    # repair_type = (
+    #     advertisement.repair_type.value
+    #     if lang == "ru"
+    #     else advertisement.repair_type_uz.value
+    # )
     owner_phone_number = (
         f"\n<b>Номер собственника: </b><i>{advertisement.owner_phone_number}</i>"
         if not hide_owner_phone
         else ""
     )
 
+    name_uz = (
+        f"\n<b>Заголовок на узбекском:</b><i>{advertisement.name_uz}</i>"
+        if lang == "uz"
+        else ""
+    )
+
+    adress_uz = (
+        f"\n<b>Адрес на узбекском:</b><i>{advertisement.address_uz}</i>"
+        if lang == "uz"
+        else ""
+    )
+
     return f"""
 <b>№</b> <i>{advertisement.unique_id}</i>
-<b>Заголовок:</b><i>{name}</i>
-<b>Тип объявления: </b><i>{operation_type}</i>
-<b>Описание: </b><i>{description}</i>
-<b>Район: </b><i>{district}</i>
-<b>Адрес: </b><i>{address}</i>{owner_phone_number}
-<b>Категория недвижимости: </b><i>{category}</i>
-<b>Тип недвижимости: </b><i>{property_type}</i>{creation_year}
+<b>Заголовок:</b><i>{advertisement.name}</i>{name_uz}
+<b>Тип объявления: </b><i>{advertisement.operation_type.value}</i>
+<b>Описание: </b><i>{advertisement.description}</i>{description_uz}
+<b>Район: </b><i>{advertisement.district.name}</i>
+<b>Адрес: </b><i>{advertisement.address}</i>{adress_uz}{owner_phone_number}
+<b>Категория недвижимости: </b><i>{advertisement.category.name}</i>
+<b>Тип недвижимости: </b><i>{advertisement.property_type.value}</i>{creation_year}
 <b>Цена: </b><i>{advertisement.price}</i>{house_quadrature}
 {rooms_from_to if not advertisement.is_studio else f'<b>Кол-во комнат: </b> Студия'}
 <b>Квадратура: </b><i>{advertisement.quadrature}</i>
 <b>Этаж: </b><i>{advertisement.floor_from}</i> из <i>{advertisement.floor_to}</i>
-<b>Ремонт: </b><i>{repair_type}</i>
+<b>Ремонт: </b><i>{advertisement.repair_type.value}</i>
 """

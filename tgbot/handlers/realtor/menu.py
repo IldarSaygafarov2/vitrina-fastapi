@@ -81,7 +81,7 @@ async def get_realtor_advertisement_detail(
         advertisement_id=advertisement_id
     )
     advertisement_message = realtor_advertisement_completed_text(
-        advertisement=advertisement
+        advertisement=advertisement, lang="uz"
     )
     photos = [obj.tg_image_hash for obj in advertisement.images]
     media_group: list[InputMediaPhoto] = [

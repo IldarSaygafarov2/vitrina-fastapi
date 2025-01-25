@@ -43,8 +43,14 @@ class AdvertisementModerationState(StatesGroup):
 
 class AdvertisementUpdateState(StatesGroup):
     name = State()
+    name_uz = State()
+
     description = State()
+    description_uz = State()
+
     address = State()
+    address_uz = State()
+
     price = State()
     quadrature = State()
     rooms = State()
