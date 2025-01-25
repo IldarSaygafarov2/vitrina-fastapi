@@ -251,9 +251,8 @@ async def get_owner_phone_number(
         text=get_district_text(),
         reply_markup=districts_kb(districts=districts),
     )
-    phone_number = filter_digits(message.text)
 
-    await state.update_data(owner_phone_number=phone_number)
+    await state.update_data(owner_phone_number=message.text)
     await state.set_state(AdvertisementCreationState.district)
 
 
