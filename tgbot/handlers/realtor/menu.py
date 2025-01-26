@@ -5,6 +5,7 @@ from aiogram.types import CallbackQuery, Message, InputMediaPhoto
 
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
+from tgbot.keyboards.admin.inline import advertisement_moderation_kb
 from tgbot.keyboards.user.inline import (
     advertisement_actions_kb,
     operation_type_kb,
@@ -99,4 +100,45 @@ async def get_realtor_advertisement_detail(
     await call.message.answer(
         text="Выберите действие над этим объявлением",
         reply_markup=advertisement_actions_kb(advertisement_id=advertisement_id),
+    )
+
+
+@router.callback_query(F.data.startswith("advertisement_delete"))
+async def delete_advertisement(
+    call: CallbackQuery,
+    repo: RequestsRepo,
+):
+    await call.answer()
+    advertisement_id = int(call.data.split(":")[-1])
+
+    advertisement = await repo.advertisements.get_advertisement_by_id(
+        advertisement_id=advertisement_id
+    )
+
+    message = realtor_advertisement_completed_text(advertisement=advertisement)
+    photos = [obj.tg_image_hash for obj in advertisement.images]
+    media_group: list[InputMediaPhoto] = [
+        (
+            InputMediaPhoto(media=img, caption=message)
+            if i == 0
+            else InputMediaPhoto(media=img)
+        )
+        for i, img in enumerate(photos)
+    ]
+
+    director = await repo.users.get_user_by_chat_id(
+        tg_chat_id=advertisement.user.added_by
+    )
+    await call.message.answer("Удаление объявления отправлено на проверку")
+    await call.bot.send_message(
+        chat_id=director.tg_chat_id,
+        text=f"Агент: {advertisement.user.first_name} {advertisement.user.lastname} хочет удалить объявление",
+    )
+    await call.bot.send_media_group(chat_id=director.tg_chat_id, media=media_group)
+    await call.bot.send_message(
+        chat_id=director.tg_chat_id,
+        text="Выберите действие",
+        reply_markup=advertisement_moderation_kb(
+            advertisement_id=advertisement_id, for_delete=True
+        ),
     )

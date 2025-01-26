@@ -41,6 +41,10 @@ class AdvertisementModerationState(StatesGroup):
     message = State()
 
 
+class AdvertisementDeletionState(StatesGroup):
+    message = State()
+
+
 class AdvertisementUpdateState(StatesGroup):
     name = State()
     name_uz = State()

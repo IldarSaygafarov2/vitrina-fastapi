@@ -108,10 +108,22 @@ def directors_kb(directors: list["User"], current_director: "User"):
     return kb.as_markup()
 
 
-def advertisement_moderation_kb(advertisement_id: int):
+def advertisement_moderation_kb(advertisement_id: int, for_delete: bool = False):
     kb = InlineKeyboardBuilder()
-    kb.button(text="Да ✔", callback_data=f"moderation_confirm:{advertisement_id}")
-    kb.button(text="Нет ❌", callback_data=f"moderation_deny:{advertisement_id}")
+
+    call_1 = (
+        f"moderation_confirm:{advertisement_id}"
+        if not for_delete
+        else f"confirm_advertisement_delete:{advertisement_id}"
+    )
+    call_2 = (
+        f"moderation_deny:{advertisement_id}"
+        if not for_delete
+        else f"deny_advertisement_delete:{advertisement_id}"
+    )
+
+    kb.button(text="Да ✔", callback_data=call_1)
+    kb.button(text="Нет ❌", callback_data=call_2)
     return kb.as_markup()
 
 

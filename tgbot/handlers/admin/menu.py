@@ -22,7 +22,10 @@ from tgbot.keyboards.admin.inline import (
 )
 from tgbot.keyboards.user.inline import realtor_advertisements_kb, return_home_kb
 from tgbot.misc.realtor_states import RealtorCreationState, RealtorUpdatingState
-from tgbot.misc.user_states import AdvertisementModerationState
+from tgbot.misc.user_states import (
+    AdvertisementDeletionState,
+    AdvertisementModerationState,
+)
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.messages import (
     rent_channel_advertisement_message,
@@ -625,3 +628,62 @@ async def delete_realtor_advertisement(
     )
     await call.message.answer("Объявление успешно удалено")
     await repo.advertisements.delete_advertisement(advertisement_id)
+
+
+# confirm_advertisement_delete
+# deny_advertisement_delete
+
+
+@router.callback_query(F.data.startswith("confirm_advertisement_delete"))
+async def confirm_advertisement_delete(
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    await call.answer()
+    advertisement_id = int(call.data.split(":")[-1])
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+    user_id = advertisement.user_id
+
+    user = await repo.users.get_user_by_id(user_id)
+
+    await call.bot.send_message(
+        user.tg_chat_id,
+        f"Объявление {advertisement.name} {advertisement.unique_id} было удалено",
+    )
+    await call.message.answer("Объявление успешно удалено")
+    await repo.advertisements.delete_advertisement(advertisement_id)
+
+
+@router.callback_query(F.data.startswith("deny_advertisement_delete"))
+async def deny_advertisement_delete(
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    await call.answer()
+
+    advertisement_id = int(call.data.split(":")[-1])
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+
+    await call.message.answer("напишите причину отказа")
+    await state.set_state(AdvertisementDeletionState.message)
+    await state.update_data(advertisement=advertisement)
+
+
+@router.message(AdvertisementDeletionState.message)
+async def process_advertisement_deletion_message(
+    message: Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
+):
+    data = await state.get_data()
+    advertisement = data.pop("advertisement")
+
+    user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
+    await message.bot.send_message(
+        user.tg_chat_id,
+        f"Объявление {advertisement.name} {advertisement.unique_id} не было удалено",
+    )
+    await message.bot.send_message(user.tg_chat_id, f"Причина: {message.text}")
+    await state.clear()
