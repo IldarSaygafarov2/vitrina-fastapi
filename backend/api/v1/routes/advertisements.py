@@ -24,22 +24,22 @@ async def get_advertisements(
     filters: Annotated[AdvertisementFilter, Query()],
     repo: Annotated[RequestsRepo, Depends(get_repo)],
 ) -> PaginatedAdvertisementDTO:
+
     advertisements = await repo.advertisements.get_filtered_advertisements(filters)
+    count = advertisements["total_count"]
 
     advertisements = [
         AdvertisementDTO.model_validate(obj, from_attributes=True)
-        for obj in advertisements
+        for obj in advertisements["data"]
     ]
 
-    filters_dict = filters.model_dump()
-    filters_dict.pop("limit")
-    filters_dict.pop("offset")
-    filters_dict = list(filter(lambda obj: obj is not None, filters_dict.values()))
-
-    total = await repo.advertisements.get_total_advertisements()
+    # filters_dict = filters.model_dump()
+    # filters_dict.pop("limit")
+    # filters_dict.pop("offset")
+    # filters_dict = list(filter(lambda obj: obj is not None, filters_dict.values()))
 
     return PaginatedAdvertisementDTO(
-        total=total if not len(filters_dict) else len(advertisements),
+        total=count,
         limit=filters.limit,
         offset=filters.offset,
         results=advertisements,
@@ -59,6 +59,17 @@ async def get_advertisement(
     advertisement = AdvertisementDetailDTO.model_validate(
         advertisement, from_attributes=True
     )
+
+    related_objects = await repo.advertisements.get_advertisements_by_category_id(
+        category_id=advertisement.category.id,
+    )
+
+    # advertisement.related_objects = [
+    #     AdvertisementDTO.model_validate(obj, from_attributes=True)
+    #     for obj in related_objects
+    # ]
+
+    advertisement.related_objects = []
 
     advertisement.images = sorted(
         [i.model_dump() for i in advertisement.images],

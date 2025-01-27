@@ -54,6 +54,8 @@ class AdvertisementDetailDTO(BaseModel):
     user: Optional[UserAdvertisementObjectDTO]
     images: Optional[list["AdvertisementImageDTO"]]
 
+    related_objects: Optional[list[AdvertisementDTO]] = None
+
 
 class AdvertisementImageDTO(BaseModel):
     id: int

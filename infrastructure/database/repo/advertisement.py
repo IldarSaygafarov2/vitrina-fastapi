@@ -96,12 +96,9 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def get_filtered_advertisements(self, _filter: AdvertisementFilter):
-
-        query = (
-            select(Advertisement)
-            .filter(Advertisement.is_moderated == True)
-            .order_by(desc(Advertisement.created_at))
-        )
+        # Создаем базовый запрос для фильтрации
+        # Создаем базовый запрос для фильтрации
+        query = select(Advertisement).filter(Advertisement.is_moderated == True)
 
         if _filter.rooms:
             rooms = [int(i) for i in _filter.rooms.split(",")]
@@ -141,11 +138,22 @@ class AdvertisementRepo(BaseRepo):
         if _filter.district_id:
             query = query.filter(Advertisement.district_id == _filter.district_id)
 
-        # Пагинация
+        # Подсчитываем общее количество отфильтрованных записей (без пагинации)
+        count_query = query.with_only_columns(func.count().label("total_count"))
+
+        # Выполняем запрос для подсчета количества
+        total_count_result = await self.session.execute(count_query)
+        total_count = total_count_result.scalar()
+
+        # Пагинация (основной запрос)
+        query = query.order_by(
+            desc(Advertisement.created_at)
+        )  # Сортировка уже после подсчета
         query = query.offset(_filter.offset).limit(_filter.limit)
         result = await self.session.execute(query)
 
-        return result.scalars().all()
+        # Возвращаем результат: данные и общее количество
+        return {"data": result.scalars().all(), "total_count": total_count}
 
     async def get_advertisement_by_id(self, advertisement_id: int):
         stmt = (
@@ -234,6 +242,15 @@ class AdvertisementRepo(BaseRepo):
         updated = await self.session.execute(stmt)
         await self.session.commit()
         return updated.scalar_one()
+
+    async def get_advertisements_by_category_id(self, category_id: int):
+        stmt = (
+            select(Advertisement)
+            .where(Advertisement.category_id == category_id)
+            .options(selectinload(Advertisement.images))
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
 
 
 class AdvertisementImageRepo(BaseRepo):
