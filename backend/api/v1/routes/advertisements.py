@@ -33,11 +33,6 @@ async def get_advertisements(
         for obj in advertisements["data"]
     ]
 
-    # filters_dict = filters.model_dump()
-    # filters_dict.pop("limit")
-    # filters_dict.pop("offset")
-    # filters_dict = list(filter(lambda obj: obj is not None, filters_dict.values()))
-
     return PaginatedAdvertisementDTO(
         total=count,
         limit=filters.limit,
@@ -69,7 +64,7 @@ async def get_advertisement(
     #     for obj in related_objects
     # ]
 
-    advertisement.related_objects = []
+    advertisement.related_objects = related_objects
 
     advertisement.images = sorted(
         [i.model_dump() for i in advertisement.images],
