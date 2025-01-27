@@ -46,7 +46,7 @@ async def get_advertisement(
     request: Request,
     advertisement_id: int,
     repo: Annotated[RequestsRepo, Depends(get_repo)],
-) -> Union[AdvertisementDetailDTO, dict]:
+) -> AdvertisementDetailDTO | dict:
 
     advertisement = await repo.advertisements.get_advertisement_by_id(
         advertisement_id=advertisement_id

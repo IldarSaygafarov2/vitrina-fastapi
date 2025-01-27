@@ -247,6 +247,8 @@ class AdvertisementRepo(BaseRepo):
         stmt = (
             select(Advertisement)
             .where(Advertisement.category_id == category_id)
+            .where(Advertisement.is_moderated == True)
+            .limit(12)
             .options(selectinload(Advertisement.images))
         )
         result = await self.session.execute(stmt)
