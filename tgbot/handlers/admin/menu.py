@@ -573,22 +573,25 @@ async def process_moderation_deny(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    await call.answer()
+    try:
+        await call.answer()
 
-    advertisement_id = int(call.data.split(":")[-1])
+        advertisement_id = int(call.data.split(":")[-1])
 
-    advertisement = await repo.advertisements.update_advertisement(
-        advertisement_id=advertisement_id, is_moderated=False
-    )
-    user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
+        advertisement = await repo.advertisements.update_advertisement(
+            advertisement_id=advertisement_id, is_moderated=False
+        )
+        user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
 
-    await state.update_data(user=user, advertisement=advertisement)
-    await state.set_state(AdvertisementModerationState.message)
+        await state.update_data(user=user, advertisement=advertisement)
+        await state.set_state(AdvertisementModerationState.message)
 
-    await call.message.edit_text(
-        "Напишите причину, почему данное объявление не прошло модерацию",
-        reply_markup=None,
-    )
+        await call.message.edit_text(
+            "Напишите причину, почему данное объявление не прошло модерацию",
+            reply_markup=None,
+        )
+    except Exception as e:
+        await call.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementModerationState.message)
@@ -597,16 +600,19 @@ async def process_moderation_deny_message(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    data = await state.get_data()
-    user = data.pop("user")
-    advertisement = data.pop("advertisement")
+    try:
+        data = await state.get_data()
+        user = data.pop("user")
+        advertisement = data.pop("advertisement")
 
-    await message.bot.send_message(
-        chat_id=user.tg_chat_id,
-        text=f"Объявление <b>{advertisement.name}</b> не прошло модерацию",
-    )
-    await message.bot.send_message(chat_id=user.tg_chat_id, text=message.text)
-    await state.clear()
+        await message.bot.send_message(
+            chat_id=user.tg_chat_id,
+            text=f"Объявление <b>{advertisement.name}</b> не прошло модерацию",
+        )
+        await message.bot.send_message(chat_id=user.tg_chat_id, text=message.text)
+        await state.clear()
+    except Exception as e:
+        await call.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.callback_query(F.data.startswith("rg_advertisement_delete"))
