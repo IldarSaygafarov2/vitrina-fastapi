@@ -612,7 +612,7 @@ async def process_moderation_deny_message(
         await message.bot.send_message(chat_id=user.tg_chat_id, text=message.text)
         await state.clear()
     except Exception as e:
-        await call.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.callback_query(F.data.startswith("rg_advertisement_delete"))
