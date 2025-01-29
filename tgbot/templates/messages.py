@@ -22,8 +22,9 @@ ID: {advertisement.unique_id}
 @{advertisement.user.tg_username}
 {advertisement.user.phone_number} {advertisement.user.first_name}
 
-А если вы хотите купить квартиру, переходите в канал с Продажей 👇
-@ivitrinauz
+А если вы хотите купить квартиру, переходите на наш удобный сайт 👇
+
+<a href='https://ivitrina-nedvizhimosti.com/'>📱 НАШ САЙТ</a>
 """
 
 
@@ -46,7 +47,9 @@ ID: {advertisement.unique_id}
 Подробности по телефону: {advertisement.user.phone_number} {advertisement.user.first_name}
 @{advertisement.user.tg_username}
 
-<a href='https://t.me/ivitrinauz'>📱 ПРОДАЖА НЕДВИЖИМОСТИ</a>
+Выберите квартиру на удобном сайте👇
+
+<a href='https://ivitrina-nedvizhimosti.com/'>📱 НАШ САЙТ</a>
 
 <a href='https://t.me/vitrinanedvizhimosti'>📱 АРЕНДА НЕДВИЖИМОСТИ</a>
 
