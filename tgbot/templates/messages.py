@@ -22,7 +22,7 @@ ID: {advertisement.unique_id}
 @{advertisement.user.tg_username}
 {advertisement.user.phone_number} {advertisement.user.first_name}
 
-А если вы хотите купить квартиру, переходите на наш удобный сайт 👇
+Больше вариантов в нашей удобной платформе, жмите и переходите на сайт 👇
 
 <a href='https://ivitrina-nedvizhimosti.com/'>📱 НАШ САЙТ</a>
 """
