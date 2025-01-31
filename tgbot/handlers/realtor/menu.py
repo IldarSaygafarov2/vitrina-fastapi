@@ -60,14 +60,17 @@ async def show_realtor_advertisements(
 ):
     await call.answer()
 
-    realtor_chat_id = int(call.data.split(":")[-1])
-    user = await repo.users.get_user_by_chat_id(tg_chat_id=realtor_chat_id)
+    try:
+        realtor_chat_id = int(call.data.split(":")[-1])
+        user = await repo.users.get_user_by_chat_id(tg_chat_id=realtor_chat_id)
 
-    advertisements = await repo.advertisements.get_user_advertisements(user_id=user.id)
-    await call.message.edit_text(
-        text="Ваши объявления",
-        reply_markup=realtor_advertisements_kb(advertisements=advertisements),
-    )
+        advertisements = await repo.advertisements.get_user_advertisements(user_id=user.id)
+        await call.message.edit_text(
+            text="Ваши объявления",
+            reply_markup=realtor_advertisements_kb(advertisements=advertisements),
+        )
+    except Exception as e:
+        await call.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.callback_query(F.data.startswith("realtor_advertisement"))
