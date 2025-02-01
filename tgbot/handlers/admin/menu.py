@@ -119,6 +119,12 @@ async def get_realtor(
 
     realtor = await repo.users.get_user_by_id(user_id=realtor_id)
 
+    advertisements = await repo.advertisements.get_user_advertisements(
+        user_id=realtor.id
+    )
+
+    await state.update_data(advertisements=advertisements)
+
     realtor_info = get_realtor_info(realtor)
 
     profile_image = (
@@ -174,6 +180,8 @@ async def get_realtor_advertisements(
     state: FSMContext,
 ):
     await call.answer()
+
+    # state_data = await state.get_data()
 
     realtor_id = int(call.data.split(":")[-1])
     realtor = await repo.users.get_user_by_id(user_id=realtor_id)

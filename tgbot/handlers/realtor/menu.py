@@ -57,6 +57,7 @@ async def create_advertisement(
 async def show_realtor_advertisements(
     call: CallbackQuery,
     repo: "RequestsRepo",
+    state: FSMContext,
 ):
     await call.answer()
 
@@ -64,7 +65,10 @@ async def show_realtor_advertisements(
         realtor_chat_id = int(call.data.split(":")[-1])
         user = await repo.users.get_user_by_chat_id(tg_chat_id=realtor_chat_id)
 
-        advertisements = await repo.advertisements.get_user_advertisements(user_id=user.id)
+        advertisements = await repo.advertisements.get_user_advertisements(
+            user_id=user.id
+        )
+        await state.update_data(advertisements=advertisements)
         await call.message.edit_text(
             text="Ваши объявления",
             reply_markup=realtor_advertisements_kb(advertisements=advertisements),

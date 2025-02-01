@@ -96,9 +96,15 @@ def repair_type_kb(repair_types: dict):
 def realtor_advertisements_kb(
     advertisements: list["Advertisement"],
     for_admin: bool = False,
+    start: int = 0,
+    finish: int = 15,
+    page: int = 1,
 ):
     kb = InlineKeyboardBuilder()
-    for idx, advertisement in enumerate(advertisements, start=1):
+
+    total_pages = len(advertisements) // 15 + 1
+
+    for idx, advertisement in enumerate(advertisements[start:finish], start=start):
         callback = (
             f"realtor_advertisement:{advertisement.id}"
             if not for_admin
@@ -108,8 +114,20 @@ def realtor_advertisements_kb(
             text=f"{idx}. {advertisement.unique_id}. {advertisement.name}.",
             callback_data=callback,
         )
-    kb.button(text="На главную", callback_data="return_home")
+
     kb.adjust(1)
+
+    kb.row(
+        InlineKeyboardButton(
+            text="<", callback_data=f"prev_page:{start}:{finish}:{page}"
+        ),
+        InlineKeyboardButton(text=f"{page}/{total_pages}", callback_data="do_nothing"),
+        InlineKeyboardButton(
+            text=">", callback_data=f"next_page:{start}:{finish}:{page}:{total_pages}"
+        ),
+    )
+    kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
+
     return kb.as_markup()
 
 
