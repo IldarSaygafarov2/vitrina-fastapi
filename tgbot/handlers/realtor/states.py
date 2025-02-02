@@ -534,18 +534,21 @@ async def get_floor_to(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
+    try:
+        state_data = await state.get_data()
+        cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.answer(
-        text="Укажите тип ремонта",
-        reply_markup=repair_type_kb(REPAIR_TYPE_MAPPING),
-    )
+        cur_message = await cur_message.answer(
+            text="Укажите тип ремонта",
+            reply_markup=repair_type_kb(REPAIR_TYPE_MAPPING),
+        )
 
-    floor_to = filter_digits(message.text)
+        floor_to = filter_digits(message.text)
 
-    await state.update_data(floor_to=floor_to, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.repair_type)
+        await state.update_data(floor_to=floor_to, cur_message=cur_message)
+        await state.set_state(AdvertisementCreationState.repair_type)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.callback_query(
@@ -559,161 +562,170 @@ async def get_repair_type(
 ):
     await call.answer()
 
-    unique_id = generate_code()
-    _, repair_type = call.data.split(":")
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
+    try:
+        unique_id = generate_code()
+        _, repair_type = call.data.split(":")
+        state_data = await state.get_data()
+        cur_message = state_data.pop("cur_message")
 
-    operation_type = state_data.get("operation_type")
-    category = state_data.get("category")
-    district = state_data.get("district")
+        operation_type = state_data.get("operation_type")
+        category = state_data.get("category")
+        district = state_data.get("district")
 
-    title = state_data.get("title")
-    title_uz = state_data.get("title_uz")
+        title = state_data.get("title")
+        title_uz = state_data.get("title_uz")
 
-    description = state_data.get("description")
-    description_uz = state_data.get("description_uz")
+        description = state_data.get("description")
+        description_uz = state_data.get("description_uz")
 
-    address = state_data.get("address")
-    address_uz = state_data.get("address_uz")
+        address = state_data.get("address")
+        address_uz = state_data.get("address_uz")
 
-    property_type = state_data.get("property_type")
-    creation_year = state_data.get("creation_year", 0)
-    price = state_data.get("price")
-    is_studio = state_data.get("is_studio")
+        property_type = state_data.get("property_type")
+        creation_year = state_data.get("creation_year", 0)
+        price = state_data.get("price")
+        is_studio = state_data.get("is_studio")
 
-    rooms_quantity = state_data.get("rooms_quantity")
+        rooms_quantity = state_data.get("rooms_quantity")
 
-    quadrature = state_data.get("quadrature")
+        quadrature = state_data.get("quadrature")
 
-    floor_from = state_data.get("floor_from")
-    floor_to = state_data.get("floor_to")
-    house_quadrature_from = state_data.get("house_quadrature_from", 0)
-    house_quadrature_to = state_data.get("house_quadrature_to", 0)
+        floor_from = state_data.get("floor_from")
+        floor_to = state_data.get("floor_to")
+        house_quadrature_from = state_data.get("house_quadrature_from", 0)
+        house_quadrature_to = state_data.get("house_quadrature_to", 0)
 
-    user_chat_id = call.message.chat.id
-    user = await repo.users.get_user_by_chat_id(user_chat_id)
+        user_chat_id = call.message.chat.id
+        user = await repo.users.get_user_by_chat_id(user_chat_id)
 
-    operation_type_status = OperationType(OPERATION_TYPE_MAPPING[operation_type])
-    operation_type_status_uz = OperationTypeUz(
-        OPERATION_TYPE_MAPPING_UZ[operation_type]
-    )
-    property_type_status = PropertyType(PROPERTY_TYPE_MAPPING[property_type])
-    property_type_status_uz = PropertyTypeUz(PROPERTY_TYPE_MAPPING_UZ[property_type])
-    repair_type_status = RepairType(REPAIR_TYPE_MAPPING[repair_type])
-    repair_type_status_uz = RepairTypeUz(REPAIR_TYPE_MAPPING_UZ[repair_type])
+        operation_type_status = OperationType(OPERATION_TYPE_MAPPING[operation_type])
+        operation_type_status_uz = OperationTypeUz(
+            OPERATION_TYPE_MAPPING_UZ[operation_type]
+        )
+        property_type_status = PropertyType(PROPERTY_TYPE_MAPPING[property_type])
+        property_type_status_uz = PropertyTypeUz(
+            PROPERTY_TYPE_MAPPING_UZ[property_type]
+        )
+        repair_type_status = RepairType(REPAIR_TYPE_MAPPING[repair_type])
+        repair_type_status_uz = RepairTypeUz(REPAIR_TYPE_MAPPING_UZ[repair_type])
 
-    photos = state_data.get("photos")
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    owner_phone_number = state_data.get("owner_phone_number")
+        photos = state_data.get("photos")
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        owner_phone_number = state_data.get("owner_phone_number")
 
-    advertisements_folder = upload_dir / "advertisements" / date_str
-    advertisements_folder.mkdir(parents=True, exist_ok=True)
-    files_locations = []
+        advertisements_folder = upload_dir / "advertisements" / date_str
+        advertisements_folder.mkdir(parents=True, exist_ok=True)
+        files_locations = []
 
-    # preview
-    preview_file_id = state_data.get("preview_file_id")
-    preview_file_obj = await call.bot.get_file(preview_file_id)
-    preview_filename = preview_file_obj.file_path.split("/")[-1]
-    preview_file = await call.bot.download_file(preview_file_obj.file_path)
-    preview_file_location = advertisements_folder / preview_filename
-    with open(preview_file_location, "wb") as f:
-        shutil.copyfileobj(preview_file, f)
+        # preview
+        preview_file_id = state_data.get("preview_file_id")
+        preview_file_obj = await call.bot.get_file(preview_file_id)
+        preview_filename = preview_file_obj.file_path.split("/")[-1]
+        preview_file = await call.bot.download_file(preview_file_obj.file_path)
+        preview_file_location = advertisements_folder / preview_filename
+        with open(preview_file_location, "wb") as f:
+            shutil.copyfileobj(preview_file, f)
 
-    # other photos
-    for photo_id in photos:
-        file_obj = await call.bot.get_file(photo_id)
-        filename = file_obj.file_path.split("/")[-1]
-        file = await call.bot.download_file(file_obj.file_path)
+        # other photos
+        for photo_id in photos:
+            file_obj = await call.bot.get_file(photo_id)
+            filename = file_obj.file_path.split("/")[-1]
+            file = await call.bot.download_file(file_obj.file_path)
 
-        file_location = advertisements_folder / filename
-        files_locations.append((file_location, photo_id))
+            file_location = advertisements_folder / filename
+            files_locations.append((file_location, photo_id))
 
-        with open(file_location, "wb") as f:
-            shutil.copyfileobj(file, f)
+            with open(file_location, "wb") as f:
+                shutil.copyfileobj(file, f)
 
-    new_advertisement = await repo.advertisements.create_advertisement(
-        unique_id=unique_id,
-        operation_type=operation_type_status,
-        category=category.id,
-        district=district.id,
-        title=title,
-        title_uz=title_uz,
-        description=description,
-        description_uz=description_uz,
-        preview=str(preview_file_location),
-        address=address,
-        address_uz=address_uz,
-        property_type=property_type_status,
-        creation_year=int(creation_year),
-        price=int(price),
-        is_studio=is_studio,
-        rooms_quantity=int(rooms_quantity) if rooms_quantity is not None else 0,
-        quadrature=int(quadrature),
-        floor_from=int(floor_from),
-        floor_to=int(floor_to),
-        house_quadrature_from=int(house_quadrature_from),
-        house_quadrature_to=int(house_quadrature_to),
-        repair_type=repair_type_status,
-        operation_type_uz=operation_type_status_uz,
-        property_type_uz=property_type_status_uz,
-        repair_type_uz=repair_type_status_uz,
-        user=user.id,
-        owner_phone_number=owner_phone_number,
-    )
-
-    advertisement_message = realtor_advertisement_completed_text(new_advertisement)
-
-    # await repo.advertisements.update_advertisement_preview(
-    #     advertisement_id=new_advertisement.id,
-    #     url=str(preview_file_location),
-    # )
-
-    for file_location, photo_id in files_locations:
-        await repo.advertisement_images.insert_advertisement_image(
-            advertisement_id=new_advertisement.id,
-            url=str(file_location),
-            tg_image_hash=photo_id,
+        new_advertisement = await repo.advertisements.create_advertisement(
+            unique_id=unique_id,
+            operation_type=operation_type_status,
+            category=category.id,
+            district=district.id,
+            title=title,
+            title_uz=title_uz,
+            description=description,
+            description_uz=description_uz,
+            preview=str(preview_file_location),
+            address=address,
+            address_uz=address_uz,
+            property_type=property_type_status,
+            creation_year=int(creation_year),
+            price=int(price),
+            is_studio=is_studio,
+            rooms_quantity=int(rooms_quantity) if rooms_quantity is not None else 0,
+            quadrature=int(quadrature),
+            floor_from=int(floor_from),
+            floor_to=int(floor_to),
+            house_quadrature_from=int(house_quadrature_from),
+            house_quadrature_to=int(house_quadrature_to),
+            repair_type=repair_type_status,
+            operation_type_uz=operation_type_status_uz,
+            property_type_uz=property_type_status_uz,
+            repair_type_uz=repair_type_status_uz,
+            user=user.id,
+            owner_phone_number=owner_phone_number,
         )
 
-    media_group: list[InputMediaPhoto] = [
-        (
-            InputMediaPhoto(media=img, caption=advertisement_message)
-            if i == 0
-            else InputMediaPhoto(media=img)
+        advertisement_message = realtor_advertisement_completed_text(new_advertisement)
+
+        # await repo.advertisements.update_advertisement_preview(
+        #     advertisement_id=new_advertisement.id,
+        #     url=str(preview_file_location),
+        # )
+
+        for file_location, photo_id in files_locations:
+            await repo.advertisement_images.insert_advertisement_image(
+                advertisement_id=new_advertisement.id,
+                url=str(file_location),
+                tg_image_hash=photo_id,
+            )
+
+        media_group: list[InputMediaPhoto] = [
+            (
+                InputMediaPhoto(media=img, caption=advertisement_message)
+                if i == 0
+                else InputMediaPhoto(media=img)
+            )
+            for i, img in enumerate(photos)
+        ]
+
+        await cur_message.delete()
+        advertisement_message = await call.message.answer_media_group(media=media_group)
+
+        group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
+
+        for director in group_directors:
+            try:
+                print(director.tg_chat_id, new_advertisement.user.added_by)
+                if (
+                    director.tg_chat_id
+                    and director.tg_chat_id == new_advertisement.user.added_by
+                ):
+                    print("sent_to", director.tg_username)
+                    realtor_fullname = f"{new_advertisement.user.first_name} {new_advertisement.user.lastname}"
+                    print(realtor_fullname)
+                    await call.bot.send_message(
+                        director.tg_chat_id,
+                        f"Риелтор: {realtor_fullname} добавил новое объявление",
+                    )
+                    await call.bot.send_media_group(
+                        director.tg_chat_id, media=media_group
+                    )
+                    await call.bot.send_message(
+                        director.tg_chat_id,
+                        f"Объявление прошло модерацию?",
+                        reply_markup=advertisement_moderation_kb(new_advertisement.id),
+                    )
+            except Exception as e:
+                print(e)
+
+        await call.message.answer(
+            text="Выберите действие над этим объявлением",
+            reply_markup=advertisement_actions_kb(
+                advertisement_id=new_advertisement.id
+            ),
         )
-        for i, img in enumerate(photos)
-    ]
-
-    await cur_message.delete()
-    advertisement_message = await call.message.answer_media_group(media=media_group)
-
-    group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
-
-    for director in group_directors:
-        try:
-            print(director.tg_chat_id, new_advertisement.user.added_by)
-            if (
-                director.tg_chat_id
-                and director.tg_chat_id == new_advertisement.user.added_by
-            ):
-                print("sent_to", director.tg_username)
-                realtor_fullname = f"{new_advertisement.user.first_name} {new_advertisement.user.lastname}"
-                print(realtor_fullname)
-                await call.bot.send_message(
-                    director.tg_chat_id,
-                    f"Риелтор: {realtor_fullname} добавил новое объявление",
-                )
-                await call.bot.send_media_group(director.tg_chat_id, media=media_group)
-                await call.bot.send_message(
-                    director.tg_chat_id,
-                    f"Объявление прошло модерацию?",
-                    reply_markup=advertisement_moderation_kb(new_advertisement.id),
-                )
-        except Exception as e:
-            print(e)
-
-    await call.message.answer(
-        text="Выберите действие над этим объявлением",
-        reply_markup=advertisement_actions_kb(advertisement_id=new_advertisement.id),
-    )
+    except Exception as e:
+        await call.bot.send_message(chat_id=5090318438, text=str(e))
