@@ -648,8 +648,8 @@ async def get_repair_type(
 
         floor_from = state_data.get("floor_from")
         floor_to = state_data.get("floor_to")
-        house_quadrature_from = state_data.get("house_quadrature_from", 0)
-        house_quadrature_to = state_data.get("house_quadrature_to", 0)
+        house_quadrature_from = state_data.get("house_quadrature_from", "0")
+        house_quadrature_to = state_data.get("house_quadrature_to", "0")
 
         user_chat_id = call.message.chat.id
         user = await repo.users.get_user_by_chat_id(user_chat_id)
