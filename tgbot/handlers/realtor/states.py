@@ -189,12 +189,17 @@ async def get_title_uz(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    data = await state.get_data()
-    title_message = data.pop("title_message")
+    try:
+        data = await state.get_data()
+        title_message = data.pop("title_message")
 
-    description_text = await title_message.answer(text=get_description_text())
-    await state.update_data(title_uz=message.text, description_text=description_text)
-    await state.set_state(AdvertisementCreationState.description)
+        description_text = await title_message.answer(text=get_description_text())
+        await state.update_data(
+            title_uz=message.text, description_text=description_text
+        )
+        await state.set_state(AdvertisementCreationState.description)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.description)
@@ -203,18 +208,22 @@ async def get_description_set_description_uz(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    current_data = await state.get_data()
-    description_text = current_data.pop("description_text")
+    try:
 
-    description_uz_text = await description_text.answer(
-        text=get_description_text(lang="uz"),
-    )
+        current_data = await state.get_data()
+        description_text = current_data.pop("description_text")
 
-    await state.update_data(
-        description=message.text,
-        description_uz_text=description_uz_text,
-    )
-    await state.set_state(AdvertisementCreationState.description_uz)
+        description_uz_text = await description_text.answer(
+            text=get_description_text(lang="uz"),
+        )
+
+        await state.update_data(
+            description=message.text,
+            description_uz_text=description_uz_text,
+        )
+        await state.set_state(AdvertisementCreationState.description_uz)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.description_uz)
@@ -223,19 +232,24 @@ async def get_description_uz(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    data = await state.get_data()
-    description_uz_text = data.pop("description_uz_text")
+    try:
+        data = await state.get_data()
+        description_uz_text = data.pop("description_uz_text")
 
-    districts_text = await description_uz_text.answer(
-        text="""
-        Напишите номер телефона собственника
-        
-        пример: +998901231212
-        """,
-        # reply_markup=districts_kb(districts=districts),
-    )
-    await state.update_data(description_uz=message.text, districts_text=districts_text)
-    await state.set_state(AdvertisementCreationState.owner_phone_number)
+        districts_text = await description_uz_text.answer(
+            text="""
+            Напишите номер телефона собственника
+            
+            пример: +998901231212
+            """,
+            # reply_markup=districts_kb(districts=districts),
+        )
+        await state.update_data(
+            description_uz=message.text, districts_text=districts_text
+        )
+        await state.set_state(AdvertisementCreationState.owner_phone_number)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.owner_phone_number)
@@ -245,15 +259,18 @@ async def get_owner_phone_number(
     state: FSMContext,
 ):
 
-    districts = await repo.districts.get_districts()
+    try:
+        districts = await repo.districts.get_districts()
 
-    await message.answer(
-        text=get_district_text(),
-        reply_markup=districts_kb(districts=districts),
-    )
+        await message.answer(
+            text=get_district_text(),
+            reply_markup=districts_kb(districts=districts),
+        )
 
-    await state.update_data(owner_phone_number=message.text)
-    await state.set_state(AdvertisementCreationState.district)
+        await state.update_data(owner_phone_number=message.text)
+        await state.set_state(AdvertisementCreationState.district)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.callback_query(
@@ -267,19 +284,22 @@ async def get_district_set_address(
 ):
     await call.answer()
 
-    state_data = await state.get_data()
-    current_message = state_data.pop("districts_text")
+    try:
+        state_data = await state.get_data()
+        current_message = state_data.pop("districts_text")
 
-    district_id = int(call.data.split(":")[-1])
-    district = await repo.districts.get_district_by_id(district_id=district_id)
+        district_id = int(call.data.split(":")[-1])
+        district = await repo.districts.get_district_by_id(district_id=district_id)
 
-    cur_message = await current_message.answer(
-        text=get_address_text(district_name=district.name),
-        reply_markup=None,
-    )
+        cur_message = await current_message.answer(
+            text=get_address_text(district_name=district.name),
+            reply_markup=None,
+        )
 
-    await state.update_data(district=district, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.address)
+        await state.update_data(district=district, cur_message=cur_message)
+        await state.set_state(AdvertisementCreationState.address)
+    except Exception as e:
+        await call.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.address)
@@ -288,15 +308,18 @@ async def get_address(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
+    try:
+        state_data = await state.get_data()
+        cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.answer(
-        text=get_address_text_uz(),
-    )
+        cur_message = await cur_message.answer(
+            text=get_address_text_uz(),
+        )
 
-    await state.update_data(address=message.text, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.address_uz)
+        await state.update_data(address=message.text, cur_message=cur_message)
+        await state.set_state(AdvertisementCreationState.address_uz)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.address_uz)
@@ -305,15 +328,18 @@ async def get_address_uz(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
+    try:
+        state_data = await state.get_data()
+        cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.answer(
-        text=get_propety_type_text(),
-        reply_markup=property_type_kb(),
-    )
-    await state.update_data(address_uz=message.text, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.property_type)
+        cur_message = await cur_message.answer(
+            text=get_propety_type_text(),
+            reply_markup=property_type_kb(),
+        )
+        await state.update_data(address_uz=message.text, cur_message=cur_message)
+        await state.set_state(AdvertisementCreationState.property_type)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.callback_query(
@@ -327,25 +353,32 @@ async def get_property_type(
 ):
     await call.answer()
 
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
+    try:
+        state_data = await state.get_data()
+        cur_message = state_data.pop("cur_message")
 
-    _, property_type = call.data.split(":")
-    property_type_name = PROPERTY_TYPE_MAPPING[property_type]
+        _, property_type = call.data.split(":")
+        property_type_name = PROPERTY_TYPE_MAPPING[property_type]
 
-    if property_type == "new":
-        cur_message = await cur_message.answer(
-            text=creation_year_text(property_type=property_type_name),
-        )
-        await state.update_data(property_type=property_type, cur_message=cur_message)
-        await state.set_state(AdvertisementCreationState.creation_year)
+        if property_type == "new":
+            cur_message = await cur_message.answer(
+                text=creation_year_text(property_type=property_type_name),
+            )
+            await state.update_data(
+                property_type=property_type, cur_message=cur_message
+            )
+            await state.set_state(AdvertisementCreationState.creation_year)
 
-    if property_type == "old":
-        cur_message = await cur_message.answer(
-            text=price_text(property_type=property_type_name)
-        )
-        await state.update_data(property_type=property_type, cur_message=cur_message)
-        await state.set_state(AdvertisementCreationState.price)
+        if property_type == "old":
+            cur_message = await cur_message.answer(
+                text=price_text(property_type=property_type_name)
+            )
+            await state.update_data(
+                property_type=property_type, cur_message=cur_message
+            )
+            await state.set_state(AdvertisementCreationState.price)
+    except Exception as e:
+        await call.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.creation_year)
@@ -354,18 +387,21 @@ async def get_creation_year(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
+    try:
+        state_data = await state.get_data()
+        cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.answer(
-        text="Напишите цену для данного объявления",
-    )
+        cur_message = await cur_message.answer(
+            text="Напишите цену для данного объявления",
+        )
 
-    creation_year = filter_digits(message.text)
-    print(f"{creation_year=}")
+        creation_year = filter_digits(message.text)
+        print(f"{creation_year=}")
 
-    await state.update_data(creation_year=creation_year, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.price)
+        await state.update_data(creation_year=creation_year, cur_message=cur_message)
+        await state.set_state(AdvertisementCreationState.price)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.price)
@@ -374,18 +410,21 @@ async def get_price(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
+    try:
+        state_data = await state.get_data()
+        cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.answer(
-        text=is_studio_text(),
-        reply_markup=is_studio_kb(),
-    )
+        cur_message = await cur_message.answer(
+            text=is_studio_text(),
+            reply_markup=is_studio_kb(),
+        )
 
-    price = filter_digits(message.text)
+        price = filter_digits(message.text)
 
-    await state.update_data(price=price, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.is_studio)
+        await state.update_data(price=price, cur_message=cur_message)
+        await state.set_state(AdvertisementCreationState.is_studio)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.callback_query(
@@ -398,23 +437,28 @@ async def get_is_studio(
     state: FSMContext,
 ):
     await call.answer()
-    state_data = await state.get_data()
+    try:
+        state_data = await state.get_data()
 
-    cur_message = state_data.pop("cur_message")
-    _, is_studio_state = call.data.split(":")
+        cur_message = state_data.pop("cur_message")
+        _, is_studio_state = call.data.split(":")
 
-    is_studio = True if is_studio_state == "yes" else False
+        is_studio = True if is_studio_state == "yes" else False
 
-    if is_studio:
-        cur_message = await cur_message.answer(text="Квадратура: ", reply_markup=None)
-        await state.update_data(is_studio=is_studio, cur_message=cur_message)
-        await state.set_state(AdvertisementCreationState.quadrature)
-    else:
-        cur_message = await cur_message.answer(
-            text="Количество комнат: ", reply_markup=None
-        )
-        await state.update_data(is_studio=is_studio, cur_message=cur_message)
-        await state.set_state(AdvertisementCreationState.rooms_quantity)
+        if is_studio:
+            cur_message = await cur_message.answer(
+                text="Квадратура: ", reply_markup=None
+            )
+            await state.update_data(is_studio=is_studio, cur_message=cur_message)
+            await state.set_state(AdvertisementCreationState.quadrature)
+        else:
+            cur_message = await cur_message.answer(
+                text="Количество комнат: ", reply_markup=None
+            )
+            await state.update_data(is_studio=is_studio, cur_message=cur_message)
+            await state.set_state(AdvertisementCreationState.rooms_quantity)
+    except Exception as e:
+        await call.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.rooms_quantity)
@@ -423,26 +467,31 @@ async def get_rooms_to(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
+    try:
+        state_data = await state.get_data()
+        cur_message = state_data.pop("cur_message")
 
-    category = state_data.get("category")
+        category = state_data.get("category")
 
-    if category.slug == "doma":
+        if category.slug == "doma":
+            cur_message = await cur_message.answer(
+                text="Площадь участка от: ",
+            )
+            await state.update_data(
+                rooms_quantity=message.text, cur_message=cur_message
+            )
+            await state.set_state(AdvertisementCreationState.house_quadrature_from)
+            return
+
         cur_message = await cur_message.answer(
-            text="Площадь участка от: ",
+            text="Квадратура: ",
         )
-        await state.update_data(rooms_quantity=message.text, cur_message=cur_message)
-        await state.set_state(AdvertisementCreationState.house_quadrature_from)
-        return
 
-    cur_message = await cur_message.answer(
-        text="Квадратура: ",
-    )
-
-    rooms = filter_digits(message.text)
-    await state.update_data(rooms_quantity=rooms, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.quadrature)
+        rooms = filter_digits(message.text)
+        await state.update_data(rooms_quantity=rooms, cur_message=cur_message)
+        await state.set_state(AdvertisementCreationState.quadrature)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.house_quadrature_from)
@@ -451,18 +500,21 @@ async def get_house_quadrature_from(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    state_data = await state.get_data()
-    cur_message = state_data.get("cur_message")
+    try:
+        state_data = await state.get_data()
+        cur_message = state_data.get("cur_message")
 
-    cur_message = await cur_message.answer(
-        text="Площадь участка до: ",
-    )
+        cur_message = await cur_message.answer(
+            text="Площадь участка до: ",
+        )
 
-    await state.update_data(
-        house_quadrature_from=message.text,
-        cur_message=cur_message,
-    )
-    await state.set_state(AdvertisementCreationState.house_quadrature_to)
+        await state.update_data(
+            house_quadrature_from=message.text,
+            cur_message=cur_message,
+        )
+        await state.set_state(AdvertisementCreationState.house_quadrature_to)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.house_quadrature_to)
@@ -471,18 +523,21 @@ async def get_house_quadrature_to(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    state_data = await state.get_data()
-    cur_message = state_data.get("cur_message")
+    try:
+        state_data = await state.get_data()
+        cur_message = state_data.get("cur_message")
 
-    cur_message = await cur_message.answer(
-        text="Квадратура: ",
-    )
+        cur_message = await cur_message.answer(
+            text="Квадратура: ",
+        )
 
-    await state.update_data(
-        house_quadrature_to=message.text,
-        cur_message=cur_message,
-    )
-    await state.set_state(AdvertisementCreationState.quadrature)
+        await state.update_data(
+            house_quadrature_to=message.text,
+            cur_message=cur_message,
+        )
+        await state.set_state(AdvertisementCreationState.quadrature)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.quadrature)
@@ -491,18 +546,20 @@ async def get_quadrature(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
+    try:
+        state_data = await state.get_data()
+        cur_message = state_data.pop("cur_message")
 
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
+        cur_message = await cur_message.answer(
+            text="Этаж от: ",
+        )
 
-    cur_message = await cur_message.answer(
-        text="Этаж от: ",
-    )
+        quadrature = filter_digits(message.text)
 
-    quadrature = filter_digits(message.text)
-
-    await state.update_data(quadrature=quadrature, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.floor_from)
+        await state.update_data(quadrature=quadrature, cur_message=cur_message)
+        await state.set_state(AdvertisementCreationState.floor_from)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.floor_from)
@@ -511,17 +568,20 @@ async def get_floor_from(
     repo: "RequestsRepo",
     state: FSMContext,
 ):
-    state_data = await state.get_data()
-    cur_message = state_data.pop("cur_message")
+    try:
+        state_data = await state.get_data()
+        cur_message = state_data.pop("cur_message")
 
-    cur_message = await cur_message.answer(
-        text="Этаж до:",
-    )
+        cur_message = await cur_message.answer(
+            text="Этаж до:",
+        )
 
-    floor_from = filter_digits(message.text)
+        floor_from = filter_digits(message.text)
 
-    await state.update_data(floor_from=floor_from, cur_message=cur_message)
-    await state.set_state(AdvertisementCreationState.floor_to)
+        await state.update_data(floor_from=floor_from, cur_message=cur_message)
+        await state.set_state(AdvertisementCreationState.floor_to)
+    except Exception as e:
+        await message.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.message(AdvertisementCreationState.floor_to)
