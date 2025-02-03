@@ -458,10 +458,8 @@ async def get_house_quadrature_from(
         text="Площадь участка до: ",
     )
 
-    house_quadrature_from = filter_digits(message.text)
-
     await state.update_data(
-        house_quadrature_from=house_quadrature_from,
+        house_quadrature_from=message.text,
         cur_message=cur_message,
     )
     await state.set_state(AdvertisementCreationState.house_quadrature_to)
@@ -480,10 +478,8 @@ async def get_house_quadrature_to(
         text="Квадратура: ",
     )
 
-    house_quadrature_to = filter_digits(message.text)
-
     await state.update_data(
-        house_quadrature_to=house_quadrature_to,
+        house_quadrature_to=message.text,
         cur_message=cur_message,
     )
     await state.set_state(AdvertisementCreationState.quadrature)
@@ -658,8 +654,8 @@ async def get_repair_type(
             quadrature=int(quadrature),
             floor_from=int(floor_from),
             floor_to=int(floor_to),
-            house_quadrature_from=int(house_quadrature_from),
-            house_quadrature_to=int(house_quadrature_to),
+            house_quadrature_from=house_quadrature_from,
+            house_quadrature_to=house_quadrature_to,
             repair_type=repair_type_status,
             operation_type_uz=operation_type_status_uz,
             property_type_uz=property_type_status_uz,

@@ -29,6 +29,11 @@ ID: {advertisement.unique_id}
 
 
 def buy_channel_advertisement_message(advertisement: Advertisement):
+    house_quadrature = (
+        f"Общая площадь - {advertisement.house_quadrature_from} соток"
+        if advertisement.category.slug == "doma"
+        else ""
+    )
     return f"""
 {advertisement.name}
 
@@ -36,6 +41,7 @@ def buy_channel_advertisement_message(advertisement: Advertisement):
 
 Комнат - {advertisement.rooms_quantity} / Площадь - {advertisement.quadrature} кв.м
 Этаж - {advertisement.floor_from} / Этажность - {advertisement.floor_to}
+{house_quadrature}
 
 Описание - {advertisement.repair_type.value}
 {advertisement.description}
