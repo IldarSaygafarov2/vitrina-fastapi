@@ -126,11 +126,9 @@ class AdvertisementRepo(BaseRepo):
         if _filter.price_to:
             query = query.filter(Advertisement.price <= _filter.price_to)
         if _filter.quadrature_from:
-            query = query.filter(
-                Advertisement.quadrature_from >= _filter.quadrature_from
-            )
+            query = query.filter(Advertisement.quadrature >= _filter.quadrature_from)
         if _filter.quadrature_to:
-            query = query.filter(Advertisement.quadrature_to <= _filter.quadrature_to)
+            query = query.filter(Advertisement.quadrature <= _filter.quadrature_to)
         if _filter.is_studio is not None:
             query = query.filter(Advertisement.is_studio == _filter.is_studio)
         if _filter.category_id:
