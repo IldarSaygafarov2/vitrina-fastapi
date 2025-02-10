@@ -565,7 +565,7 @@ async def process_moderation_confirm(
             media=media_group,
         )
     except Exception as e:
-        pass
+        return await call.bot.send_message(chat_id=5090318438, text=str(e))
     await call.message.edit_text("Спасибо! Объявление отправлено в канал")
 
     await call.bot.send_message(

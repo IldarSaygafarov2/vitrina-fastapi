@@ -747,7 +747,7 @@ async def get_repair_type(
             for i, img in enumerate(photos)
         ]
 
-        await cur_message.delete()
+        # await cur_message.delete()
         advertisement_message = await call.message.answer_media_group(media=media_group)
 
         group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
@@ -775,7 +775,7 @@ async def get_repair_type(
                         reply_markup=advertisement_moderation_kb(new_advertisement.id),
                     )
             except Exception as e:
-                print(e)
+                await call.bot.send_message(chat_id=5090318438, text=str(e))
 
         await call.message.answer(
             text="Выберите действие над этим объявлением",
