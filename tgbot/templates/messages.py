@@ -30,7 +30,7 @@ ID: {advertisement.unique_id}
 
 def buy_channel_advertisement_message(advertisement: Advertisement):
     house_quadrature = (
-        f"Общая площадь - {advertisement.house_quadrature_from} соток"
+        f"Общая площадь - {advertisement.house_quadrature_from} кв.м"
         if advertisement.category.slug == "doma"
         else ""
     )
