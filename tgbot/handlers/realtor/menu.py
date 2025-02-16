@@ -91,23 +91,31 @@ async def get_realtor_advertisement_detail(
     advertisement_message = realtor_advertisement_completed_text(
         advertisement=advertisement, lang="uz"
     )
-    photos = [obj.tg_image_hash for obj in advertisement.images]
-    media_group: list[InputMediaPhoto] = [
-        (
-            InputMediaPhoto(media=img, caption=advertisement_message)
-            if i == 0
-            else InputMediaPhoto(media=img)
-        )
-        for i, img in enumerate(photos)
-    ]
+    try:
 
-    await call.message.edit_text(text=advertisement_message)
-    if media_group:
-        await call.message.answer_media_group(media=media_group)
-    await call.message.answer(
-        text="Выберите действие над этим объявлением",
-        reply_markup=advertisement_actions_kb(advertisement_id=advertisement_id),
-    )
+        photos = [obj.tg_image_hash for obj in advertisement.images]
+        media_group: list[InputMediaPhoto] = [
+            (
+                InputMediaPhoto(media=img, caption=advertisement_message)
+                if i == 0
+                else InputMediaPhoto(media=img)
+            )
+            for i, img in enumerate(photos)
+        ]
+
+        await call.message.edit_text(text=advertisement_message)
+        if media_group:
+            await call.message.answer_media_group(media=media_group)
+        await call.message.answer(
+            text="Выберите действие над этим объявлением",
+            reply_markup=advertisement_actions_kb(advertisement_id=advertisement_id),
+        )
+    except Exception as e:
+        error_message = (
+            f"{str(e)}\n{e.__class__.__name__}\nID: {advertisement.unique_id}"
+        )
+
+        await call.bot.send_message(chat_id=5090318438, text=error_message)
 
 
 @router.callback_query(F.data.startswith("advertisement_delete"))
