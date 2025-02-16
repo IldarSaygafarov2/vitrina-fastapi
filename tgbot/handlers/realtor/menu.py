@@ -89,7 +89,7 @@ async def get_realtor_advertisement_detail(
         advertisement_id=advertisement_id
     )
     advertisement_message = realtor_advertisement_completed_text(
-        advertisement=advertisement, lang="uz"
+        advertisement=advertisement,
     )
     try:
 
