@@ -212,32 +212,35 @@ async def get_realtor_advertisement(
     advertisement_message = realtor_advertisement_completed_text(advertisement)
     photos = [obj.tg_image_hash for obj in advertisement.images]
 
-    if all(photos):
-        media_group: list[InputMediaPhoto] = [
-            (
-                InputMediaPhoto(media=img, caption=advertisement_message)
-                if i == 0
-                else InputMediaPhoto(media=img)
+    try:
+        if all(photos):
+            media_group: list[InputMediaPhoto] = [
+                (
+                    InputMediaPhoto(media=img, caption=advertisement_message)
+                    if i == 0
+                    else InputMediaPhoto(media=img)
+                )
+                for i, img in enumerate(photos)
+            ]
+        else:
+            media_group = []
+
+        if media_group:
+            await call.message.answer_media_group(
+                media=media_group,
+                reply_markup=delete_advertisement_kb(advertisement_id),
             )
-            for i, img in enumerate(photos)
-        ]
-    else:
-        media_group = []
+            return await call.message.answer(
+                text="Выберите действие над объявлением",
+                reply_markup=delete_advertisement_kb(advertisement_id),
+            )
 
-    if media_group:
-        await call.message.answer_media_group(
-            media=media_group,
+        return await call.message.edit_text(
+            text=advertisement_message,
             reply_markup=delete_advertisement_kb(advertisement_id),
         )
-        return await call.message.answer(
-            text="Выберите действие над объявлением",
-            reply_markup=delete_advertisement_kb(advertisement_id),
-        )
-
-    return await call.message.edit_text(
-        text=advertisement_message,
-        reply_markup=delete_advertisement_kb(advertisement_id),
-    )
+    except Exception as e:
+        await call.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.callback_query(F.data.startswith("edit_realtor"))
