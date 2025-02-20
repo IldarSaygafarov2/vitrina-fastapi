@@ -57,6 +57,7 @@ async def next_page(
 ):
 
     state_data = await state.get_data()
+    for_admin = state_data.get("for_admin", False)
 
     _, start, finish, page, total_pages = call.data.split(":")
 
@@ -69,6 +70,7 @@ async def next_page(
             start=int(start) + 15,
             finish=int(finish) + 15,
             page=int(page) + 1,
+            for_admin=for_admin,
         )
     )
 
@@ -80,6 +82,7 @@ async def prev_page(
     state: FSMContext,
 ):
     state_data = await state.get_data()
+    for_admin = state_data.get("for_admin", False)
 
     _, start, finish, page = call.data.split(":")
 
@@ -92,5 +95,6 @@ async def prev_page(
             start=int(start) - 15,
             finish=int(finish) - 15,
             page=int(page) - 1,
+            for_admin=for_admin,
         )
     )

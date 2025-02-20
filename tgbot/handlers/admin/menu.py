@@ -189,7 +189,7 @@ async def get_realtor_advertisements(
     advertisements = await repo.advertisements.get_user_advertisements(
         user_id=realtor_id
     )
-
+    await state.update_data(for_admin=True)
     await call.message.delete()
     await call.message.answer(
         text=f"Объявления риелтора: <b>{realtor.first_name} {realtor.lastname}</b>",
