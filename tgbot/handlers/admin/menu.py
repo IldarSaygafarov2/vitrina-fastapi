@@ -240,7 +240,7 @@ async def get_realtor_advertisement(
             reply_markup=delete_advertisement_kb(advertisement_id),
         )
     except Exception as e:
-        await call.bot.send_message(chat_id=5090318438, text=str(e))
+        return await call.bot.send_message(chat_id=5090318438, text=str(e))
 
 
 @router.callback_query(F.data.startswith("edit_realtor"))
