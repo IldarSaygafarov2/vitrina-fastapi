@@ -49,6 +49,7 @@ class AdvertisementDetailDTO(BaseModel):
     description: str
     description_uz: str
     creation_year: Optional[int]
+    created_at: Optional[datetime]
 
     category: Optional[CategoryDTO]
     district: Optional[DistrictDTO]
