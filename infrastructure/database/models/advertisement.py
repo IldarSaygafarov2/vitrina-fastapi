@@ -56,8 +56,8 @@ class Advertisement(Base, IntIdMixin):
 
     owner_phone_number: Mapped[str] = mapped_column(nullable=True)
 
-    house_quadrature_from: Mapped[str] = mapped_column(default="0")
-    house_quadrature_to: Mapped[str] = mapped_column(default="0")
+    house_quadrature_from: Mapped[int] = mapped_column(default=0)
+    house_quadrature_to: Mapped[int] = mapped_column(default=0)
     creation_year: Mapped[int] = mapped_column(default=0)
 
     property_type: Mapped["PropertyType"] = mapped_column(

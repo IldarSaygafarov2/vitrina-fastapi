@@ -477,9 +477,9 @@ async def get_rooms_to(
             cur_message = await cur_message.answer(
                 text="Площадь участка от: ",
             )
-            await state.update_data(
-                rooms_quantity=message.text, cur_message=cur_message
-            )
+            digits = filter_digits(message.text)
+            await state.update_data(rooms_quantity=digits, cur_message=cur_message)
+
             await state.set_state(AdvertisementCreationState.house_quadrature_from)
             return
 
@@ -507,9 +507,9 @@ async def get_house_quadrature_from(
         cur_message = await cur_message.answer(
             text="Площадь участка до: ",
         )
-
+        house_quadrature_from = filter_digits(message.text)
         await state.update_data(
-            house_quadrature_from=message.text,
+            house_quadrature_from=house_quadrature_from,
             cur_message=cur_message,
         )
         await state.set_state(AdvertisementCreationState.house_quadrature_to)
@@ -530,9 +530,9 @@ async def get_house_quadrature_to(
         cur_message = await cur_message.answer(
             text="Квадратура: ",
         )
-
+        house_quadrature_to = filter_digits(message.text)
         await state.update_data(
-            house_quadrature_to=message.text,
+            house_quadrature_to=house_quadrature_to,
             cur_message=cur_message,
         )
         await state.set_state(AdvertisementCreationState.quadrature)
@@ -648,8 +648,8 @@ async def get_repair_type(
 
         floor_from = state_data.get("floor_from")
         floor_to = state_data.get("floor_to")
-        house_quadrature_from = state_data.get("house_quadrature_from", "0")
-        house_quadrature_to = state_data.get("house_quadrature_to", "0")
+        house_quadrature_from = state_data.get("house_quadrature_from", 0)
+        house_quadrature_to = state_data.get("house_quadrature_to", 0)
 
         user_chat_id = call.message.chat.id
         user = await repo.users.get_user_by_chat_id(user_chat_id)
@@ -714,8 +714,8 @@ async def get_repair_type(
             quadrature=int(quadrature),
             floor_from=int(floor_from),
             floor_to=int(floor_to),
-            house_quadrature_from=house_quadrature_from,
-            house_quadrature_to=house_quadrature_to,
+            house_quadrature_from=int(house_quadrature_from),
+            house_quadrature_to=int(house_quadrature_to),
             repair_type=repair_type_status,
             operation_type_uz=operation_type_status_uz,
             property_type_uz=property_type_status_uz,
