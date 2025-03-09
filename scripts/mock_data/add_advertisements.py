@@ -6,10 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.loader import load_config
 from external.db_migrate import clean_json
-from infrastructure.database.models.advertisement import (
-    Advertisement,
-    AdvertisementImage,
-)
+from infrastructure.database.models.advertisement import Advertisement
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
 
@@ -20,7 +17,6 @@ async def add_advertisements(session: AsyncSession):
     repo = RequestsRepo(session)
 
     result = []
-    result_images = []
 
     for adv in advertisements:
         slug = f'{slugify(adv["name"])}-{uuid.uuid4()}'[:30]
