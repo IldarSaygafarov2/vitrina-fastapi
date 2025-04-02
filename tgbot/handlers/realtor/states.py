@@ -19,7 +19,6 @@ from infrastructure.utils.helpers import generate_code
 from tgbot.keyboards.admin.inline import advertisement_moderation_kb
 from tgbot.keyboards.user.inline import (
     advertisement_actions_kb,
-    advertisement_update_kb,
     categories_kb,
     districts_kb,
     is_studio_kb,
@@ -27,7 +26,6 @@ from tgbot.keyboards.user.inline import (
     repair_type_kb,
 )
 from tgbot.misc.constants import (
-    ADVERTISEMENT_UPDATE_FIELDS,
     OPERATION_TYPE_MAPPING,
     OPERATION_TYPE_MAPPING_UZ,
     PROPERTY_TYPE_MAPPING,
@@ -38,7 +36,6 @@ from tgbot.misc.constants import (
 from tgbot.misc.user_states import AdvertisementCreationState
 from tgbot.templates.advertisement_creation import (
     choose_category_text,
-    choose_photos_quantity_text,
     choose_photos_text,
     creation_year_text,
     get_address_text,
