@@ -196,7 +196,7 @@ async def get_title_uz(
         )
         await state.set_state(AdvertisementCreationState.description)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.description)
@@ -220,7 +220,7 @@ async def get_description_set_description_uz(
         )
         await state.set_state(AdvertisementCreationState.description_uz)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.description_uz)
@@ -246,7 +246,7 @@ async def get_description_uz(
         )
         await state.set_state(AdvertisementCreationState.owner_phone_number)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.owner_phone_number)
@@ -267,7 +267,7 @@ async def get_owner_phone_number(
         await state.update_data(owner_phone_number=message.text)
         await state.set_state(AdvertisementCreationState.district)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.callback_query(
@@ -296,7 +296,7 @@ async def get_district_set_address(
         await state.update_data(district=district, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.address)
     except Exception as e:
-        await call.bot.send_message(chat_id=5090318438, text=str(e))
+        await call.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.address)
@@ -316,7 +316,7 @@ async def get_address(
         await state.update_data(address=message.text, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.address_uz)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.address_uz)
@@ -336,7 +336,7 @@ async def get_address_uz(
         await state.update_data(address_uz=message.text, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.property_type)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.callback_query(
@@ -375,7 +375,7 @@ async def get_property_type(
             )
             await state.set_state(AdvertisementCreationState.price)
     except Exception as e:
-        await call.bot.send_message(chat_id=5090318438, text=str(e))
+        await call.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.creation_year)
@@ -398,7 +398,7 @@ async def get_creation_year(
         await state.update_data(creation_year=creation_year, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.price)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.price)
@@ -421,7 +421,7 @@ async def get_price(
         await state.update_data(price=price, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.is_studio)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.callback_query(
@@ -455,7 +455,7 @@ async def get_is_studio(
             await state.update_data(is_studio=is_studio, cur_message=cur_message)
             await state.set_state(AdvertisementCreationState.rooms_quantity)
     except Exception as e:
-        await call.bot.send_message(chat_id=5090318438, text=str(e))
+        await call.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.rooms_quantity)
@@ -488,7 +488,7 @@ async def get_rooms_to(
         await state.update_data(rooms_quantity=rooms, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.quadrature)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.house_quadrature_from)
@@ -511,7 +511,7 @@ async def get_house_quadrature_from(
         )
         await state.set_state(AdvertisementCreationState.house_quadrature_to)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.house_quadrature_to)
@@ -534,7 +534,7 @@ async def get_house_quadrature_to(
         )
         await state.set_state(AdvertisementCreationState.quadrature)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.quadrature)
@@ -556,7 +556,7 @@ async def get_quadrature(
         await state.update_data(quadrature=quadrature, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.floor_from)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.floor_from)
@@ -578,7 +578,7 @@ async def get_floor_from(
         await state.update_data(floor_from=floor_from, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.floor_to)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.message(AdvertisementCreationState.floor_to)
@@ -601,7 +601,7 @@ async def get_floor_to(
         await state.update_data(floor_to=floor_to, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.repair_type)
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
 
 @router.callback_query(
@@ -772,7 +772,7 @@ async def get_repair_type(
                         reply_markup=advertisement_moderation_kb(new_advertisement.id),
                     )
             except Exception as e:
-                await call.bot.send_message(chat_id=5090318438, text=str(e))
+                await call.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
 
         await call.message.answer(
             text="Выберите действие над этим объявлением",
@@ -781,4 +781,4 @@ async def get_repair_type(
             ),
         )
     except Exception as e:
-        await call.bot.send_message(chat_id=5090318438, text=str(e))
+        await call.bot.send_message(chat_id=5090318438, text=f'{str(e)}\n{e.__class__.__name__}')
