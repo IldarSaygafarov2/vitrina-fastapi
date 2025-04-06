@@ -48,15 +48,16 @@ async def get_advertisement(
     repo: Annotated[RequestsRepo, Depends(get_repo)],
 ) -> AdvertisementDetailDTO | dict:
 
-    advertisement = await repo.advertisements.get_advertisement_by_id(
+    _advertisement = await repo.advertisements.get_advertisement_by_id(
         advertisement_id=advertisement_id
     )
     advertisement = AdvertisementDetailDTO.model_validate(
-        advertisement, from_attributes=True
+        _advertisement, from_attributes=True
     )
 
-    related_objects = await repo.advertisements.get_advertisements_by_category_id(
+    related_objects = await repo.advertisements.get_advertisements_by_category_id_and_operation_type(
         category_id=advertisement.category.id,
+        operation_type=_advertisement.operation_type,
     )
 
     # advertisement.related_objects = [

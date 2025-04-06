@@ -40,7 +40,8 @@ class AdvertisementDetailDTO(BaseModel):
     quadrature_to: Optional[int] = 0
     quadrature: Optional[int]
     house_quadrature_from: Optional[int] = 0
-    house_quadrature_from: Optional[int] = 0
+    house_quadrature_to: Optional[int] = 0
+    operation_type: str
     floor_from: int
     floor_to: int
     repair_type: str

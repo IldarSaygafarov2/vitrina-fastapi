@@ -241,10 +241,12 @@ class AdvertisementRepo(BaseRepo):
         await self.session.commit()
         return updated.scalar_one()
 
-    async def get_advertisements_by_category_id(self, category_id: int):
+    async def get_advertisements_by_category_id_and_operation_type(self, category_id: int,
+                                                                   operation_type: str):
         stmt = (
             select(Advertisement)
             .where(Advertisement.category_id == category_id)
+            .where(Advertisement.operation_type == operation_type)
             .where(Advertisement.is_moderated == True)
             .limit(12)
             .options(selectinload(Advertisement.images))
