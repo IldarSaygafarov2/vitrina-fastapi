@@ -719,7 +719,8 @@ async def get_advertisement_for_base_channel(
             media=media_group,
         )
     except Exception as e:
-        return await call.bot.send_message(chat_id=config.tg_bot.main_chat_id, text=str(e))
+        return await call.bot.send_message(chat_id=config.tg_bot.main_chat_id, text=f'{chat_id=} {e}')
+
 
     await call.message.edit_text("Спасибо! Объявление отправлено в резервный канал")
     await call.bot.send_message(
