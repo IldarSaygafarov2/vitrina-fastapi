@@ -34,14 +34,16 @@ from tgbot.templates.advertisement_updating import (
     update_rooms_text,
 )
 
+from tgbot.utils.helpers import get_media_group
+
 router = Router()
 
 
 @router.callback_query(F.data.startswith("advertisement_update"))
 async def process_advertisement_update(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -54,12 +56,11 @@ async def process_advertisement_update(
 
 @router.callback_query(F.data.startswith("update_advertisement_name"))
 async def update_advertisement_name(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
-    print("working")
 
     advertisement_id = int(call.data.split(":")[-1])
     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
@@ -73,16 +74,11 @@ async def update_advertisement_name(
     await state.update_data(advertisement_id=advertisement_id)
 
 
-# update_advertisement_name_uz
-# update_advertisement_description_uz
-# update_advertisement_address_uz
-
-
 @router.message(AdvertisementUpdateState.name)
 async def get_new_name(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     text = message.text
@@ -99,9 +95,9 @@ async def get_new_name(
 
 @router.callback_query(F.data.startswith("uz_update_advertisement_name"))
 async def update_advertisement_name_uz(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -119,9 +115,9 @@ async def update_advertisement_name_uz(
 
 @router.message(AdvertisementUpdateState.name_uz)
 async def get_new_name_uz(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     text = message.text
@@ -138,9 +134,9 @@ async def get_new_name_uz(
 
 @router.callback_query(F.data.startswith("update_advertisement_owner_phone_number"))
 async def update_advertisement_owner_phone_number(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -157,7 +153,7 @@ async def update_advertisement_owner_phone_number(
 
 @router.message(AdvertisementUpdateState.owner_phone_number)
 async def update_advertisement_owner_phone_number(
-    message: types.Message, repo: "RequestsRepo", state: FSMContext
+        message: types.Message, repo: "RequestsRepo", state: FSMContext
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
@@ -173,9 +169,9 @@ async def update_advertisement_owner_phone_number(
 
 @router.callback_query(F.data.startswith("update_advertisement_operation_type"))
 async def update_operation_type(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -190,9 +186,9 @@ async def update_operation_type(
 
 @router.callback_query(F.data.startswith("update_operation_type"))
 async def get_new_operation_type(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     await call.answer()
@@ -211,9 +207,9 @@ async def get_new_operation_type(
 
 @router.callback_query(F.data.startswith("update_advertisement_gallery"))
 async def update_gallery(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -225,15 +221,15 @@ async def update_gallery(
     if not photos:
         photos = [obj.url for obj in images]
 
-    media_group: list[types.InputMediaPhoto] = [
-        (
-            types.InputMediaPhoto(media=img)
-            if i == 0
-            else types.InputMediaPhoto(media=img)
-        )
-        for i, img in enumerate(photos)
-    ]
-
+    # media_group: list[types.InputMediaPhoto] = [
+    #     (
+    #         types.InputMediaPhoto(media=img)
+    #         if i == 0
+    #         else types.InputMediaPhoto(media=img)
+    #     )
+    #     for i, img in enumerate(photos)
+    # ]
+    media_group = get_media_group(photos)
     await call.message.answer_media_group(media=media_group)
     await call.message.answer(
         text="Выберите фотографию которую хотите обновить",
@@ -244,9 +240,9 @@ async def update_gallery(
 
 @router.callback_query(F.data.startswith("update_advertisement_description"))
 async def update_description(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -264,9 +260,9 @@ async def update_description(
 
 @router.message(AdvertisementUpdateState.description)
 async def get_new_description(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
@@ -283,9 +279,9 @@ async def get_new_description(
 
 @router.callback_query(F.data.startswith("uz_update_advertisement_description"))
 async def update_description(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -303,9 +299,9 @@ async def update_description(
 
 @router.message(AdvertisementUpdateState.description_uz)
 async def get_new_description(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
@@ -322,9 +318,9 @@ async def get_new_description(
 
 @router.callback_query(F.data.startswith("update_advertisement_district"))
 async def update_district(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -342,9 +338,9 @@ async def update_district(
 
 @router.callback_query(F.data.startswith("update_chosen_district"))
 async def get_new_district(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -365,9 +361,9 @@ async def get_new_district(
 
 @router.callback_query(F.data.startswith("update_advertisement_address"))
 async def update_address(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -383,9 +379,9 @@ async def update_address(
 
 @router.message(AdvertisementUpdateState.address)
 async def get_new_address(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
@@ -402,9 +398,9 @@ async def get_new_address(
 
 @router.callback_query(F.data.startswith("uz_update_advertisement_address"))
 async def update_address(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -420,9 +416,9 @@ async def update_address(
 
 @router.message(AdvertisementUpdateState.address_uz)
 async def get_new_address(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
@@ -440,9 +436,9 @@ async def get_new_address(
 
 @router.callback_query(F.data.startswith("update_advertisement_property_category"))
 async def update_advertisement_category(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -460,9 +456,9 @@ async def update_advertisement_category(
 
 @router.callback_query(F.data.startswith("update_chosen_category"))
 async def get_new_category(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -484,9 +480,9 @@ async def get_new_category(
 
 @router.callback_query(F.data.startswith("update_advertisement_property_type"))
 async def update_property_type(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -504,9 +500,9 @@ async def update_property_type(
 
 @router.callback_query(F.data.startswith("update_property_type"))
 async def get_new_property_type(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     _, property_type = call.data.split(":")
@@ -525,9 +521,9 @@ async def get_new_property_type(
 
 @router.callback_query(F.data.startswith("update_advertisement_price"))
 async def update_advertisement_price(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -544,9 +540,9 @@ async def update_advertisement_price(
 
 @router.message(AdvertisementUpdateState.price)
 async def get_new_price(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
@@ -563,9 +559,9 @@ async def get_new_price(
 
 @router.callback_query(F.data.startswith("update_advertisement_quadrature"))
 async def update_quadrature(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -586,9 +582,9 @@ async def update_quadrature(
 
 @router.message(AdvertisementUpdateState.quadrature)
 async def get_new_quadrature(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
@@ -607,9 +603,9 @@ async def get_new_quadrature(
 
 @router.callback_query(F.data.startswith("update_advertisement_creation_date"))
 async def update_creation_date(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -625,9 +621,9 @@ async def update_creation_date(
 
 @router.message(AdvertisementUpdateState.creation_year)
 async def get_new_creation_year(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
@@ -645,9 +641,9 @@ async def get_new_creation_year(
 
 @router.callback_query(F.data.startswith("update_advertisement_rooms"))
 async def update_rooms(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -667,9 +663,9 @@ async def update_rooms(
 
 @router.message(AdvertisementUpdateState.rooms)
 async def get_new_rooms_qty(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
@@ -687,9 +683,9 @@ async def get_new_rooms_qty(
 
 @router.callback_query(F.data.startswith("update_advertisement_repair_type"))
 async def update_repair_type(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -705,9 +701,9 @@ async def update_repair_type(
 
 @router.callback_query(F.data.startswith("update_repair_type"))
 async def get_new_repair_type(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -727,9 +723,9 @@ async def get_new_repair_type(
 
 @router.callback_query(F.data.startswith("update_advertisement_house_quadrature"))
 async def update_house_quadrature(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -751,9 +747,9 @@ async def update_house_quadrature(
 
 @router.message(AdvertisementUpdateState.house_quadrature)
 async def get_new_house_quadrature(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
@@ -773,9 +769,9 @@ async def get_new_house_quadrature(
 
 @router.callback_query(F.data.startswith("update_advertisement_is_studio"))
 async def update_is_studio(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -795,9 +791,9 @@ async def update_is_studio(
 
 @router.callback_query(F.data.startswith("update_is_studio"))
 async def get_new_is_studio(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     data = await state.get_data()
@@ -817,9 +813,9 @@ async def get_new_is_studio(
 
 @router.callback_query(F.data.startswith("update_advertisement_floor"))
 async def update_advertisement_floor(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -839,9 +835,9 @@ async def update_advertisement_floor(
 
 @router.message(AdvertisementUpdateState.floor)
 async def get_new_floor(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
@@ -861,9 +857,9 @@ async def get_new_floor(
 
 @router.callback_query(F.data.startswith("adv_img"))
 async def update_image(
-    call: types.CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: types.CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -884,9 +880,9 @@ async def update_image(
 
 @router.message(AdvertisementUpdateState.image)
 async def get_new_image(
-    message: types.Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: types.Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     state_data = await state.get_data()
     image_id = state_data.get("image_id")
@@ -922,14 +918,7 @@ async def get_new_image(
     if not photos:
         photos = [obj.url for obj in images]
 
-    media_group: list[types.InputMediaPhoto] = [
-        (
-            types.InputMediaPhoto(media=img, caption=advertisement_message)
-            if i == 0
-            else types.InputMediaPhoto(media=img)
-        )
-        for i, img in enumerate(photos)
-    ]
+    media_group = get_media_group(photos, advertisement_message)
 
     await message.answer_media_group(media=media_group)
     await message.answer(

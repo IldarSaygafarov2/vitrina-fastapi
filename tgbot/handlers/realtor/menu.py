@@ -17,6 +17,7 @@ from tgbot.templates.advertisement_creation import (
     choose_operation_type_text,
     realtor_advertisement_completed_text,
 )
+from tgbot.utils.helpers import get_media_group
 
 router = Router()
 router.message.filter(RoleFilter(role="realtor"))
@@ -94,15 +95,8 @@ async def get_realtor_advertisement_detail(
     try:
 
         photos = [obj.tg_image_hash for obj in advertisement.images]
-        media_group: list[InputMediaPhoto] = [
-            (
-                InputMediaPhoto(media=img, caption=advertisement_message)
-                if i == 0
-                else InputMediaPhoto(media=img)
-            )
-            for i, img in enumerate(photos)
-        ]
 
+        media_group = get_media_group(photos, advertisement_message)
         await call.message.edit_text(text=advertisement_message)
         if media_group:
             await call.message.answer_media_group(media=media_group)
@@ -132,14 +126,7 @@ async def delete_advertisement(
 
     message = realtor_advertisement_completed_text(advertisement=advertisement)
     photos = [obj.tg_image_hash for obj in advertisement.images]
-    media_group: list[InputMediaPhoto] = [
-        (
-            InputMediaPhoto(media=img, caption=message)
-            if i == 0
-            else InputMediaPhoto(media=img)
-        )
-        for i, img in enumerate(photos)
-    ]
+    media_group = get_media_group(photos, message)
 
     director = await repo.users.get_user_by_chat_id(
         tg_chat_id=advertisement.user.added_by
