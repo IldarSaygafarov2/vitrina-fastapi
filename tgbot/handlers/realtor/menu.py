@@ -18,6 +18,9 @@ from tgbot.templates.advertisement_creation import (
     realtor_advertisement_completed_text,
 )
 from tgbot.utils.helpers import get_media_group
+from config.loader import load_config
+
+config = load_config()
 
 router = Router()
 router.message.filter(RoleFilter(role="realtor"))
