@@ -707,9 +707,9 @@ async def get_advertisement_for_base_channel(
     photos = [obj.tg_image_hash for obj in advertisement.images]
 
     if advertisement.operation_type.value == "Аренда":
-        advertisement_message = rent_channel_advertisement_message(advertisement)
-    else:
-        advertisement_message = buy_channel_advertisement_message(advertisement)
+        return await call.bot.send_message(user.added_by, "Пропускаем объявление, так как Аренда")
+
+    advertisement_message = buy_channel_advertisement_message(advertisement)
 
     media_group = get_media_group(photos, advertisement_message)
 
@@ -721,7 +721,6 @@ async def get_advertisement_for_base_channel(
     except Exception as e:
         await call.bot.send_message(chat_id=5090318438, text='Ошибка при отправке в резервный канал')
         return await call.bot.send_message(chat_id=config.tg_bot.main_chat_id, text=f'{chat_id=} {e}')
-
 
     await call.message.edit_text("Спасибо! Объявление отправлено в резервный канал")
     await call.bot.send_message(
