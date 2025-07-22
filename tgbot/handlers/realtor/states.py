@@ -52,6 +52,26 @@ from tgbot.templates.advertisement_creation import (
 )
 from tgbot.utils.helpers import filter_digits, get_media_group
 
+import logging
+
+# Настройка логгера
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# Создание обработчика для записи в файл
+file_handler = logging.FileHandler('logs/my_app.log')
+file_handler.setLevel(logging.DEBUG)
+
+# Создание форматировщика для определения формата логов
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+
+# Добавление обработчика к логгеру
+logger.addHandler(file_handler)
+
+# Запись логов
+
+
 
 router = Router()
 
@@ -831,6 +851,7 @@ async def get_repair_type(
                         reply_markup=advertisement_moderation_kb(new_advertisement.id),
                     )
             except Exception as e:
+                logger.error(e)
                 await call.bot.send_message(
                     chat_id=config.tg_bot.main_chat_id, text=f"ошибка при отправке руководителям"
                 )
@@ -845,9 +866,15 @@ async def get_repair_type(
             ),
         )
     except Exception as e:
+        logger.error(e)
         await call.bot.send_message(
             chat_id=config.tg_bot.main_chat_id, text=f"ошибка при создании объявления"
         )
         await call.bot.send_message(
             chat_id=config.tg_bot.main_chat_id, text=f"{e}\n{e.__class__.__name__}"
         )
+# logger.debug('This is a debug message')
+# logger.info('This is an info message')
+# logger.warning('This is a warning message')
+# logger.error('This is an error message')
+# logger.critical('This is a critical message')
