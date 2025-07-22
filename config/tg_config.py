@@ -8,6 +8,7 @@ class TgBot:
     token: str
     rent_channel_name: str
     buy_channel_name: str
+    base_channel_name: str
 
     @staticmethod
     def from_env(env: Env) -> "TgBot":
@@ -15,4 +16,5 @@ class TgBot:
             token=env.str("BOT_API_TOKEN"),
             rent_channel_name=env.str("RENT_CHANNEL"),
             buy_channel_name=env.str("BUY_CHANNEL"),
+            base_channel_name=env.str("BASE_CHANNEL"),
         )

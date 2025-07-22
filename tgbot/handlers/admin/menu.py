@@ -20,7 +20,7 @@ from tgbot.keyboards.admin.inline import (
     realtors_kb,
     directors_kb,
 )
-from tgbot.keyboards.user.inline import realtor_advertisements_kb, return_home_kb
+from tgbot.keyboards.user.inline import realtor_advertisements_kb
 from tgbot.misc.realtor_states import RealtorCreationState, RealtorUpdatingState
 from tgbot.misc.user_states import (
     AdvertisementDeletionState,
@@ -704,3 +704,46 @@ async def process_advertisement_deletion_message(
     )
     await message.bot.send_message(user.tg_chat_id, f"Причина: {message.text}")
     await state.clear()
+
+
+@router.callback_query(F.data.startswith("for_base_channel"))
+async def get_advertisement_for_base_channel(
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
+):
+    await call.answer()
+    advertisement_id = int(call.data.split(":")[-1])
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+    user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
+
+    chat_id = config.tg_bot.base_channel_name
+    photos = [obj.tg_image_hash for obj in advertisement.images]
+
+    if advertisement.operation_type.value == "Аренда":
+        advertisement_message = rent_channel_advertisement_message(advertisement)
+    else:
+        advertisement_message = buy_channel_advertisement_message(advertisement)
+
+    media_group: list[InputMediaPhoto] = [
+        (
+            InputMediaPhoto(media=img, caption=advertisement_message)
+            if i == 0
+            else InputMediaPhoto(media=img)
+        )
+        for i, img in enumerate(photos)
+    ]
+
+    try:
+        await call.bot.send_media_group(
+            chat_id=chat_id,
+            media=media_group,
+        )
+    except Exception as e:
+        return await call.bot.send_message(chat_id=5090318438, text=str(e))
+
+    await call.message.edit_text("Спасибо! Объявление отправлено в резервный канал")
+    await call.bot.send_message(
+        chat_id=user.tg_chat_id, text="Объявление отправлено в резервный канал"
+    )
+    await call.message.delete()

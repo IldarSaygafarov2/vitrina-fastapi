@@ -1,5 +1,5 @@
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from infrastructure.database.models import User
 
@@ -124,6 +124,7 @@ def advertisement_moderation_kb(advertisement_id: int, for_delete: bool = False)
 
     kb.button(text="Да ✔", callback_data=call_1)
     kb.button(text="Нет ❌", callback_data=call_2)
+    kb.button(text='Категория С', callback_data=f'for_base_channel:{advertisement_id}')
     return kb.as_markup()
 
 

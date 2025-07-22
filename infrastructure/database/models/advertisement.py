@@ -1,11 +1,10 @@
 import enum
 
-from sqlalchemy import ForeignKey, String, false
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from infrastructure.utils.helpers import generate_code
-
 from .base import Base, created_at
 from .mixins.id_int_pk import IntIdMixin
 
@@ -119,6 +118,7 @@ class Advertisement(Base, IntIdMixin):
     is_moderated: Mapped[bool] = mapped_column(nullable=True)
 
     preview: Mapped[str] = mapped_column(nullable=True)
+    for_base_channel: Mapped[bool] = mapped_column(nullable=True, default=False)
 
     images: Mapped[list["AdvertisementImage"]] = relationship(
         back_populates="advertisement"

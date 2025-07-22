@@ -696,7 +696,6 @@ async def get_repair_type(
         unique_id = generate_code()
         _, repair_type = call.data.split(":")
         state_data = await state.get_data()
-        cur_message = state_data.pop("cur_message")
 
         operation_type = state_data.get("operation_type")
         category = state_data.get("category")
@@ -802,11 +801,6 @@ async def get_repair_type(
             new_advertisement, lang="uz"
         )
 
-        # await repo.advertisements.update_advertisement_preview(
-        #     advertisement_id=new_advertisement.id,
-        #     url=str(preview_file_location),
-        # )
-
         for file_location, photo_id in files_locations:
             await repo.advertisement_images.insert_advertisement_image(
                 advertisement_id=new_advertisement.id,
@@ -831,12 +825,10 @@ async def get_repair_type(
 
         for director in group_directors:
             try:
-                print(director.tg_chat_id, new_advertisement.user.added_by)
                 if (
                     director.tg_chat_id
                     and director.tg_chat_id == new_advertisement.user.added_by
                 ):
-                    print("sent_to", director.tg_username)
                     realtor_fullname = f"{new_advertisement.user.first_name} {new_advertisement.user.lastname}"
                     await call.bot.send_message(
                         director.tg_chat_id,
