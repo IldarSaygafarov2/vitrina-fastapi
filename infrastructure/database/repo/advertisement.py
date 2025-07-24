@@ -224,7 +224,7 @@ class AdvertisementRepo(BaseRepo):
         await self.session.commit()
 
     async def get_all_advertisements(self):
-        stmt = select(Advertisement)
+        stmt = select(Advertisement).options(selectinload(Advertisement.images))
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
