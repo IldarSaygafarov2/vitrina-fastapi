@@ -605,7 +605,6 @@ async def get_advertisement_for_base_channel(
         chat_id=user.tg_chat_id, text="Объявление отправлено в резервный канал"
     )
     await call.message.delete()
-s
 
 @router.callback_query(F.data.startswith("moderation_deny"))
 async def process_moderation_deny(
