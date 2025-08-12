@@ -1,3 +1,4 @@
+import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -7,7 +8,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from config.loader import load_config
-
 from infrastructure.database.models.advertisement import (
     OperationType,
     OperationTypeUz,
@@ -51,8 +51,6 @@ from tgbot.templates.advertisement_creation import (
     realtor_advertisement_completed_text,
 )
 from tgbot.utils.helpers import filter_digits, get_media_group
-
-import logging
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -155,6 +153,7 @@ async def get_photos_quanity_set_get_photos(
         photos_quantity=int(message.text),
         photos_message=photos_message,
         photos=[],
+        message_ids=[]
     )
     await state.set_state(AdvertisementCreationState.photos)
 
@@ -168,21 +167,33 @@ async def get_photos_set_title(
     current_state = await state.get_data()
     current_state["photos"].append(message.photo[-1].file_id)
 
+
     try:
         await message.delete()
     except Exception as e:
-        pass
+        print(e)
+
 
     if current_state["photos_quantity"] == len(current_state["photos"]):
         cur_message = await message.answer(
             text=get_title_text(),
-            reply_markup=None,
+            reply_markup=None
         )
 
+        current_state["message_ids"].append(cur_message.message_id)
+
         await state.update_data(
-            photos=current_state["photos"], title_message=cur_message
+            photos=current_state["photos"], title_message=cur_message,
         )
         await state.set_state(AdvertisementCreationState.title)
+
+    if len(current_state["message_ids"]) == current_state["photos_quantity"]:
+        for message_id in current_state["message_ids"][1:]:
+            try:
+                await message.bot.delete_message(chat_id=message.chat.id, message_id=message_id)
+            except Exception as e:
+                print(e)
+
 
 
 @router.message(AdvertisementCreationState.title)
