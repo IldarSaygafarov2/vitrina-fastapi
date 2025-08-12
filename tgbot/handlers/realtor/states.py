@@ -274,9 +274,9 @@ async def get_description_uz(
 
         districts_text = await description_uz_text.answer(
             text="""
-            Напишите номер телефона собственника
+            Напишите номер телефона собственника и имя
             
-            пример: +998901231212
+пример: +998901231212
             """,
         )
         await state.update_data(
@@ -638,7 +638,7 @@ async def get_quadrature(
         cur_message = state_data.pop("cur_message")
 
         cur_message = await cur_message.answer(
-            text="Этаж от: ",
+            text="Этаж: ",
         )
 
         quadrature = filter_digits(message.text)
@@ -665,7 +665,7 @@ async def get_floor_from(
         cur_message = state_data.pop("cur_message")
 
         cur_message = await cur_message.answer(
-            text="Этаж до:",
+            text="Этажность:",
         )
 
         floor_from = filter_digits(message.text)
@@ -719,6 +719,11 @@ async def get_repair_type(
         state: FSMContext,
 ):
     await call.answer()
+
+    await call.bot.edit_message_reply_markup(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+    )
 
     try:
         unique_id = generate_code()
@@ -884,6 +889,9 @@ async def get_repair_type(
         await call.bot.send_message(
             chat_id=config.tg_bot.main_chat_id, text=f"{e}\n{e.__class__.__name__}"
         )
+
+    await call.answer(text='Операция выполнена', show_alert=True)
+
 # logger.debug('This is a debug message')
 # logger.info('This is an info message')
 # logger.warning('This is a warning message')

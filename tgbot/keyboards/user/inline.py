@@ -146,28 +146,6 @@ def advertisement_actions_kb(advertisement_id: int):
     return kb.as_markup()
 
 
-def realtor_new_advertisement_kb(advertisement_id: int):
-    kb = InlineKeyboardBuilder()
-    kb.row(
-        InlineKeyboardButton(
-            text="Русский", callback_data=f"advertisement_lang:ru:{advertisement_id}"
-        ),
-        InlineKeyboardButton(
-            text="Узбекский", callback_data=f"advertisement_lang:uz:{advertisement_id}"
-        ),
-    )
-    kb.row(
-        InlineKeyboardButton(
-            text="Изменить", callback_data=f"advertisement_update:{advertisement_id}"
-        ),
-        InlineKeyboardButton(
-            text="Удалить", callback_data=f"advertisement_delete:{advertisement_id}"
-        ),
-    )
-    kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
-    return kb.as_markup()
-
-
 def advertisement_update_kb(advertisement_id: int):
     kb = InlineKeyboardBuilder()
     for key, value in ADVERTISEMENT_UPDATE_FIELDS.items():
