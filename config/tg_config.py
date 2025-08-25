@@ -10,6 +10,8 @@ class TgBot:
     buy_channel_name: str
     base_channel_name: str
     main_chat_id: int
+    test_main_chat_id: int
+    supergroup_id: int
 
     @staticmethod
     def from_env(env: Env) -> "TgBot":
@@ -18,5 +20,7 @@ class TgBot:
             rent_channel_name=env.str("RENT_CHANNEL"),
             buy_channel_name=env.str("BUY_CHANNEL"),
             base_channel_name=env.str("BASE_CHANNEL"),
-            main_chat_id=env.int("MAIN_CHAT_ID")
+            main_chat_id=env.int("MAIN_CHAT_ID"),
+            test_main_chat_id=env.int("TEST_MAIN_CHAT_ID"),
+            supergroup_id=env.int("SUPERGROUP_ID")
         )

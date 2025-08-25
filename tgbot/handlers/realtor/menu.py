@@ -1,5 +1,5 @@
 from aiogram import F, Router
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, InputMediaPhoto
 
@@ -147,3 +147,5 @@ async def delete_advertisement(
             advertisement_id=advertisement_id, for_delete=True
         ),
     )
+
+
