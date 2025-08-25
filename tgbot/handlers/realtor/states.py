@@ -51,6 +51,7 @@ from tgbot.templates.advertisement_creation import (
     realtor_advertisement_completed_text,
 )
 from tgbot.utils.helpers import filter_digits, get_media_group
+from tgbot.misc.enums import ForumTopicEnum
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -70,13 +71,13 @@ logger.addHandler(file_handler)
 # Запись логов
 
 
-
 router = Router()
 
 upload_dir = Path("media")
 upload_dir.mkdir(parents=True, exist_ok=True)
 
 config = load_config()
+
 
 @router.callback_query(F.data.startswith("operation_type"))
 async def get_operation_type_set_category(
@@ -167,12 +168,10 @@ async def get_photos_set_title(
     current_state = await state.get_data()
     current_state["photos"].append(message.photo[-1].file_id)
 
-
     try:
         await message.delete()
     except Exception as e:
         print(e)
-
 
     if current_state["photos_quantity"] == len(current_state["photos"]):
         cur_message = await message.answer(
@@ -193,7 +192,6 @@ async def get_photos_set_title(
                 await message.bot.delete_message(chat_id=message.chat.id, message_id=message_id)
             except Exception as e:
                 print(e)
-
 
 
 @router.message(AdvertisementCreationState.title)
@@ -846,6 +844,13 @@ async def get_repair_type(
         group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
 
         await call.message.answer_media_group(media=media_group)
+
+        if 100 < int(price) < 200:
+            await call.bot.send_media_group(
+                chat_id=config.tg_bot.supergroup_id,
+                message_thread_id=ForumTopicEnum.TOPIC_100_200.value[0],
+                media=media_group
+            )
 
         for director in group_directors:
             try:
