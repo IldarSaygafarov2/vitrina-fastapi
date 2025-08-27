@@ -79,7 +79,7 @@ async def show_realtor_advertisements(
             reply_markup=realtor_advertisements_kb(advertisements=advertisements),
         )
     except Exception as e:
-        await call.bot.send_message(chat_id=5090318438, text=str(e))
+        await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id, text=str(e))
 
 
 @router.callback_query(F.data.startswith("realtor_advertisement"))
@@ -113,7 +113,7 @@ async def get_realtor_advertisement_detail(
             f"{str(e)}\n{e.__class__.__name__}\nID: {advertisement.unique_id}"
         )
 
-        await call.bot.send_message(chat_id=5090318438, text=error_message)
+        await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id, text=error_message)
 
 
 @router.callback_query(F.data.startswith("advertisement_delete"))

@@ -114,7 +114,7 @@ class Advertisement(Base, IntIdMixin):
 
     floor_from: Mapped[int]
     floor_to: Mapped[int]
-    is_studio: Mapped[bool]
+    # is_studio: Mapped[bool]
     is_moderated: Mapped[bool] = mapped_column(nullable=True)
 
     preview: Mapped[str] = mapped_column(nullable=True)

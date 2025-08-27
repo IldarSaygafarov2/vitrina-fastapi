@@ -20,7 +20,6 @@ class AdvertisementCreationState(StatesGroup):
     property_type = State()
     creation_year = State()
     price = State()
-    is_studio = State()
     repair_type = State()
 
     quadrature = State()

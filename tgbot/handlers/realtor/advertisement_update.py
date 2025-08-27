@@ -23,7 +23,6 @@ from tgbot.templates.advertisement_updating import (
     update_district_text,
     update_floor_text,
     update_house_quadrature_text,
-    update_is_studio_text,
     update_name_text,
     update_operation_type_text,
     update_owner_phone_number_text,
@@ -767,48 +766,48 @@ async def get_new_house_quadrature(
     )
 
 
-@router.callback_query(F.data.startswith("update_advertisement_is_studio"))
-async def update_is_studio(
-        call: types.CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
-):
-    await call.answer()
+# @router.callback_query(F.data.startswith("update_advertisement_is_studio"))
+# async def update_is_studio(
+#         call: types.CallbackQuery,
+#         repo: "RequestsRepo",
+#         state: FSMContext,
+# ):
+#     await call.answer()
+#
+#     advertisement_id = int(call.data.split(":")[-1])
+#     advertisement = await repo.advertisements.get_advertisement_by_id(
+#         advertisement_id=advertisement_id
+#     )
+#
+#     is_studio_text = "Да" if advertisement.is_studio else "Нет"
+#
+#     await call.message.edit_text(
+#         text=update_is_studio_text(current=is_studio_text),
+#         reply_markup=is_studio_kb(for_update=True),
+#     )
+#     await state.update_data(advertisement_id=advertisement_id)
 
-    advertisement_id = int(call.data.split(":")[-1])
-    advertisement = await repo.advertisements.get_advertisement_by_id(
-        advertisement_id=advertisement_id
-    )
 
-    is_studio_text = "Да" if advertisement.is_studio else "Нет"
-
-    await call.message.edit_text(
-        text=update_is_studio_text(current=is_studio_text),
-        reply_markup=is_studio_kb(for_update=True),
-    )
-    await state.update_data(advertisement_id=advertisement_id)
-
-
-@router.callback_query(F.data.startswith("update_is_studio"))
-async def get_new_is_studio(
-        call: types.CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
-):
-    await call.answer()
-    data = await state.get_data()
-    advertisement_id = data.get("advertisement_id")
-    _, is_studio = call.data.split(":")
-    is_studio = True if is_studio == "Да" else False
-
-    updated = await repo.advertisements.update_advertisement(
-        advertisement_id=advertisement_id,
-        is_studio=is_studio,
-    )
-    await call.message.edit_text(
-        text=realtor_advertisement_completed_text(updated),
-        reply_markup=advertisement_update_kb(advertisement_id),
-    )
+# @router.callback_query(F.data.startswith("update_is_studio"))
+# async def get_new_is_studio(
+#         call: types.CallbackQuery,
+#         repo: "RequestsRepo",
+#         state: FSMContext,
+# ):
+#     await call.answer()
+#     data = await state.get_data()
+#     advertisement_id = data.get("advertisement_id")
+#     _, is_studio = call.data.split(":")
+#     is_studio = True if is_studio == "Да" else False
+#
+#     updated = await repo.advertisements.update_advertisement(
+#         advertisement_id=advertisement_id,
+#         is_studio=is_studio,
+#     )
+#     await call.message.edit_text(
+#         text=realtor_advertisement_completed_text(updated),
+#         reply_markup=advertisement_update_kb(advertisement_id),
+#     )
 
 
 @router.callback_query(F.data.startswith("update_advertisement_floor"))

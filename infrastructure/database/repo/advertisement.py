@@ -25,7 +25,6 @@ class AdvertisementRepo(BaseRepo):
         address_uz: str,
         creation_year: int,
         price: int,
-        is_studio: bool,
         rooms_quantity: int,
         quadrature: int,
         floor_from: int,
@@ -60,7 +59,6 @@ class AdvertisementRepo(BaseRepo):
                 property_type=property_type,
                 creation_year=creation_year,
                 price=price,
-                is_studio=is_studio,
                 rooms_quantity=rooms_quantity,
                 quadrature=quadrature,
                 floor_from=floor_from,
@@ -83,6 +81,19 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(stmt)
         await self.session.commit()
         return result.scalar_one()
+
+    async def get_advertisement_by_unique_id(self, unique_id: str):
+        query = (
+            select(Advertisement)
+            .where(Advertisement.unique_id == unique_id)
+            .options(
+                selectinload(Advertisement.images),
+                selectinload(Advertisement.category),
+                selectinload(Advertisement.district),
+            )
+        )
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
 
     async def get_advertisements(self, limit: int = 15, offset: int = 0):
         stmt = (
@@ -129,8 +140,6 @@ class AdvertisementRepo(BaseRepo):
             query = query.filter(Advertisement.quadrature >= _filter.quadrature_from)
         if _filter.quadrature_to:
             query = query.filter(Advertisement.quadrature <= _filter.quadrature_to)
-        if _filter.is_studio is not None:
-            query = query.filter(Advertisement.is_studio == _filter.is_studio)
         if _filter.category_id:
             query = query.filter(Advertisement.category_id == _filter.category_id)
         if _filter.district_id:

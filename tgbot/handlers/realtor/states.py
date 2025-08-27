@@ -23,7 +23,7 @@ from tgbot.keyboards.user.inline import (
     advertisement_actions_kb,
     categories_kb,
     districts_kb,
-    is_studio_kb,
+
     property_type_kb,
     repair_type_kb,
 )
@@ -46,12 +46,12 @@ from tgbot.templates.advertisement_creation import (
     get_district_text,
     get_propety_type_text,
     get_title_text,
-    is_studio_text,
     price_text,
     realtor_advertisement_completed_text,
 )
+from tgbot.templates.messages import rent_channel_advertisement_message
 from tgbot.utils.helpers import filter_digits, get_media_group
-from tgbot.misc.enums import ForumTopicEnum
+from tgbot.utils.helpers import send_message_to_topic
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -127,7 +127,6 @@ async def get_category_set_photos_quantity(
 @router.message(AdvertisementCreationState.preview)
 async def get_preview(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     photo_id = message.photo[-1].file_id
@@ -139,7 +138,6 @@ async def get_preview(
 @router.message(AdvertisementCreationState.photos_quantity)
 async def get_photos_quanity_set_get_photos(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     state_data = await state.get_data()
@@ -162,7 +160,6 @@ async def get_photos_quanity_set_get_photos(
 @router.message(AdvertisementCreationState.photos)
 async def get_photos_set_title(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     current_state = await state.get_data()
@@ -197,7 +194,6 @@ async def get_photos_set_title(
 @router.message(AdvertisementCreationState.title)
 async def get_title_set_description(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     state_data = await state.get_data()
@@ -212,7 +208,6 @@ async def get_title_set_description(
 @router.message(AdvertisementCreationState.title_uz)
 async def get_title_uz(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -234,7 +229,6 @@ async def get_title_uz(
 @router.message(AdvertisementCreationState.description)
 async def get_description_set_description_uz(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -263,7 +257,6 @@ async def get_description_set_description_uz(
 @router.message(AdvertisementCreationState.description_uz)
 async def get_description_uz(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -274,7 +267,7 @@ async def get_description_uz(
             text="""
             Напишите номер телефона собственника и имя
             
-пример: +998901231212
+пример: +998901231212 Александр
             """,
         )
         await state.update_data(
@@ -352,7 +345,6 @@ async def get_district_set_address(
 @router.message(AdvertisementCreationState.address)
 async def get_address(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -375,7 +367,6 @@ async def get_address(
 @router.message(AdvertisementCreationState.address_uz)
 async def get_address_uz(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -403,7 +394,6 @@ async def get_address_uz(
 )
 async def get_property_type(
         call: CallbackQuery,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     await call.answer()
@@ -444,7 +434,6 @@ async def get_property_type(
 @router.message(AdvertisementCreationState.creation_year)
 async def get_creation_year(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -471,7 +460,6 @@ async def get_creation_year(
 @router.message(AdvertisementCreationState.price)
 async def get_price(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -479,14 +467,13 @@ async def get_price(
         cur_message = state_data.pop("cur_message")
 
         cur_message = await cur_message.answer(
-            text=is_studio_text(),
-            reply_markup=is_studio_kb(),
+            text="Квадратура: ", reply_markup=None
         )
 
         price = filter_digits(message.text)
 
         await state.update_data(price=price, cur_message=cur_message)
-        await state.set_state(AdvertisementCreationState.is_studio)
+        await state.set_state(AdvertisementCreationState.quadrature)
     except Exception as e:
         await message.bot.send_message(chat_id=config.tg_bot.main_chat_id, text=f"ошибка в get_price")
         await message.bot.send_message(
@@ -494,47 +481,9 @@ async def get_price(
         )
 
 
-@router.callback_query(
-    F.data.startswith("is_studio"),
-    AdvertisementCreationState.is_studio,
-)
-async def get_is_studio(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
-):
-    await call.answer()
-    try:
-        state_data = await state.get_data()
-
-        cur_message = state_data.pop("cur_message")
-        _, is_studio_state = call.data.split(":")
-
-        is_studio = True if is_studio_state == "yes" else False
-
-        if is_studio:
-            cur_message = await cur_message.answer(
-                text="Квадратура: ", reply_markup=None
-            )
-            await state.update_data(is_studio=is_studio, cur_message=cur_message)
-            await state.set_state(AdvertisementCreationState.quadrature)
-        else:
-            cur_message = await cur_message.answer(
-                text="Количество комнат: ", reply_markup=None
-            )
-            await state.update_data(is_studio=is_studio, cur_message=cur_message)
-            await state.set_state(AdvertisementCreationState.rooms_quantity)
-    except Exception as e:
-        await call.bot.send_message(chat_id=config.tg_bot.main_chat_id, text=f"ошибка в get_is_studio")
-        await call.bot.send_message(
-            chat_id=config.tg_bot.main_chat_id, text=f"{e}\n{e.__class__.__name__}"
-        )
-
-
 @router.message(AdvertisementCreationState.rooms_quantity)
 async def get_rooms_to(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -572,7 +521,6 @@ async def get_rooms_to(
 @router.message(AdvertisementCreationState.house_quadrature_from)
 async def get_house_quadrature_from(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -600,7 +548,6 @@ async def get_house_quadrature_from(
 @router.message(AdvertisementCreationState.house_quadrature_to)
 async def get_house_quadrature_to(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -628,7 +575,6 @@ async def get_house_quadrature_to(
 @router.message(AdvertisementCreationState.quadrature)
 async def get_quadrature(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -655,7 +601,6 @@ async def get_quadrature(
 @router.message(AdvertisementCreationState.floor_from)
 async def get_floor_from(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -682,7 +627,6 @@ async def get_floor_from(
 @router.message(AdvertisementCreationState.floor_to)
 async def get_floor_to(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -744,7 +688,6 @@ async def get_repair_type(
         property_type = state_data.get("property_type")
         creation_year = state_data.get("creation_year", 0)
         price = state_data.get("price")
-        is_studio = state_data.get("is_studio")
 
         rooms_quantity = state_data.get("rooms_quantity")
 
@@ -813,7 +756,6 @@ async def get_repair_type(
             property_type=property_type_status,
             creation_year=int(creation_year),
             price=int(price),
-            is_studio=is_studio,
             rooms_quantity=int(rooms_quantity) if rooms_quantity is not None else 0,
             quadrature=int(quadrature),
             floor_from=int(floor_from),
@@ -840,17 +782,19 @@ async def get_repair_type(
             )
 
         media_group = get_media_group(photos, advertisement_message)
+        caption_for_topic = rent_channel_advertisement_message(new_advertisement)
+        media_group_for_topic = get_media_group(photos, caption_for_topic)
 
         group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
 
         await call.message.answer_media_group(media=media_group)
 
-        if 100 < int(price) < 200:
-            await call.bot.send_media_group(
-                chat_id=config.tg_bot.supergroup_id,
-                message_thread_id=ForumTopicEnum.TOPIC_100_200.value[0],
-                media=media_group
-            )
+        # if new_advertisement.operation_type.value == 'Аренда':
+        #     await send_message_to_topic(
+        #         bot=call.bot,
+        #         price=int(price),
+        #         media_group=media_group_for_topic
+        #     )
 
         for director in group_directors:
             try:

@@ -71,8 +71,6 @@ def price_text(property_type: str):
 """
 
 
-def is_studio_text():
-    return "Недвижимость является студией ?"
 
 
 def realtor_advertisement_completed_text(
@@ -99,28 +97,7 @@ def realtor_advertisement_completed_text(
         if lang == "uz"
         else ""
     )
-    # operation_type = (
-    #     advertisement.operation_type.value
-    #     if lang == "ru"
-    #     else advertisement.operation_type_uz.value
-    # )
-    # district = (
-    #     advertisement.district.name if lang == "ru" else advertisement.district.name_uz
-    # )
-    # category = (
-    #     advertisement.category.name if lang == "ru" else advertisement.category.name_uz
-    # )
-    # address = advertisement.address if lang == "ru" else advertisement.address_uz
-    # property_type = (
-    #     advertisement.property_type.value
-    #     if lang == "ru"
-    #     else advertisement.property_type_uz.value
-    # )
-    # repair_type = (
-    #     advertisement.repair_type.value
-    #     if lang == "ru"
-    #     else advertisement.repair_type_uz.value
-    # )
+
     owner_phone_number = (
         f"\n<b>Номер собственника: </b><i>{advertisement.owner_phone_number}</i>"
         if not hide_owner_phone
@@ -149,7 +126,7 @@ def realtor_advertisement_completed_text(
 <b>Категория недвижимости: </b><i>{advertisement.category.name}</i>
 <b>Тип недвижимости: </b><i>{advertisement.property_type.value}</i>{creation_year}
 <b>Цена: </b><i>{advertisement.price}</i>{house_quadrature}
-{rooms_from_to if not advertisement.is_studio else f'<b>Кол-во комнат: </b> Студия'}
+{rooms_from_to}
 <b>Квадратура: </b><i>{advertisement.quadrature}</i>
 <b>Этаж: </b><i>{advertisement.floor_from}</i> из <i>{advertisement.floor_to}</i>
 <b>Ремонт: </b><i>{advertisement.repair_type.value}</i>

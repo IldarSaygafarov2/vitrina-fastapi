@@ -1,6 +1,6 @@
-from typing import Annotated, Optional
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
-from fastapi.exceptions import ResponseValidationError
 
 from backend.app.config import config
 from backend.app.dependencies import get_repo
@@ -31,19 +31,6 @@ async def create_category(
         category_name_uz=category_data.category_name_uz,
     )
     return CategoryDTO.model_validate(new_category, from_attributes=True)
-
-
-# @router.get("/{category_id}")
-# async def get_category_by_id(
-#     category_id: int,
-#     repo: Annotated[RequestsRepo, Depends(get_repo)],
-# ):
-#     category = await repo.categories.get_category_by_id(
-#         category_id=category_id,
-#     )
-#     if category is None:
-#         return {"detail": "not found"}
-#     return CategoryDTO.model_validate(category, from_attributes=True)
 
 
 @router.get("/{category_slug}")

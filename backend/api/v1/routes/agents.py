@@ -4,10 +4,9 @@ from fastapi import APIRouter, Depends
 
 from backend.app.config import config
 from backend.app.dependencies import get_repo
-from infrastructure.database.repo.requests import RequestsRepo
-from backend.core.interfaces.user import UserDTO
-from backend.core.interfaces.agent import AgentDetailDTO, AgentListDTO
 from backend.core.interfaces.advertisement import AdvertisementDTO
+from backend.core.interfaces.agent import AgentDetailDTO, AgentListDTO
+from infrastructure.database.repo.requests import RequestsRepo
 
 router = APIRouter(
     prefix=config.api_prefix.v1.agents,

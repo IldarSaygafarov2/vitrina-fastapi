@@ -1,7 +1,6 @@
-from pprint import pprint
-from typing import Annotated, Union
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query
 
 from backend.app.config import config
 from backend.app.dependencies import get_repo
@@ -43,7 +42,6 @@ async def get_advertisements(
 
 @router.get("/{advertisement_id}")
 async def get_advertisement(
-    request: Request,
     advertisement_id: int,
     repo: Annotated[RequestsRepo, Depends(get_repo)],
 ) -> AdvertisementDetailDTO | dict:
@@ -59,11 +57,6 @@ async def get_advertisement(
         category_id=advertisement.category.id,
         operation_type=_advertisement.operation_type,
     )
-
-    # advertisement.related_objects = [
-    #     AdvertisementDTO.model_validate(obj, from_attributes=True)
-    #     for obj in related_objects
-    # ]
 
     advertisement.related_objects = related_objects
 

@@ -4,7 +4,11 @@ from aiogram.types import CallbackQuery, Message, ContentType
 
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.keyboards.admin.inline import admin_start_kb
-from tgbot.keyboards.user.inline import realtor_advertisements_kb, realtor_start_kb
+from tgbot.keyboards.user.inline import realtor_advertisements_kb, realtor_start_kb, advertisement_actions_kb
+from tgbot.keyboards.admin.inline import delete_advertisement_kb
+from tgbot.misc.common import AdvertisementSearchStates
+from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
+from tgbot.utils.helpers import get_media_group
 
 router = Router()
 
@@ -89,7 +93,7 @@ async def prev_page(
     if int(page) == 1:
         return await call.answer("Это первая страница", show_alert=True)
 
-    await call.message.edit_reply_markup(
+    return await call.message.edit_reply_markup(
         reply_markup=realtor_advertisements_kb(
             advertisements=state_data["advertisements"],
             start=int(start) - 15,
@@ -98,3 +102,59 @@ async def prev_page(
             for_admin=for_admin,
         )
     )
+
+
+@router.callback_query(F.data.startswith('search_by_id'))
+async def search_by_id(
+        call: CallbackQuery,
+        state: FSMContext
+):
+    await call.answer()
+    await state.set_state(AdvertisementSearchStates.id)
+
+    await call.message.edit_text(
+        'Напиши ID объявления!',
+        reply_markup=None
+    )
+
+
+@router.message(AdvertisementSearchStates.id)
+async def get_searched_advertisement(
+        message: Message,
+        state: FSMContext,
+        repo: RequestsRepo
+):
+    advertisement = await repo.advertisements.get_advertisement_by_unique_id(unique_id=message.text)
+    user = await repo.users.get_user_by_chat_id(tg_chat_id=message.chat.id)
+    is_group_director = user.role.value == 'group_director'
+
+
+    if not advertisement:
+        return await message.answer(f'Объявление с ID: {message.text} не найдено, перепроверьте правильность ID')
+
+    advertisement_message = realtor_advertisement_completed_text(
+        advertisement=advertisement,
+    )
+
+    try:
+        photos = [obj.tg_image_hash for obj in advertisement.images]
+        media_group = get_media_group(photos, advertisement_message)
+        if media_group:
+            await message.answer_media_group(media=media_group)
+
+
+        if not is_group_director:
+            return await message.answer(
+                text="Выберите действие над этим объявлением",
+                reply_markup=advertisement_actions_kb(advertisement_id=advertisement.id),
+            )
+        return await message.answer(
+            text="Выберите действие над этим объявлением",
+            reply_markup=delete_advertisement_kb(advertisement_id=advertisement.id),
+        )
+    except Exception as e:
+        error_message = (
+            f"{str(e)}\n{e.__class__.__name__}\nID: {advertisement.unique_id}"
+        )
+        print(error_message)
+        return None

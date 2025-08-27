@@ -43,7 +43,7 @@ class DistrictRepo(BaseRepo):
 
     async def update_district(
         self,
-        district_slug: int,
+        district_slug: str,
         distict_name: str,
     ):
         slug = generate_slug(distict_name)

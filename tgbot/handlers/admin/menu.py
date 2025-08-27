@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 from aiogram import F, Router
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
 
@@ -32,7 +32,7 @@ from tgbot.templates.messages import (
     buy_channel_advertisement_message,
 )
 from tgbot.templates.realtor_texts import get_realtor_info
-from tgbot.utils.helpers import get_media_group
+from tgbot.utils.helpers import get_media_group, send_message_to_topic
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -549,6 +549,14 @@ async def process_moderation_confirm(
 
     media_group = get_media_group(photos, advertisement_message)
 
+    if advertisement.operation_type.value == 'Аренда':
+
+        await send_message_to_topic(
+            bot=call.bot,
+            price=advertisement.price,
+            media_group=media_group
+        )
+
     try:
         await call.bot.send_media_group(
             chat_id=chat_id,
@@ -605,6 +613,7 @@ async def get_advertisement_for_base_channel(
         chat_id=user.tg_chat_id, text="Объявление отправлено в резервный канал"
     )
     await call.message.delete()
+
 
 @router.callback_query(F.data.startswith("moderation_deny"))
 async def process_moderation_deny(
@@ -675,10 +684,6 @@ async def delete_realtor_advertisement(
     await repo.advertisements.delete_advertisement(advertisement_id)
 
 
-# confirm_advertisement_delete
-# deny_advertisement_delete
-
-
 @router.callback_query(F.data.startswith("confirm_advertisement_delete"))
 async def confirm_advertisement_delete(
         call: CallbackQuery,
@@ -732,6 +737,3 @@ async def process_advertisement_deletion_message(
     )
     await message.bot.send_message(user.tg_chat_id, f"Причина: {message.text}")
     await state.clear()
-
-
-

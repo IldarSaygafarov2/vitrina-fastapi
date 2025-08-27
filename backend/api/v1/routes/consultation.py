@@ -8,7 +8,6 @@ from backend.core.interfaces.consultation import ConsultationCreateDTO, Consulta
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.googlesheets.main import GoogleSheet
 
-
 router = APIRouter(
     prefix=config.api_prefix.v1.consultation,
     tags=["Consultation"],

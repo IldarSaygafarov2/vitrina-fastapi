@@ -45,7 +45,7 @@ class CategoryRepo(BaseRepo):
         await self.session.commit()
         return result.scalar_one()
 
-    async def delete_category(self, category_slug: int):
+    async def delete_category(self, category_slug: str):
         stmt = delete(Category).where(Category.slug == category_slug)
         await self.session.execute(stmt)
         await self.session.commit()
