@@ -24,3 +24,16 @@ class TgBot:
             test_main_chat_id=env.int("TEST_MAIN_CHAT_ID"),
             supergroup_id=env.int("SUPERGROUP_ID")
         )
+
+
+@dataclass
+class TgSuperGroupConfig:
+    rent_supergroup_id: int
+    buy_supergroup_id: int
+
+    @staticmethod
+    def from_env(env: Env) -> "TgSuperGroupConfig":
+        return TgSuperGroupConfig(
+            rent_supergroup_id=env.int('RENT_SUPERGROUP_ID'),
+            buy_supergroup_id=env.int('BUY_SUPERGROUP_ID'),
+        )

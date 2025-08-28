@@ -5,8 +5,8 @@ from environs import Env
 
 from config.api_config import ApiPrefix, RunConfig
 from config.db_config import DbConfig
-from config.tg_config import TgBot
 from config.google_sheet_config import GoogleSheetConfig
+from config.tg_config import TgBot, TgSuperGroupConfig
 
 
 @dataclass
@@ -16,6 +16,7 @@ class Config:
     run_api: RunConfig
     tg_bot: TgBot
     google_sheet: GoogleSheetConfig
+    super_group: TgSuperGroupConfig
 
 
 def load_config(path: Optional[str] = None) -> "Config":
@@ -26,6 +27,7 @@ def load_config(path: Optional[str] = None) -> "Config":
     run_api_config = RunConfig.from_env(env)
     tg_bot = TgBot.from_env(env)
     google_sheet = GoogleSheetConfig.from_env(env)
+    super_group_config = TgSuperGroupConfig.from_env(env)
     api_prefix = ApiPrefix()
 
     return Config(
@@ -34,4 +36,5 @@ def load_config(path: Optional[str] = None) -> "Config":
         run_api=run_api_config,
         tg_bot=tg_bot,
         google_sheet=google_sheet,
+        super_group=super_group_config,
     )
