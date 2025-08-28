@@ -32,7 +32,7 @@ from tgbot.templates.messages import (
     buy_channel_advertisement_message,
 )
 from tgbot.templates.realtor_texts import get_realtor_info
-from tgbot.utils.helpers import get_media_group, send_message_to_topic
+from tgbot.utils.helpers import get_media_group, send_message_to_rent_topic
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -551,7 +551,7 @@ async def process_moderation_confirm(
 
     if advertisement.operation_type.value == 'Аренда':
 
-        await send_message_to_topic(
+        await send_message_to_rent_topic(
             bot=call.bot,
             price=advertisement.price,
             media_group=media_group

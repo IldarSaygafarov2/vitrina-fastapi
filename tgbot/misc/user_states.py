@@ -2,6 +2,8 @@ from aiogram.fsm.state import State, StatesGroup
 
 
 class AdvertisementCreationState(StatesGroup):
+    is_studio = State()
+
     operation_type = State()
     category = State()
 

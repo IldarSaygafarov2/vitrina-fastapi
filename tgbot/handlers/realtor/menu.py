@@ -2,7 +2,7 @@ from aiogram import F, Router
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, InputMediaPhoto
-from tgbot.misc.enums import ForumTopicEnum
+
 
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter

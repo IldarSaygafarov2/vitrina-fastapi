@@ -51,7 +51,6 @@ from tgbot.templates.advertisement_creation import (
 )
 from tgbot.templates.messages import rent_channel_advertisement_message
 from tgbot.utils.helpers import filter_digits, get_media_group
-from tgbot.utils.helpers import send_message_to_topic
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -467,18 +466,49 @@ async def get_price(
         cur_message = state_data.pop("cur_message")
 
         cur_message = await cur_message.answer(
-            text="Квадратура: ", reply_markup=None
+            text="Количество комнат: ", reply_markup=None
         )
 
         price = filter_digits(message.text)
 
         await state.update_data(price=price, cur_message=cur_message)
-        await state.set_state(AdvertisementCreationState.quadrature)
+        await state.set_state(AdvertisementCreationState.rooms_quantity)
     except Exception as e:
         await message.bot.send_message(chat_id=config.tg_bot.main_chat_id, text=f"ошибка в get_price")
         await message.bot.send_message(
             chat_id=config.tg_bot.main_chat_id, text=f"{e}\n{e.__class__.__name__}"
         )
+
+
+# @router.callback_query(
+#     F.data.startswith("is_studio"),
+#     AdvertisementCreationState.is_studio,
+# )
+# async def get_is_studio(
+#         call: CallbackQuery,
+#         repo: "RequestsRepo",
+#         state: FSMContext,
+# ):
+#     await call.answer()
+#     try:
+#         state_data = await state.get_data()
+#
+#         cur_message = state_data.pop("cur_message")
+#         _, is_studio_state = call.data.split(":")
+#
+#         is_studio = True if is_studio_state == "yes" else False
+#
+#         cur_message = await cur_message.answer(
+#             text="Количество комнат: ", reply_markup=None
+#         )
+#         await state.update_data(is_studio=is_studio, cur_message=cur_message)
+#         await state.set_state(AdvertisementCreationState.rooms_quantity)
+#
+#     except Exception as e:
+#         await call.bot.send_message(chat_id=config.tg_bot.main_chat_id, text=f"ошибка в get_is_studio")
+#         await call.bot.send_message(
+#             chat_id=config.tg_bot.main_chat_id, text=f"{e}\n{e.__class__.__name__}"
+#         )
 
 
 @router.message(AdvertisementCreationState.rooms_quantity)
@@ -788,13 +818,6 @@ async def get_repair_type(
         group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
 
         await call.message.answer_media_group(media=media_group)
-
-        # if new_advertisement.operation_type.value == 'Аренда':
-        #     await send_message_to_topic(
-        #         bot=call.bot,
-        #         price=int(price),
-        #         media_group=media_group_for_topic
-        #     )
 
         for director in group_directors:
             try:
