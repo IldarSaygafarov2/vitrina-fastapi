@@ -1,10 +1,21 @@
 from enum import Enum
+from backend.app.config import config
 
 class RentForumTopicEnum(Enum):
     TOPIC_300_600 = (24, [300, 600])
     TOPIC_600_900 = (28, [600, 900])
     TOPIC_1000_1500 = (2, [1000, 1500])
     TOPIC_1500_GT = (7, [1500, 10_000])
+
+
+# RENT_FORUM_TOPIC_DATA = {
+#     24: [300, 600],
+#     28: [600, 900],
+#     2: [1000, 1500],
+#     7: [1500, 10_000]
+# }
+
+
 
 
 class BuyForumTopicEnum(Enum):

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from environs import Env
+import json
 
 
 @dataclass
@@ -31,9 +32,28 @@ class TgSuperGroupConfig:
     rent_supergroup_id: int
     buy_supergroup_id: int
 
+    rent_topic_thread_ids: str
+    rent_topic_prices: str
+
     @staticmethod
     def from_env(env: Env) -> "TgSuperGroupConfig":
         return TgSuperGroupConfig(
             rent_supergroup_id=env.int('RENT_SUPERGROUP_ID'),
             buy_supergroup_id=env.int('BUY_SUPERGROUP_ID'),
+            rent_topic_thread_ids=env.str('RENT_TOPIC_THREAD_IDS'),
+            rent_topic_prices=env.str('RENT_TOPIC_PRICES'),
         )
+
+    def get_rent_topic_thread_ids(self):
+        return list(map(int, self.rent_topic_thread_ids.split('/')))
+
+    def get_rent_topic_prices(self):
+        prices_list = self.rent_topic_prices.split('/')
+        return [list(map(int, s.strip('[]').replace('_', '').split(', '))) for s in prices_list]
+
+    def make_forum_topics_data(self):
+        thread_ids = self.get_rent_topic_thread_ids()
+        prices = self.get_rent_topic_prices()
+        return dict(zip(thread_ids, prices))
+
+

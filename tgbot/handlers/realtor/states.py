@@ -50,7 +50,7 @@ from tgbot.templates.advertisement_creation import (
     realtor_advertisement_completed_text,
 )
 from tgbot.templates.messages import rent_channel_advertisement_message
-from tgbot.utils.helpers import filter_digits, get_media_group
+from tgbot.utils.helpers import filter_digits, get_media_group, send_message_to_rent_topic
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -818,6 +818,14 @@ async def get_repair_type(
         group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
 
         await call.message.answer_media_group(media=media_group)
+
+        # if new_advertisement.operation_type.value == 'Аренда':
+        #     await send_message_to_rent_topic(
+        #         bot=call.bot,
+        #         price=int(price),
+        #         media_group=media_group_for_topic,
+        #     )
+
 
         for director in group_directors:
             try:

@@ -2,7 +2,7 @@ from aiogram import Bot
 from aiogram.types import InputMediaPhoto
 
 from backend.app.config import config
-from tgbot.misc.enums import RentForumTopicEnum
+# from tgbot.misc.enums import RentForumTopicEnum, RENT_FORUM_TOPIC_DATA
 
 
 def filter_digits(message: str):
@@ -22,26 +22,30 @@ def get_media_group(photos, message: str | None = None) -> list[InputMediaPhoto]
     return media_group
 
 
+
+
+
 async def send_message_to_rent_topic(
         bot: Bot,
         price: int,
         media_group: list[InputMediaPhoto],
 ):
-    if 100 < int(price) < 200:
+    topic_data = config.super_group.make_forum_topics_data()
+    prices = list(topic_data.items())
+    supergroup_id = config.tg_bot.supergroup_id
+
+    for thread_id, _price in prices:
+        a, b = _price
+
+        price_range = list(range(a, b))
+        if price not in price_range:
+            continue
         await bot.send_media_group(
-            chat_id=config.tg_bot.supergroup_id,
-            message_thread_id=RentForumTopicEnum.TOPIC_100_200.value[0],
+            chat_id=supergroup_id,
+            message_thread_id=thread_id,
             media=media_group
         )
-    elif 200 < int(price) < 200:
-        await bot.send_media_group(
-            chat_id=config.tg_bot.supergroup_id,
-            message_thread_id=RentForumTopicEnum.TOPIC_200_300.value[0],
-            media=media_group
-        )
-    elif 300 < int(price) < 400:
-        await bot.send_media_group(
-            chat_id=config.tg_bot.supergroup_id,
-            message_thread_id=RentForumTopicEnum.TOPIC_300_400.value[0],
-            media=media_group
-        )
+
+
+
+

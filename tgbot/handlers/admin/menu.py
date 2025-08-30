@@ -550,7 +550,6 @@ async def process_moderation_confirm(
     media_group = get_media_group(photos, advertisement_message)
 
     if advertisement.operation_type.value == 'Аренда':
-
         await send_message_to_rent_topic(
             bot=call.bot,
             price=advertisement.price,
