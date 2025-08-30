@@ -71,3 +71,4 @@ token.json
 *.csv
 .DS_Store
 logs/
+*.json
