@@ -162,14 +162,13 @@ async def get_photos_set_title(
         message: Message,
         state: FSMContext,
 ):
-    print(message)
     current_state = await state.get_data()
     current_state["photos"].append(message.photo[-1].file_id)
 
-    try:
-        await message.delete()
-    except Exception as e:
-        print(e)
+    # try:
+    #     await message.delete()
+    # except Exception as e:
+    #     print(e)
 
     if current_state["photos_quantity"] == len(current_state["photos"]):
         cur_message = await message.answer(
@@ -745,6 +744,7 @@ async def get_repair_type(
         repair_type_status_uz = RepairTypeUz(REPAIR_TYPE_MAPPING_UZ[repair_type])
 
         photos = state_data.get("photos")
+        first_photo = photos[0]
         date_str = datetime.now().strftime("%Y-%m-%d")
         owner_phone_number = state_data.get("owner_phone_number")
 
@@ -754,7 +754,7 @@ async def get_repair_type(
 
         # preview
         preview_file_id = state_data.get("preview_file_id")
-        preview_file_obj = await call.bot.get_file(preview_file_id)
+        preview_file_obj = await call.bot.get_file(first_photo)
         preview_filename = preview_file_obj.file_path.split("/")[-1]
         preview_file = await call.bot.download_file(preview_file_obj.file_path)
         preview_file_location = advertisements_folder / preview_filename
