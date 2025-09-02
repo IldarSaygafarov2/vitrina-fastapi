@@ -1,12 +1,14 @@
 import os
 import shutil
+from datetime import datetime
 from pathlib import Path
 
 from aiogram import F, Router
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
 
+from backend.core.interfaces.advertisement import AdvertisementForReportDTO
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
@@ -21,6 +23,7 @@ from tgbot.keyboards.admin.inline import (
     directors_kb,
 )
 from tgbot.keyboards.user.inline import realtor_advertisements_kb
+from tgbot.misc.constants import MONTHS_DICT
 from tgbot.misc.realtor_states import RealtorCreationState, RealtorUpdatingState
 from tgbot.misc.user_states import (
     AdvertisementDeletionState,
@@ -32,6 +35,7 @@ from tgbot.templates.messages import (
     buy_channel_advertisement_message,
 )
 from tgbot.templates.realtor_texts import get_realtor_info
+from tgbot.utils.google_sheet import client_init_json, get_table_by_url, update_row_values
 from tgbot.utils.helpers import get_media_group, send_message_to_rent_topic
 
 router = Router()
@@ -736,3 +740,31 @@ async def process_advertisement_deletion_message(
     )
     await message.bot.send_message(user.tg_chat_id, f"Причина: {message.text}")
     await state.clear()
+
+
+@router.message(Command('get_report'))
+async def get_month_report(message: Message, repo: "RequestsRepo"):
+    month = datetime.now().month - 1
+
+    advertisements = await repo.advertisements.get_advertisements_by_month(month)
+    _advertisements_rent = []
+    _advertisements_buy = []
+
+    client = client_init_json()
+    rent_spreadsheet = get_table_by_url(client, config.report_sheet.rent_report_sheet_link)
+    buy_spreadsheet = get_table_by_url(client, config.report_sheet.buy_report_sheet_link)
+
+    for item in advertisements:
+        item = AdvertisementForReportDTO.model_validate(item, from_attributes=True).model_dump()
+        item['created_at'] = item['created_at'].strftime("%d.%m.%Y %H:%M:%S")
+        item['category'] = item['category']['name']
+        item['district'] = item['district']['name']
+        item['user'] = item['user']['fullname'] if item.get('user') else ''
+        if item['operation_type'] == 'Аренда':
+            _advertisements_rent.append(item)
+        elif item['operation_type'] == 'Покупка':
+            _advertisements_buy.append(item)
+
+    # update_row_values(rent_spreadsheet, worksheet_name=MONTHS_DICT[month], values=_advertisements_rent)
+    # update_row_values(buy_spreadsheet, worksheet_name=MONTHS_DICT[month], values=_advertisements_buy)
+    await message.answer('Отчет успешно сгенерирован')

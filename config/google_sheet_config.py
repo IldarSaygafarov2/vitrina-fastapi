@@ -16,12 +16,14 @@ class GoogleSheetConfig:
 
 @dataclass
 class ReportSheetConfig:
-    report_sheet_link: str
+    rent_report_sheet_link: str
+    buy_report_sheet_link: str
     config_filename: str
 
     @staticmethod
     def from_env(env: Env) -> "ReportSheetConfig":
         return ReportSheetConfig(
-            report_sheet_link=env.str("REPORT_SHEET_LINK"),
+            rent_report_sheet_link=env.str("RENT_REPORT_SHEET_LINK"),
+            buy_report_sheet_link=env.str("BUY_REPORT_SHEET_LINK"),
             config_filename=env.str("REPORT_SHEET_CONFIG"),
         )

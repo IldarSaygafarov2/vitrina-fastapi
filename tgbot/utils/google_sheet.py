@@ -41,3 +41,14 @@ def update_row_values(spread: Spreadsheet, worksheet_name: str, values: list):
 
 
 
+def main() -> None:
+    client = client_init_json()
+    buy_spread = get_table_by_url(client, config.report_sheet.buy_report_sheet_link)
+    create_worksheets(buy_spread, list(MONTHS_DICT.values()))
+    add_row_titles(buy_spread, list(ROW_FIELDS.values()))
+    print(buy_spread)
+
+
+if __name__ == '__main__':
+    main()
+
