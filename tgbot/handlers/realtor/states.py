@@ -50,7 +50,7 @@ from tgbot.templates.advertisement_creation import (
     realtor_advertisement_completed_text,
 )
 from tgbot.templates.messages import rent_channel_advertisement_message
-from tgbot.utils.helpers import filter_digits, get_media_group, send_message_to_rent_topic
+from tgbot.utils.helpers import filter_digits, get_media_group
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -113,29 +113,30 @@ async def get_category_set_photos_quantity(
     category = await repo.categories.get_category_by_id(category_id=category_id)
 
     message = await call.message.answer(
-        text="""Отправьте заставку объявления
-Фотография будет отображаться на странице списка объявлений
-(Не добавляйте фотографии унитазов, ванной комнаты, и других непрезентабельных комнат)
-        """
+#         text="""Отправьте заставку объявления
+# Фотография будет отображаться на странице списка объявлений
+# (Не добавляйте фотографии унитазов, ванной комнаты, и других непрезентабельных комнат)
+#         """
+        text='Напишите сколько фотографий будет у объявления'
     )
 
     await state.update_data(category=category, photos_qty_message=message)
-    await state.set_state(AdvertisementCreationState.preview)
-
-
-@router.message(AdvertisementCreationState.preview)
-async def get_preview(
-        message: Message,
-        state: FSMContext,
-):
-    photo_id = message.photo[-1].file_id
-    await message.answer("Напишите сколько фотографий будет у объявления")
-    await state.update_data(preview_file_id=photo_id)
     await state.set_state(AdvertisementCreationState.photos_quantity)
 
 
+# @router.message(AdvertisementCreationState.preview)
+# async def get_preview(
+#         message: Message,
+#         state: FSMContext,
+# ):
+#     photo_id = message.photo[-1].file_id
+#     await message.answer("Напишите сколько фотографий будет у объявления")
+#     await state.update_data(preview_file_id=photo_id)
+#     await state.set_state(AdvertisementCreationState.photos_quantity)
+
+
 @router.message(AdvertisementCreationState.photos_quantity)
-async def get_photos_quanity_set_get_photos(
+async def get_photos_quantity_set_get_photos(
         message: Message,
         state: FSMContext,
 ):
@@ -161,6 +162,7 @@ async def get_photos_set_title(
         message: Message,
         state: FSMContext,
 ):
+    print(message)
     current_state = await state.get_data()
     current_state["photos"].append(message.photo[-1].file_id)
 
