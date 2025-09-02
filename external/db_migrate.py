@@ -1,6 +1,5 @@
-import csv
 import json
-from pprint import pprint
+import re
 
 
 def read_json(json_path: str) -> list[dict]:
@@ -8,17 +7,22 @@ def read_json(json_path: str) -> list[dict]:
         return json.load(file)
 
 
-def make_json(csv_path: str, json_path: str):
-    data = []
+def fix_json_list(json_list_str: str) -> list[dict]:
+    """
+    Принимает строку со списком JSON-объектов (возможно с ошибками экранирования)
+    и возвращает список словарей.
+    """
+    # Чиним лишние экранирования кавычек (\\" -> \")
+    fixed_str = re.sub(r'\\\\\"', r'\"', json_list_str)
 
-    with open(csv_path, encoding="utf-8") as csv_file:
-        reader = csv.DictReader(csv_file)
+    # Пробуем распарсить как список JSON-объектов
+    data = json.loads(fixed_str)
 
-        for row in reader:
-            data.append(row)
+    # Если на вход пришёл один объект, а не список — оборачиваем в список
+    if isinstance(data, dict):
+        data = [data]
 
-    with open(json_path, mode="w", encoding="utf-8") as json_file:
-        json.dump(data, json_file, indent=4, ensure_ascii=False)
+    return data
 
 
 def clean_json(json_path: str, *fields):
@@ -61,18 +65,3 @@ def clean_json(json_path: str, *fields):
         json.dump(imgs, t, indent=4, ensure_ascii=False)
 
     return result
-
-
-# districts = clean_json("external/districts.json", "name_ru", "id")
-# categories = clean_json("external/categories.json", "name_ru", "id")
-advertisements = clean_json("external/advertisements.json")
-# pprint(advertisements)
-
-# make_json("external/api_district.csv", "external/districts.json")
-# make_json("external/api_category.csv", "external/categories.json")
-# make_json("external/api_advertisement.csv", "external/advertisements.json")
-# make_json("external/users_user.csv", "external/users.json")
-# make_json(
-#     "external/api_advertisementgallery.csv",
-#     "external/api_advertisementgallery.json",
-# )

@@ -1,17 +1,28 @@
-import random
-import uuid
-
 from sqlalchemy import delete, desc, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
 from backend.core.filters.advertisement import AdvertisementFilter
 from infrastructure.database.models import Advertisement, AdvertisementImage
-
 from .base import BaseRepo
 
 
 class AdvertisementRepo(BaseRepo):
+    async def get_advertisements_by_month(self, month: int):
+        query = (
+            select(Advertisement)
+            .filter(
+                func.extract('month', Advertisement.created_at) == month
+            )
+            .options(
+                selectinload(Advertisement.user),
+                selectinload(Advertisement.category),
+                selectinload(Advertisement.district),
+
+            )
+        )
+        result = await self.session.execute(query)
+        return result.scalars().all()
 
     async def create_advertisement(
         self,

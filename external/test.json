@@ -1,6 +1,6 @@
 {
-    "Учтепинский район": [],
-    "Бектемирский район": [
+    "Заголовок - русский язык": [],
+    "Продается квартира Новостройка": [
         {
             "id": "1",
             "photo": "media/advertisements/2024-12-05/file_4.jpg",
@@ -22,20 +22,24 @@
             "advertisement_id": "2"
         }
     ],
-    "Мирзо-Улугбекский район": [],
-    "Мирабадский район": [
+    "testoviy zagolovok": [
         {
-            "id": "7",
-            "photo": "media/advertisements/2024-12-05/file_15_sYfMg9J.jpg",
-            "advertisement_id": "4"
+            "id": "17",
+            "photo": "media/advertisements/2024-12-05/file_29.jpg",
+            "advertisement_id": "7"
         },
         {
-            "id": "8",
-            "photo": "media/advertisements/2024-12-05/file_14_PBOlI0f.jpg",
-            "advertisement_id": "4"
+            "id": "18",
+            "photo": "media/advertisements/2024-12-05/file_31.jpg",
+            "advertisement_id": "7"
+        },
+        {
+            "id": "19",
+            "photo": "media/advertisements/2024-12-05/file_30.jpg",
+            "advertisement_id": "7"
         }
     ],
-    "Сергелийский район": [
+    "Zagolovok": [
         {
             "id": "9",
             "photo": "media/advertisements/2024-12-05/file_21.jpg",
@@ -57,7 +61,7 @@
             "advertisement_id": "5"
         }
     ],
-    "Алмзарский район": [
+    "Продается квартира на Котельной": [
         {
             "id": "13",
             "photo": "media/advertisements/2024-12-05/file_18.jpg",
@@ -79,31 +83,14 @@
             "advertisement_id": "6"
         }
     ],
-    "Чиланзарский район": [
-        {
-            "id": "17",
-            "photo": "media/advertisements/2024-12-05/file_29.jpg",
-            "advertisement_id": "7"
-        },
-        {
-            "id": "18",
-            "photo": "media/advertisements/2024-12-05/file_31.jpg",
-            "advertisement_id": "7"
-        },
-        {
-            "id": "19",
-            "photo": "media/advertisements/2024-12-05/file_30.jpg",
-            "advertisement_id": "7"
-        }
-    ],
-    "Шайхантаурский район": [
+    "тестовое объявление": [
         {
             "id": "20",
             "photo": "media/advertisements/2024-12-05/file_32.jpg",
             "advertisement_id": "8"
         }
     ],
-    "Юнусабадский район": [
+    "Продаётся квартира": [
         {
             "id": "21",
             "photo": "media/advertisements/2024-12-05/file_37.jpg",
@@ -135,7 +122,7 @@
             "advertisement_id": "9"
         }
     ],
-    "Яккасарайский район": [
+    "Тестовый заголовок": [
         {
             "id": "27",
             "photo": "media/advertisements/2024-12-05/hNmKO9hhZhc.jpg",
@@ -147,7 +134,7 @@
             "advertisement_id": "10"
         }
     ],
-    "Яшнабадский район": [
+    "3 комнатная квартира по ул.Нукусская": [
         {
             "id": "29",
             "photo": "media/advertisements/2024-12-05/file_46.jpg",
@@ -189,7 +176,7 @@
             "advertisement_id": "11"
         }
     ],
-    "Янгихаётский район": [
+    "Аренда квартиры\nIT Park": [
         {
             "id": "37",
             "photo": "media/advertisements/2024-12-05/file_56.jpg",
@@ -239,6 +226,539 @@
             "id": "46",
             "photo": "media/advertisements/2024-12-05/file_59.jpg",
             "advertisement_id": "12"
+        }
+    ],
+    "Улица Новомосковская стадион СТАРТ": [
+        {
+            "id": "47",
+            "photo": "media/advertisements/2024-12-05/file_65.jpg",
+            "advertisement_id": "13"
+        },
+        {
+            "id": "48",
+            "photo": "media/advertisements/2024-12-05/file_69.jpg",
+            "advertisement_id": "13"
+        },
+        {
+            "id": "49",
+            "photo": "media/advertisements/2024-12-05/file_64.jpg",
+            "advertisement_id": "13"
+        },
+        {
+            "id": "50",
+            "photo": "media/advertisements/2024-12-05/file_68.jpg",
+            "advertisement_id": "13"
+        },
+        {
+            "id": "51",
+            "photo": "media/advertisements/2024-12-05/file_67.jpg",
+            "advertisement_id": "13"
+        },
+        {
+            "id": "52",
+            "photo": "media/advertisements/2024-12-05/file_71.jpg",
+            "advertisement_id": "13"
+        },
+        {
+            "id": "53",
+            "photo": "media/advertisements/2024-12-05/file_66.jpg",
+            "advertisement_id": "13"
+        },
+        {
+            "id": "54",
+            "photo": "media/advertisements/2024-12-05/file_70.jpg",
+            "advertisement_id": "13"
+        }
+    ],
+    "2 комнатная на Госпитальном": [
+        {
+            "id": "55",
+            "photo": "media/advertisements/2024-12-05/file_76.jpg",
+            "advertisement_id": "14"
+        },
+        {
+            "id": "56",
+            "photo": "media/advertisements/2024-12-05/file_79.jpg",
+            "advertisement_id": "14"
+        },
+        {
+            "id": "57",
+            "photo": "media/advertisements/2024-12-05/file_73.jpg",
+            "advertisement_id": "14"
+        },
+        {
+            "id": "58",
+            "photo": "media/advertisements/2024-12-05/file_78.jpg",
+            "advertisement_id": "14"
+        },
+        {
+            "id": "59",
+            "photo": "media/advertisements/2024-12-05/file_75.jpg",
+            "advertisement_id": "14"
+        },
+        {
+            "id": "60",
+            "photo": "media/advertisements/2024-12-05/file_77.jpg",
+            "advertisement_id": "14"
+        },
+        {
+            "id": "61",
+            "photo": "media/advertisements/2024-12-05/file_72.jpg",
+            "advertisement_id": "14"
+        },
+        {
+            "id": "62",
+            "photo": "media/advertisements/2024-12-05/file_74.jpg",
+            "advertisement_id": "14"
+        }
+    ],
+    "Срочно.3 комнатная на Ц-5": [
+        {
+            "id": "63",
+            "photo": "media/advertisements/2024-12-05/file_90.jpg",
+            "advertisement_id": "15"
+        },
+        {
+            "id": "64",
+            "photo": "media/advertisements/2024-12-05/file_87.jpg",
+            "advertisement_id": "15"
+        },
+        {
+            "id": "65",
+            "photo": "media/advertisements/2024-12-05/file_82.jpg",
+            "advertisement_id": "15"
+        },
+        {
+            "id": "66",
+            "photo": "media/advertisements/2024-12-05/file_83.jpg",
+            "advertisement_id": "15"
+        },
+        {
+            "id": "67",
+            "photo": "media/advertisements/2024-12-05/file_81.jpg",
+            "advertisement_id": "15"
+        },
+        {
+            "id": "68",
+            "photo": "media/advertisements/2024-12-05/file_84.jpg",
+            "advertisement_id": "15"
+        },
+        {
+            "id": "69",
+            "photo": "media/advertisements/2024-12-05/file_88.jpg",
+            "advertisement_id": "15"
+        },
+        {
+            "id": "70",
+            "photo": "media/advertisements/2024-12-05/file_86.jpg",
+            "advertisement_id": "15"
+        },
+        {
+            "id": "71",
+            "photo": "media/advertisements/2024-12-05/file_85.jpg",
+            "advertisement_id": "15"
+        },
+        {
+            "id": "72",
+            "photo": "media/advertisements/2024-12-05/file_89.jpg",
+            "advertisement_id": "15"
+        }
+    ],
+    "3 комнатная на Новомосковской": [
+        {
+            "id": "73",
+            "photo": "media/advertisements/2024-12-05/file_100.jpg",
+            "advertisement_id": "16"
+        },
+        {
+            "id": "74",
+            "photo": "media/advertisements/2024-12-05/file_97.jpg",
+            "advertisement_id": "16"
+        },
+        {
+            "id": "75",
+            "photo": "media/advertisements/2024-12-05/file_94.jpg",
+            "advertisement_id": "16"
+        },
+        {
+            "id": "76",
+            "photo": "media/advertisements/2024-12-05/file_93.jpg",
+            "advertisement_id": "16"
+        },
+        {
+            "id": "77",
+            "photo": "media/advertisements/2024-12-05/file_92.jpg",
+            "advertisement_id": "16"
+        },
+        {
+            "id": "78",
+            "photo": "media/advertisements/2024-12-05/file_98.jpg",
+            "advertisement_id": "16"
+        },
+        {
+            "id": "79",
+            "photo": "media/advertisements/2024-12-05/file_95.jpg",
+            "advertisement_id": "16"
+        },
+        {
+            "id": "80",
+            "photo": "media/advertisements/2024-12-05/file_99.jpg",
+            "advertisement_id": "16"
+        },
+        {
+            "id": "81",
+            "photo": "media/advertisements/2024-12-05/file_96.jpg",
+            "advertisement_id": "16"
+        },
+        {
+            "id": "82",
+            "photo": "media/advertisements/2024-12-05/file_91.jpg",
+            "advertisement_id": "16"
+        }
+    ],
+    "2 комнатная.Ул.Садыка Азимова": [
+        {
+            "id": "83",
+            "photo": "media/advertisements/2024-12-05/file_107.jpg",
+            "advertisement_id": "17"
+        },
+        {
+            "id": "84",
+            "photo": "media/advertisements/2024-12-05/file_106.jpg",
+            "advertisement_id": "17"
+        },
+        {
+            "id": "85",
+            "photo": "media/advertisements/2024-12-05/file_102.jpg",
+            "advertisement_id": "17"
+        },
+        {
+            "id": "86",
+            "photo": "media/advertisements/2024-12-05/file_108.jpg",
+            "advertisement_id": "17"
+        },
+        {
+            "id": "87",
+            "photo": "media/advertisements/2024-12-05/file_101.jpg",
+            "advertisement_id": "17"
+        },
+        {
+            "id": "88",
+            "photo": "media/advertisements/2024-12-05/file_104.jpg",
+            "advertisement_id": "17"
+        },
+        {
+            "id": "89",
+            "photo": "media/advertisements/2024-12-05/file_103.jpg",
+            "advertisement_id": "17"
+        },
+        {
+            "id": "90",
+            "photo": "media/advertisements/2024-12-05/file_105.jpg",
+            "advertisement_id": "17"
+        }
+    ],
+    "2 комнатная. Метро Космонавты": [
+        {
+            "id": "91",
+            "photo": "media/advertisements/2024-12-05/file_110.jpg",
+            "advertisement_id": "18"
+        },
+        {
+            "id": "92",
+            "photo": "media/advertisements/2024-12-05/file_112.jpg",
+            "advertisement_id": "18"
+        },
+        {
+            "id": "93",
+            "photo": "media/advertisements/2024-12-05/file_111.jpg",
+            "advertisement_id": "18"
+        },
+        {
+            "id": "94",
+            "photo": "media/advertisements/2024-12-05/file_109.jpg",
+            "advertisement_id": "18"
+        }
+    ],
+    "3 комнатная.Улица Шахрисабз": [
+        {
+            "id": "95",
+            "photo": "media/advertisements/2024-12-05/file_114.jpg",
+            "advertisement_id": "19"
+        },
+        {
+            "id": "96",
+            "photo": "media/advertisements/2024-12-05/file_121.jpg",
+            "advertisement_id": "19"
+        },
+        {
+            "id": "97",
+            "photo": "media/advertisements/2024-12-05/file_120.jpg",
+            "advertisement_id": "19"
+        },
+        {
+            "id": "98",
+            "photo": "media/advertisements/2024-12-05/file_119.jpg",
+            "advertisement_id": "19"
+        },
+        {
+            "id": "99",
+            "photo": "media/advertisements/2024-12-05/file_113.jpg",
+            "advertisement_id": "19"
+        },
+        {
+            "id": "100",
+            "photo": "media/advertisements/2024-12-05/file_117.jpg",
+            "advertisement_id": "19"
+        },
+        {
+            "id": "101",
+            "photo": "media/advertisements/2024-12-05/file_116.jpg",
+            "advertisement_id": "19"
+        },
+        {
+            "id": "102",
+            "photo": "media/advertisements/2024-12-05/file_115.jpg",
+            "advertisement_id": "19"
+        },
+        {
+            "id": "103",
+            "photo": "media/advertisements/2024-12-05/file_118.jpg",
+            "advertisement_id": "19"
+        }
+    ],
+    "5 комнатная на Госпитальном": [
+        {
+            "id": "104",
+            "photo": "media/advertisements/2024-12-05/file_127.jpg",
+            "advertisement_id": "20"
+        },
+        {
+            "id": "105",
+            "photo": "media/advertisements/2024-12-05/file_125.jpg",
+            "advertisement_id": "20"
+        },
+        {
+            "id": "106",
+            "photo": "media/advertisements/2024-12-05/file_128.jpg",
+            "advertisement_id": "20"
+        },
+        {
+            "id": "107",
+            "photo": "media/advertisements/2024-12-05/file_126.jpg",
+            "advertisement_id": "20"
+        },
+        {
+            "id": "108",
+            "photo": "media/advertisements/2024-12-05/file_129.jpg",
+            "advertisement_id": "20"
+        },
+        {
+            "id": "109",
+            "photo": "media/advertisements/2024-12-05/file_122.jpg",
+            "advertisement_id": "20"
+        },
+        {
+            "id": "110",
+            "photo": "media/advertisements/2024-12-05/file_123.jpg",
+            "advertisement_id": "20"
+        },
+        {
+            "id": "111",
+            "photo": "media/advertisements/2024-12-05/file_124.jpg",
+            "advertisement_id": "20"
+        },
+        {
+            "id": "112",
+            "photo": "media/advertisements/2024-12-05/file_130.jpg",
+            "advertisement_id": "20"
+        }
+    ],
+    "2 комнатная квартира на Ц-7": [
+        {
+            "id": "113",
+            "photo": "media/advertisements/2024-12-05/file_136.jpg",
+            "advertisement_id": "21"
+        },
+        {
+            "id": "114",
+            "photo": "media/advertisements/2024-12-05/file_135.jpg",
+            "advertisement_id": "21"
+        },
+        {
+            "id": "115",
+            "photo": "media/advertisements/2024-12-05/file_132.jpg",
+            "advertisement_id": "21"
+        },
+        {
+            "id": "116",
+            "photo": "media/advertisements/2024-12-05/file_133.jpg",
+            "advertisement_id": "21"
+        },
+        {
+            "id": "117",
+            "photo": "media/advertisements/2024-12-05/file_131.jpg",
+            "advertisement_id": "21"
+        },
+        {
+            "id": "118",
+            "photo": "media/advertisements/2024-12-05/file_139.jpg",
+            "advertisement_id": "21"
+        },
+        {
+            "id": "119",
+            "photo": "media/advertisements/2024-12-05/file_138.jpg",
+            "advertisement_id": "21"
+        },
+        {
+            "id": "120",
+            "photo": "media/advertisements/2024-12-05/file_137.jpg",
+            "advertisement_id": "21"
+        },
+        {
+            "id": "121",
+            "photo": "media/advertisements/2024-12-05/file_134.jpg",
+            "advertisement_id": "21"
+        }
+    ],
+    "3 комнатная. Метро Космонавты. Голубые Купола": [
+        {
+            "id": "122",
+            "photo": "media/advertisements/2024-12-05/file_142.jpg",
+            "advertisement_id": "22"
+        },
+        {
+            "id": "123",
+            "photo": "media/advertisements/2024-12-05/file_141.jpg",
+            "advertisement_id": "22"
+        },
+        {
+            "id": "124",
+            "photo": "media/advertisements/2024-12-05/file_145.jpg",
+            "advertisement_id": "22"
+        },
+        {
+            "id": "125",
+            "photo": "media/advertisements/2024-12-05/file_143.jpg",
+            "advertisement_id": "22"
+        },
+        {
+            "id": "126",
+            "photo": "media/advertisements/2024-12-05/file_140.jpg",
+            "advertisement_id": "22"
+        },
+        {
+            "id": "127",
+            "photo": "media/advertisements/2024-12-05/file_144.jpg",
+            "advertisement_id": "22"
+        }
+    ],
+    "2 комнатнпя в центре": [
+        {
+            "id": "128",
+            "photo": "media/advertisements/2024-12-05/file_146.jpg",
+            "advertisement_id": "23"
+        },
+        {
+            "id": "129",
+            "photo": "media/advertisements/2024-12-05/file_149.jpg",
+            "advertisement_id": "23"
+        },
+        {
+            "id": "130",
+            "photo": "media/advertisements/2024-12-05/file_147.jpg",
+            "advertisement_id": "23"
+        },
+        {
+            "id": "131",
+            "photo": "media/advertisements/2024-12-05/file_148.jpg",
+            "advertisement_id": "23"
+        },
+        {
+            "id": "132",
+            "photo": "media/advertisements/2024-12-05/file_150.jpg",
+            "advertisement_id": "23"
+        }
+    ],
+    "4 комнатная с ремонтом на Госпитальном": [
+        {
+            "id": "133",
+            "photo": "media/advertisements/2024-12-05/file_153.jpg",
+            "advertisement_id": "24"
+        },
+        {
+            "id": "134",
+            "photo": "media/advertisements/2024-12-05/file_157.jpg",
+            "advertisement_id": "24"
+        },
+        {
+            "id": "135",
+            "photo": "media/advertisements/2024-12-05/file_152.jpg",
+            "advertisement_id": "24"
+        },
+        {
+            "id": "136",
+            "photo": "media/advertisements/2024-12-05/file_151.jpg",
+            "advertisement_id": "24"
+        },
+        {
+            "id": "137",
+            "photo": "media/advertisements/2024-12-05/file_156.jpg",
+            "advertisement_id": "24"
+        },
+        {
+            "id": "138",
+            "photo": "media/advertisements/2024-12-05/file_154.jpg",
+            "advertisement_id": "24"
+        },
+        {
+            "id": "139",
+            "photo": "media/advertisements/2024-12-05/file_158.jpg",
+            "advertisement_id": "24"
+        },
+        {
+            "id": "140",
+            "photo": "media/advertisements/2024-12-05/file_155.jpg",
+            "advertisement_id": "24"
+        }
+    ],
+    "4 комнатная на Дархане": [
+        {
+            "id": "141",
+            "photo": "media/advertisements/2024-12-05/file_161.jpg",
+            "advertisement_id": "25"
+        },
+        {
+            "id": "142",
+            "photo": "media/advertisements/2024-12-05/file_160.jpg",
+            "advertisement_id": "25"
+        },
+        {
+            "id": "143",
+            "photo": "media/advertisements/2024-12-05/file_163.jpg",
+            "advertisement_id": "25"
+        },
+        {
+            "id": "144",
+            "photo": "media/advertisements/2024-12-05/file_162.jpg",
+            "advertisement_id": "25"
+        },
+        {
+            "id": "145",
+            "photo": "media/advertisements/2024-12-05/file_159.jpg",
+            "advertisement_id": "25"
+        }
+    ],
+    "4 комнатная.Ц-4.Массив Кашгар": [
+        {
+            "id": "146",
+            "photo": "media/advertisements/2024-12-05/file_165.jpg",
+            "advertisement_id": "26"
+        },
+        {
+            "id": "147",
+            "photo": "media/advertisements/2024-12-05/file_164.jpg",
+            "advertisement_id": "26"
         }
     ]
 }

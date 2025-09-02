@@ -56,3 +56,48 @@ ADVERTISEMENT_UPDATE_FIELDS = [
     ("update_advertisement_is_studio", "Студия"),
 ]
 ADVERTISEMENT_UPDATE_FIELDS = {k: v for k, v in ADVERTISEMENT_UPDATE_FIELDS}
+
+ROW_FIELDS = {
+    "name": "Название",
+    "house_quadrature_from": "Площадь участка от",
+    "house_quadrature_to": "Площадь участка до",
+    "creation_year": "Дата постройки",
+    "property_type": "Тип недвижимости",
+    "repair_type": "Ремонт",
+    "description": "Описание",
+    "address": "Адрес",
+    "price": "Цена",
+    "floor_from": "Этаж",
+    "floor_to": "Этажность",
+    "operation_type": "Тип операции",
+    "district_id": "Район",
+    "category_id": "Категория",
+    "user_id": "Пользователь",
+    "name_uz": "Название UZ",
+    "description_uz": "Описание UZ",
+    "address_uz": "Адрес",
+    "property_type_uz": "Тип недвижимости UZ",
+    "operation_type_uz": "Тип операции UZ",
+    "repair_type_uz": "Тип ремонта UZ",
+    "is_moderated": "Статус модерации",
+    "created_at": "Дата добавления",
+    "unique_id": "Уникальный ID",
+    "rooms_quantity": "Количество комнат",
+    "quadrature": "Квадратура",
+    "owner_phone_number": "Номер собственника",
+}
+
+MONTHS_DICT = {
+    1: 'Январь',
+    2: 'Февраль',
+    3: 'Март',
+    4: 'Апрель',
+    5: 'Май',
+    6: 'Июнь',
+    7: 'Июль',
+    8: 'Август',
+    9: 'Сентябрь',
+    10: 'Октябрь',
+    11: 'Ноябрь',
+    12: 'Декабрь',
+}

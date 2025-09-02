@@ -1,8 +1,14 @@
+import json
+
 from aiogram import Bot
 from aiogram.types import InputMediaPhoto
 
 from backend.app.config import config
-# from tgbot.misc.enums import RentForumTopicEnum, RENT_FORUM_TOPIC_DATA
+
+
+def read_json(file_path: str):
+    with open(file_path, mode='r', encoding='utf-8') as f:
+        return json.load(f)
 
 
 def filter_digits(message: str):

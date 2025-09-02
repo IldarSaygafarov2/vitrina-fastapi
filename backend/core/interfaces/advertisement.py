@@ -5,7 +5,37 @@ from pydantic import BaseModel
 
 from backend.core.interfaces.category import CategoryDTO
 from backend.core.interfaces.district import DistrictDTO
-from backend.core.interfaces.user import UserDTO, UserAdvertisementObjectDTO
+from backend.core.interfaces.user import UserAdvertisementObjectDTO
+
+
+class AdvertisementForReportDTO(BaseModel):
+    name: str
+    house_quadrature_from: int
+    house_quadrature_to: int
+    creation_year: int
+    property_type: str
+    repair_type: str
+    description: str
+    address: str
+    price: int
+    floor_from: int
+    floor_to: int
+    operation_type: str
+    category: Optional[CategoryDTO]
+    district: Optional[DistrictDTO]
+    user: Optional[UserAdvertisementObjectDTO]
+    name_uz: str
+    description_uz: str
+    address_uz: str
+    property_type_uz: str
+    operation_type_uz: str
+    repair_type_uz: str
+    is_moderated: bool | None
+    created_at: datetime
+    unique_id: str
+    rooms_quantity: int
+    quadrature: int
+    owner_phone_number: str | None
 
 
 class AdvertisementDTO(BaseModel):

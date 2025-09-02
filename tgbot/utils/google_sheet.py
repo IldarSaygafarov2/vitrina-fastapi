@@ -1,21 +1,7 @@
 from gspread import Client, Spreadsheet, service_account
 
 from backend.app.config import config
-
-MONTHS = [
-    'Январь',
-    'Февраль',
-    'Март',
-    'Апрель',
-    'Май',
-    'Июнь',
-    'Июль',
-    'Август',
-    'Сентябрь',
-    'Октябрь',
-    'Ноябрь',
-    'Декабрь',
-]
+from tgbot.misc.constants import MONTHS_DICT, ROW_FIELDS
 
 
 def client_init_json() -> Client:
@@ -33,16 +19,25 @@ def create_worksheets(spread: Spreadsheet, worksheet_names: list[str] = None):
         if worksheet_name in current_worksheets:
             continue
 
-        spread.add_worksheet(worksheet_name, rows=1, cols=1)
+        spread.add_worksheet(worksheet_name, rows=1000, cols=26)
 
     print(f'Created {len(worksheet_names)} worksheets')
 
 
-def main():
-    client = client_init_json()
-    spreadsheet = get_table_by_url(client, config.report_sheet.report_sheet_link)
-    create_worksheets(spreadsheet, MONTHS)
+def add_row_titles(spread: Spreadsheet, data):
+    worksheets = spread.worksheets()
+    for worksheet in worksheets:
+        worksheet.append_row(data)
 
 
-if __name__ == '__main__':
-    main()
+def update_row_values(spread: Spreadsheet, worksheet_name: str, values: list):
+    worksheet = spread.worksheet(worksheet_name)
+    all_values_count = len(worksheet.get_all_values())
+    for item in values:
+        item = list(item.values())
+        worksheet.insert_row(item, index=all_values_count + 1)
+        print(f'Added row: {item}')
+
+
+
+
