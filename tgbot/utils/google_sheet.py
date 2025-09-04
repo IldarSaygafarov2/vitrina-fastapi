@@ -1,3 +1,5 @@
+import time
+
 from gspread import Client, Spreadsheet, service_account
 
 from backend.app.config import config
@@ -37,7 +39,15 @@ def update_row_values(spread: Spreadsheet, worksheet_name: str, values: list):
         item = list(item.values())
         worksheet.insert_row(item, index=all_values_count + 1)
         print(f'Added row: {item}')
+        time.sleep(2)
 
+
+def fill_row_with_data(spread: Spreadsheet, worksheet_name: str, data: dict):
+    worksheet = spread.worksheet(worksheet_name)
+    total_values = len(worksheet.get_all_values())
+    data_values = list(data.values())
+    worksheet.insert_row(data_values, index=total_values + 1)
+    print(f'Added row: {data_values}')
 
 
 

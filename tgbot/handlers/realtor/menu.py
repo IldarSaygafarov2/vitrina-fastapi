@@ -1,9 +1,9 @@
 from aiogram import F, Router
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message, InputMediaPhoto
+from aiogram.types import CallbackQuery, Message
 
-
+from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
 from tgbot.keyboards.admin.inline import advertisement_moderation_kb
@@ -19,7 +19,6 @@ from tgbot.templates.advertisement_creation import (
     realtor_advertisement_completed_text,
 )
 from tgbot.utils.helpers import get_media_group
-from config.loader import load_config
 
 config = load_config()
 
