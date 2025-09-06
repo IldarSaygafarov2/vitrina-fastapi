@@ -1,16 +1,13 @@
-import json
+import datetime
 import os
 import shutil
-from datetime import datetime
-from lib2to3.fixer_util import find_indentation
 from pathlib import Path
 
 from aiogram import F, Router
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
 
-from backend.core.interfaces.advertisement import AdvertisementForReportDTO
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
@@ -37,7 +34,8 @@ from tgbot.templates.messages import (
 )
 from tgbot.templates.realtor_texts import get_realtor_info
 from tgbot.utils.helpers import get_media_group, send_message_to_rent_topic
-from celery_tasks.tasks import fill_advertisements_report
+from celery_tasks.tasks import fill_report
+from backend.core.interfaces.advertisement import AdvertisementForReportDTO
 
 
 router = Router()
@@ -70,7 +68,6 @@ async def start(message: Message, repo: "RequestsRepo"):
 @router.callback_query(F.data == "rg_realtors")
 async def get_realtors(
         call: CallbackQuery,
-        repo: "RequestsRepo",
 ):
     await call.answer()
 
@@ -104,7 +101,6 @@ async def get_all_realtors(
 @router.callback_query(F.data == "rg_realtors_add")
 async def add_new_realtor(
         call: CallbackQuery,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     await call.answer()
@@ -147,10 +143,9 @@ async def get_realtor(
 
 
 @router.callback_query(F.data.startswith("delete_realtor"))
-async def delete_reltor(
+async def delete_realtor(
         call: CallbackQuery,
         repo: "RequestsRepo",
-        state: FSMContext,
 ):
     await call.answer()
     realtor_id = int(call.data.split(":")[-1])
@@ -166,7 +161,6 @@ async def delete_reltor(
 async def confirm_realtor_delete(
         call: CallbackQuery,
         repo: "RequestsRepo",
-        state: FSMContext,
 ):
     await call.answer()
     realtor_id = int(call.data.split(":")[-1])
@@ -207,7 +201,6 @@ async def get_realtor_advertisements(
 async def get_realtor_advertisement(
         call: CallbackQuery,
         repo: "RequestsRepo",
-        state: FSMContext,
 ):
     await call.answer()
 
@@ -237,14 +230,13 @@ async def get_realtor_advertisement(
             reply_markup=delete_advertisement_kb(advertisement_id),
         )
     except Exception as e:
-        return await call.bot.send_message(chat_id=5090318438, text=str(e))
+        return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id, text=str(e))
 
 
 @router.callback_query(F.data.startswith("edit_realtor"))
 async def edit_realtor_data(
         call: CallbackQuery,
         repo: "RequestsRepo",
-        state: FSMContext,
 ):
     await call.answer()
 
@@ -469,7 +461,6 @@ async def update_tg_username(
 @router.callback_query(F.data.startswith("update_realtor_photo"))
 async def update_profile_image(
         call: CallbackQuery,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     await call.answer()
@@ -532,7 +523,6 @@ async def update_profile_image(
 async def process_moderation_confirm(
         call: CallbackQuery,
         repo: "RequestsRepo",
-        state: FSMContext,
 ):
     await call.answer()
 
@@ -545,7 +535,7 @@ async def process_moderation_confirm(
     photos = [obj.tg_image_hash for obj in advertisement.images]
 
     user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
-
+    
     if advertisement.operation_type.value == "Аренда":
         chat_id = config.tg_bot.rent_channel_name
         advertisement_message = rent_channel_advertisement_message(advertisement)
@@ -554,6 +544,13 @@ async def process_moderation_confirm(
         advertisement_message = buy_channel_advertisement_message(advertisement)
 
     media_group = get_media_group(photos, advertisement_message)
+
+    month = datetime.datetime.now().month
+
+    advertisement_data = AdvertisementForReportDTO.model_validate(advertisement, from_attributes=True).model_dump()
+
+    fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
+                      data=advertisement_data)
 
     if advertisement.operation_type.value == 'Аренда':
         await send_message_to_rent_topic(
@@ -573,21 +570,19 @@ async def process_moderation_confirm(
                 media=media_group,
             )
     except Exception as e:
-        return await call.bot.send_message(chat_id=5090318438, text=str(e))
-    await call.message.edit_text("Спасибо! Объявление отправлено в канал")
+        return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id, text=str(e))
 
+    await call.message.edit_text("Спасибо! Объявление отправлено в канал")
     await call.bot.send_message(
         chat_id=user.tg_chat_id, text="Объявление прошло модерацию"
     )
-
-    await call.message.delete()
+    return await call.message.delete()
 
 
 @router.callback_query(F.data.startswith("for_base_channel"))
 async def get_advertisement_for_base_channel(
         call: CallbackQuery,
         repo: "RequestsRepo",
-        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -610,7 +605,7 @@ async def get_advertisement_for_base_channel(
             media=media_group,
         )
     except Exception as e:
-        await call.bot.send_message(chat_id=5090318438, text='Ошибка при отправке в резервный канал')
+        await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id, text='Ошибка при отправке в резервный канал')
         return await call.bot.send_message(chat_id=config.tg_bot.main_chat_id, text=f'{chat_id=} {e}')
 
     await call.message.edit_text("Спасибо! Объявление отправлено в резервный канал")
@@ -644,13 +639,12 @@ async def process_moderation_deny(
             reply_markup=None,
         )
     except Exception as e:
-        await call.bot.send_message(chat_id=5090318438, text=str(e))
+        await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id, text=str(e))
 
 
 @router.message(AdvertisementModerationState.message)
 async def process_moderation_deny_message(
         message: Message,
-        repo: "RequestsRepo",
         state: FSMContext,
 ):
     try:
@@ -665,14 +659,13 @@ async def process_moderation_deny_message(
         await message.bot.send_message(chat_id=user.tg_chat_id, text=message.text)
         await state.clear()
     except Exception as e:
-        await message.bot.send_message(chat_id=5090318438, text=str(e))
+        await message.bot.send_message(chat_id=config.tg_bot.test_main_chat_id, text=str(e))
 
 
 @router.callback_query(F.data.startswith("rg_advertisement_delete"))
 async def delete_realtor_advertisement(
         call: CallbackQuery,
         repo: "RequestsRepo",
-        state: FSMContext,
 ):
     await call.answer()
 
@@ -693,7 +686,6 @@ async def delete_realtor_advertisement(
 async def confirm_advertisement_delete(
         call: CallbackQuery,
         repo: "RequestsRepo",
-        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -744,15 +736,15 @@ async def process_advertisement_deletion_message(
     await state.clear()
 
 
-@router.message(Command('get_report'))
-async def get_month_report(message: Message, repo: "RequestsRepo"):
-    month = datetime.now().month
-    advertisements = await repo.advertisements.get_advertisements_by_month(month)
-    advertisements = [AdvertisementForReportDTO.model_validate(item, from_attributes=True).model_dump() for item in advertisements]
-
-    result = fill_advertisements_report.delay(month=month, advertisements=advertisements)
-    if result.ready():
-        await message.delete()
-        await message.answer('Отчет успешно сгенерирован')
-    else:
-        await message.answer('Отчет генерируется')
+# @router.message(Command('get_report'))
+# async def get_month_report(message: Message, repo: "RequestsRepo"):
+#     month = datetime.now().month
+#     advertisements = await repo.advertisements.get_advertisements_by_month(month)
+#     advertisements = [AdvertisementForReportDTO.model_validate(item, from_attributes=True).model_dump() for item in advertisements]
+#
+#     result = fill_advertisements_report.delay(month=month, advertisements=advertisements)
+#     if result.ready():
+#         await message.delete()
+#         await message.answer('Отчет успешно сгенерирован')
+#     else:
+#         await message.answer('Отчет генерируется')

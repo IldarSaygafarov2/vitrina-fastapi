@@ -1,4 +1,3 @@
-import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -48,26 +47,7 @@ from tgbot.templates.advertisement_creation import (
     price_text,
     realtor_advertisement_completed_text,
 )
-from tgbot.templates.messages import rent_channel_advertisement_message
 from tgbot.utils.helpers import filter_digits, get_media_group
-
-# Настройка логгера
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-# Создание обработчика для записи в файл
-file_handler = logging.FileHandler("logs/my_app.log")
-file_handler.setLevel(logging.DEBUG)
-
-# Создание форматировщика для определения формата логов
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-file_handler.setFormatter(formatter)
-
-# Добавление обработчика к логгеру
-logger.addHandler(file_handler)
-
-# Запись логов
-
 
 router = Router()
 
@@ -79,9 +59,9 @@ config = load_config()
 
 @router.callback_query(F.data.startswith("operation_type"))
 async def get_operation_type_set_category(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
     _, operation_type = call.data.split(":")
@@ -101,9 +81,9 @@ async def get_operation_type_set_category(
 
 @router.callback_query(F.data.startswith("chosen_category"))
 async def get_category_set_photos_quantity(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -121,8 +101,8 @@ async def get_category_set_photos_quantity(
 
 @router.message(AdvertisementCreationState.photos_quantity)
 async def get_photos_quantity_set_get_photos(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     state_data = await state.get_data()
 
@@ -143,8 +123,8 @@ async def get_photos_quantity_set_get_photos(
 
 @router.message(AdvertisementCreationState.photos)
 async def get_photos_set_title(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     current_state = await state.get_data()
     current_state["photos"].append(message.photo[-1].file_id)
@@ -177,8 +157,8 @@ async def get_photos_set_title(
 
 @router.message(AdvertisementCreationState.title)
 async def get_title_set_description(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     state_data = await state.get_data()
     print(state_data)
@@ -192,8 +172,8 @@ async def get_title_set_description(
 
 @router.message(AdvertisementCreationState.title_uz)
 async def get_title_uz(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         data = await state.get_data()
@@ -215,8 +195,8 @@ async def get_title_uz(
 
 @router.message(AdvertisementCreationState.description)
 async def get_description_set_description_uz(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
 
@@ -244,8 +224,8 @@ async def get_description_set_description_uz(
 
 @router.message(AdvertisementCreationState.description_uz)
 async def get_description_uz(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         data = await state.get_data()
@@ -273,9 +253,9 @@ async def get_description_uz(
 
 @router.message(AdvertisementCreationState.owner_phone_number)
 async def get_owner_phone_number(
-    message: Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     try:
         districts = await repo.districts.get_districts()
@@ -301,9 +281,9 @@ async def get_owner_phone_number(
     AdvertisementCreationState.district,
 )
 async def get_district_set_address(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -333,8 +313,8 @@ async def get_district_set_address(
 
 @router.message(AdvertisementCreationState.address)
 async def get_address(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -357,8 +337,8 @@ async def get_address(
 
 @router.message(AdvertisementCreationState.address_uz)
 async def get_address_uz(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -384,8 +364,8 @@ async def get_address_uz(
     AdvertisementCreationState.property_type,
 )
 async def get_property_type(
-    call: CallbackQuery,
-    state: FSMContext,
+        call: CallbackQuery,
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -424,8 +404,8 @@ async def get_property_type(
 
 @router.message(AdvertisementCreationState.creation_year)
 async def get_creation_year(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -450,8 +430,8 @@ async def get_creation_year(
 
 @router.message(AdvertisementCreationState.price)
 async def get_price(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -507,8 +487,8 @@ async def get_price(
 
 @router.message(AdvertisementCreationState.rooms_quantity)
 async def get_rooms_to(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -544,8 +524,8 @@ async def get_rooms_to(
 
 @router.message(AdvertisementCreationState.house_quadrature_from)
 async def get_house_quadrature_from(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -572,8 +552,8 @@ async def get_house_quadrature_from(
 
 @router.message(AdvertisementCreationState.house_quadrature_to)
 async def get_house_quadrature_to(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -599,8 +579,8 @@ async def get_house_quadrature_to(
 
 @router.message(AdvertisementCreationState.quadrature)
 async def get_quadrature(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -625,8 +605,8 @@ async def get_quadrature(
 
 @router.message(AdvertisementCreationState.floor_from)
 async def get_floor_from(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -651,8 +631,8 @@ async def get_floor_from(
 
 @router.message(AdvertisementCreationState.floor_to)
 async def get_floor_to(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -681,9 +661,9 @@ async def get_floor_to(
     AdvertisementCreationState.repair_type,
 )
 async def get_repair_type(
-    call: CallbackQuery,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        call: CallbackQuery,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     await call.answer()
 
@@ -747,13 +727,12 @@ async def get_repair_type(
         files_locations = []
 
         # preview
-        preview_file_id = state_data.get("preview_file_id")
         preview_file_obj = await call.bot.get_file(first_photo)
         preview_filename = preview_file_obj.file_path.split("/")[-1]
         preview_file = await call.bot.download_file(preview_file_obj.file_path)
         preview_file_location = advertisements_folder / preview_filename
         with open(preview_file_location, "wb") as f:
-            shutil.copyfileobj(preview_file, f)
+            shutil.copyfileobj(preview_file, f)  # type: ignore
 
         # other photos
         for photo_id in photos:
@@ -765,7 +744,7 @@ async def get_repair_type(
             files_locations.append((file_location, photo_id))
 
             with open(file_location, "wb") as f:
-                shutil.copyfileobj(file, f)
+                shutil.copyfileobj(file, f)  # type: ignore
 
         new_advertisement = await repo.advertisements.create_advertisement(
             unique_id=unique_id,
@@ -808,26 +787,17 @@ async def get_repair_type(
             )
 
         media_group = get_media_group(photos, advertisement_message)
-        caption_for_topic = rent_channel_advertisement_message(new_advertisement)
-        media_group_for_topic = get_media_group(photos, caption_for_topic)
+
+        dev_user = await repo.users.get_user_by_chat_id(tg_chat_id=config.tg_bot.test_main_chat_id)
 
         group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
+        group_directors.append(dev_user)
 
         await call.message.answer_media_group(media=media_group)
 
-        # if new_advertisement.operation_type.value == 'Аренда':
-        #     await send_message_to_rent_topic(
-        #         bot=call.bot,
-        #         price=int(price),
-        #         media_group=media_group_for_topic,
-        #     )
-
         for director in group_directors:
             try:
-                if (
-                    director.tg_chat_id
-                    and director.tg_chat_id == new_advertisement.user.added_by
-                ):
+                if director.tg_chat_id and director.tg_chat_id == new_advertisement.user.added_by:
                     realtor_fullname = f"{new_advertisement.user.first_name} {new_advertisement.user.lastname}"
                     await call.bot.send_message(
                         director.tg_chat_id,
@@ -842,7 +812,6 @@ async def get_repair_type(
                         reply_markup=advertisement_moderation_kb(new_advertisement.id),
                     )
             except Exception as e:
-                logger.error(e)
                 await call.bot.send_message(
                     chat_id=config.tg_bot.main_chat_id,
                     text=f"ошибка при отправке руководителям",
@@ -859,7 +828,6 @@ async def get_repair_type(
             ),
         )
     except Exception as e:
-        logger.error(e)
         await call.bot.send_message(
             chat_id=config.tg_bot.main_chat_id, text=f"ошибка при создании объявления"
         )
@@ -868,10 +836,3 @@ async def get_repair_type(
         )
 
     await call.answer(text="Операция выполнена", show_alert=True)
-
-
-# logger.debug('This is a debug message')
-# logger.info('This is an info message')
-# logger.warning('This is a warning message')
-# logger.error('This is an error message')
-# logger.critical('This is a critical message')

@@ -21,7 +21,6 @@ upload_dir.mkdir(parents=True, exist_ok=True)
 @router.message(RealtorCreationState.first_name)
 async def get_first_name_set_lastname(
     message: Message,
-    repo: "RequestsRepo",
     state: FSMContext,
 ):
     chat_id = message.from_user.id
@@ -35,7 +34,6 @@ async def get_first_name_set_lastname(
 @router.message(RealtorCreationState.lastname)
 async def get_lastname_set_phone_number(
     message: Message,
-    repo: "RequestsRepo",
     state: FSMContext,
 ):
     await state.update_data(lastname=message.text)
@@ -47,7 +45,6 @@ async def get_lastname_set_phone_number(
 @router.message(RealtorCreationState.phone_number)
 async def get_phone_number_set_tg_username(
     message: Message,
-    repo: "RequestsRepo",
     state: FSMContext,
 ):
     await state.update_data(phone_number=message.text)
@@ -59,7 +56,6 @@ async def get_phone_number_set_tg_username(
 @router.message(RealtorCreationState.tg_username)
 async def get_tg_username_set_profile_image(
     message: Message,
-    repo: "RequestsRepo",
     state: FSMContext,
 ):
 
