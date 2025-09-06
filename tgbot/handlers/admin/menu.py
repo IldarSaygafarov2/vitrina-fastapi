@@ -8,6 +8,8 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
 
+from backend.core.interfaces.advertisement import AdvertisementForReportDTO
+from celery_tasks.tasks import fill_report
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
@@ -34,9 +36,6 @@ from tgbot.templates.messages import (
 )
 from tgbot.templates.realtor_texts import get_realtor_info
 from tgbot.utils.helpers import get_media_group, send_message_to_rent_topic
-from celery_tasks.tasks import fill_report
-from backend.core.interfaces.advertisement import AdvertisementForReportDTO
-
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -535,7 +534,7 @@ async def process_moderation_confirm(
     photos = [obj.tg_image_hash for obj in advertisement.images]
 
     user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
-    
+
     if advertisement.operation_type.value == "Аренда":
         chat_id = config.tg_bot.rent_channel_name
         advertisement_message = rent_channel_advertisement_message(advertisement)
