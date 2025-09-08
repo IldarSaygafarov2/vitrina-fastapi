@@ -35,7 +35,7 @@ from tgbot.templates.messages import (
     buy_channel_advertisement_message,
 )
 from tgbot.templates.realtor_texts import get_realtor_info
-from tgbot.utils.helpers import get_media_group, send_message_to_rent_topic
+from tgbot.utils.helpers import get_media_group, send_message_to_rent_topic, correct_advertisement_dict
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -547,6 +547,7 @@ async def process_moderation_confirm(
     month = datetime.datetime.now().month
 
     advertisement_data = AdvertisementForReportDTO.model_validate(advertisement, from_attributes=True).model_dump()
+    advertisement_data = correct_advertisement_dict(advertisement_data)
 
     fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
                       data=advertisement_data)
@@ -569,7 +570,7 @@ async def process_moderation_confirm(
                 media=media_group,
             )
     except Exception as e:
-        return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id, text=str(e))
+        return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id, text=f'ошибка при отправке медиа группы\n{str(e)}')
 
     await call.message.edit_text("Спасибо! Объявление отправлено в канал")
     await call.bot.send_message(

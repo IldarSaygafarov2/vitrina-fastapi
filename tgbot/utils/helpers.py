@@ -53,5 +53,9 @@ async def send_message_to_rent_topic(
         )
 
 
-
-
+def correct_advertisement_dict(data: dict):
+    data['created_at'] = data['created_at'].strftime("%d.%m.%Y %H:%M:%S")
+    data['category'] = data['category']['name']
+    data['district'] = data['district']['name']
+    data['user'] = data['user']['fullname'] if data.get('user') else ''
+    return data
