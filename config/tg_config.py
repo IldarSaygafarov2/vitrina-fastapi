@@ -38,8 +38,8 @@ class TgSuperGroupConfig:
     @staticmethod
     def from_env(env: Env) -> "TgSuperGroupConfig":
         return TgSuperGroupConfig(
-            rent_supergroup_id=env.int('RENT_SUPERGROUP_ID'),
-            buy_supergroup_id=env.int('BUY_SUPERGROUP_ID'),
+            rent_supergroup_id=env.str('RENT_SUPERGROUP_ID'),
+            buy_supergroup_id=env.str('BUY_SUPERGROUP_ID'),
             rent_topic_thread_ids=env.str('RENT_TOPIC_THREAD_IDS'),
             rent_topic_prices=env.str('RENT_TOPIC_PRICES'),
         )

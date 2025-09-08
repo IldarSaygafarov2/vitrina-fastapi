@@ -38,7 +38,7 @@ async def send_message_to_rent_topic(
 ):
     topic_data = config.super_group.make_forum_topics_data()
     prices = list(topic_data.items())
-    supergroup_id = config.tg_bot.supergroup_id
+    supergroup_id = config.super_group.rent_supergroup_id
 
     for thread_id, _price in prices:
         a, b = _price
