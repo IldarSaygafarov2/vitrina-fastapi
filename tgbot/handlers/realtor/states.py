@@ -79,6 +79,25 @@ async def get_operation_type_set_category(
     )
 
 
+# @router.callback_query(F.data.startswith("chosen_category"))
+# async def get_category_set_photos_quantity(
+#         call: CallbackQuery,
+#         repo: "RequestsRepo",
+#         state: FSMContext,
+# ):
+#     await call.answer()
+#
+#     category_id = int(call.data.split(":")[-1])
+#
+#     category = await repo.categories.get_category_by_id(category_id=category_id)
+#
+#     message = await call.message.answer(
+#         text="Напишите сколько фотографий будет у объявления",
+#     )
+#
+#     await state.update_data(category=category, photos_qty_message=message)
+#     await state.set_state(AdvertisementCreationState.photos_quantity)
+
 @router.callback_query(F.data.startswith("chosen_category"))
 async def get_category_set_photos_quantity(
         call: CallbackQuery,
@@ -92,10 +111,24 @@ async def get_category_set_photos_quantity(
     category = await repo.categories.get_category_by_id(category_id=category_id)
 
     message = await call.message.answer(
-        text="Напишите сколько фотографий будет у объявления",
+        text="""Отправьте заставку объявления
+Фотография будет отображаться на странице списка объявлений
+(Не добавляйте фотографии унитазов, ванной комнаты, и других непрезентабельных комнат)
+        """
     )
 
     await state.update_data(category=category, photos_qty_message=message)
+    await state.set_state(AdvertisementCreationState.preview)
+
+
+@router.message(AdvertisementCreationState.preview)
+async def get_preview(
+        message: Message,
+        state: FSMContext,
+):
+    photo_id = message.photo[-1].file_id
+    await message.answer("Напишите сколько фотографий будет у объявления")
+    await state.update_data(preview_file_id=photo_id)
     await state.set_state(AdvertisementCreationState.photos_quantity)
 
 
@@ -718,7 +751,7 @@ async def get_repair_type(
         repair_type_status_uz = RepairTypeUz(REPAIR_TYPE_MAPPING_UZ[repair_type])
 
         photos = state_data.get("photos")
-        first_photo = photos[0]
+        # first_photo = photos[0]
         date_str = datetime.now().strftime("%Y-%m-%d")
         owner_phone_number = state_data.get("owner_phone_number")
 
@@ -727,12 +760,20 @@ async def get_repair_type(
         files_locations = []
 
         # preview
-        preview_file_obj = await call.bot.get_file(first_photo)
+        # preview_file_obj = await call.bot.get_file(first_photo)
+        # preview_filename = preview_file_obj.file_path.split("/")[-1]
+        # preview_file = await call.bot.download_file(preview_file_obj.file_path)
+        # preview_file_location = advertisements_folder / preview_filename
+        # with open(preview_file_location, "wb") as f:
+        #     shutil.copyfileobj(preview_file, f)  # type: ignore
+
+        preview_file_id = state_data.get("preview_file_id")
+        preview_file_obj = await call.bot.get_file(preview_file_id)
         preview_filename = preview_file_obj.file_path.split("/")[-1]
         preview_file = await call.bot.download_file(preview_file_obj.file_path)
         preview_file_location = advertisements_folder / preview_filename
         with open(preview_file_location, "wb") as f:
-            shutil.copyfileobj(preview_file, f)  # type: ignore
+            shutil.copyfileobj(preview_file, f)
 
         # other photos
         for photo_id in photos:
