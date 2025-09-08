@@ -59,3 +59,15 @@ def correct_advertisement_dict(data: dict):
     data['district'] = data['district']['name']
     data['user'] = data['user']['fullname'] if data.get('user') else ''
     return data
+
+
+async def check_bot_membership(bot: Bot, chat_id: str, bot_user_id: int):
+    try:
+        member = await bot.get_chat_member(chat_id, bot_user_id)
+        if member.status in ['member', 'administrator', 'creator']:
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"Error checking bot membership: {e}")
+        return False

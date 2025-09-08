@@ -544,20 +544,20 @@ async def process_moderation_confirm(
 
     media_group = get_media_group(photos, advertisement_message)
 
-    month = datetime.datetime.now().month
+    # month = datetime.datetime.now().month
+    #
+    # advertisement_data = AdvertisementForReportDTO.model_validate(advertisement, from_attributes=True).model_dump()
+    # advertisement_data = correct_advertisement_dict(advertisement_data)
 
-    advertisement_data = AdvertisementForReportDTO.model_validate(advertisement, from_attributes=True).model_dump()
-    advertisement_data = correct_advertisement_dict(advertisement_data)
-
-    fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
-                      data=advertisement_data)
-
-    if advertisement.operation_type.value == 'Аренда':
-        await send_message_to_rent_topic(
-            bot=call.bot,
-            price=advertisement.price,
-            media_group=media_group
-        )
+    # fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
+    #                   data=advertisement_data)
+    #
+    # if advertisement.operation_type.value == 'Аренда':
+    #     await send_message_to_rent_topic(
+    #         bot=call.bot,
+    #         price=advertisement.price,
+    #         media_group=media_group
+    #     )
 
     try:
         await call.bot.send_media_group(

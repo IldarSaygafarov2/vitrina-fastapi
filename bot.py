@@ -49,15 +49,6 @@ async def main():
         ),
     )
 
-    bot_me = await bot.get_me()
-    bot_id = bot_me.id
-    is_member = await check_bot_membership(bot, config.super_group.rent_supergroup_id, bot_id)
-    if is_member:
-        print("Bot is a member of the supergroup.")
-    else:
-        print("Bot is NOT a member of the supergroup.")
-
-
     dp = Dispatcher(storage=storage)
     dp["config"] = config
 
@@ -70,16 +61,7 @@ async def main():
 
     await dp.start_polling(bot)
 
-async def check_bot_membership(bot: Bot, chat_id: str, bot_user_id: int):
-    try:
-        member = await bot.get_chat_member(chat_id, bot_user_id)
-        if member.status in ['member', 'administrator', 'creator']:
-            return True
-        else:
-            return False
-    except Exception as e:
-        print(f"Error checking bot membership: {e}")
-        return False
+
 
 if __name__ == "__main__":
     try:
