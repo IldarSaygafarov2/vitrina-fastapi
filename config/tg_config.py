@@ -29,8 +29,8 @@ class TgBot:
 
 @dataclass
 class TgSuperGroupConfig:
-    rent_supergroup_id: int
-    buy_supergroup_id: int
+    rent_supergroup_id: str
+    buy_supergroup_id: str
 
     rent_topic_thread_ids: str
     rent_topic_prices: str

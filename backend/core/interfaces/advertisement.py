@@ -9,9 +9,7 @@ from backend.core.interfaces.user import UserAdvertisementObjectDTO
 
 
 class AdvertisementForReportDTO(BaseModel):
-    unique_id: str
     name: str
-    price: int
     house_quadrature_from: int
     house_quadrature_to: int
     creation_year: int
@@ -19,17 +17,20 @@ class AdvertisementForReportDTO(BaseModel):
     repair_type: str
     description: str
     address: str
+    price: int
     floor_from: int
     floor_to: int
     operation_type: str
-    category: Optional[CategoryDTO]
     district: Optional[DistrictDTO]
+    category: Optional[CategoryDTO]
     user: Optional[UserAdvertisementObjectDTO]
+    is_moderated: bool
+    created_at: datetime
+    unique_id: str
     rooms_quantity: int
     quadrature: int
-    owner_phone_number: str | None
-    is_moderated: bool | None
-    created_at: datetime
+    owner_phone_number: Optional[str]
+   
 
 
 class AdvertisementDTO(BaseModel):
