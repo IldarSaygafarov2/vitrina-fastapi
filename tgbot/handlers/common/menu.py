@@ -109,8 +109,11 @@ async def search_by_id(
         call: CallbackQuery,
         state: FSMContext
 ):
+    chat_id = call.message.chat.id
+
     await call.answer()
     await state.set_state(AdvertisementSearchStates.id)
+    await state.update_data(chat_id=chat_id)
 
     await call.message.edit_text(
         'Напиши ID объявления!',
@@ -126,11 +129,19 @@ async def get_searched_advertisement(
 ):
     advertisement = await repo.advertisements.get_advertisement_by_unique_id(unique_id=message.text)
     user = await repo.users.get_user_by_chat_id(tg_chat_id=message.chat.id)
-    is_group_director = user.role.value == 'group_director'
 
+    is_group_director = user.role.value == 'group_director'
 
     if not advertisement:
         return await message.answer(f'Объявление с ID: {message.text} не найдено, перепроверьте правильность ID')
+
+    if is_group_director:
+        director_agents = await repo.users.get_director_agents(director_chat_id=user.tg_chat_id)
+
+
+    if advertisement.user != user:
+        return await message.answer(f'Объявление с ID: {message.text} не найдено либо не является вашим объявлением, перепроверьте правильность ID')
+
 
     advertisement_message = realtor_advertisement_completed_text(
         advertisement=advertisement,

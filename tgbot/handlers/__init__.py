@@ -5,8 +5,10 @@ from .common.start import router as common_user_router
 from .realtor.advertisement_update import router as update_router
 from .realtor.menu import router as realtor_router
 from .realtor.states import router as realtor_states_router
+from .dev.menu import dev_router
 
 routers_list = [
+    # dev_router,
     admin_router,
     admin_states_router,
     common_user_router,

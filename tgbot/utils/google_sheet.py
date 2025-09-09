@@ -50,6 +50,10 @@ def fill_row_with_data(spread: Spreadsheet, worksheet_name: str, data: dict):
     print(f'Added row: {data_values}')
 
 
+def get_sheet_values(spread: Spreadsheet, worksheet_name: str):
+    worksheet = spread.worksheet(worksheet_name)
+    return worksheet.get_all_values()
+
 
 def main() -> None:
     client = client_init_json()

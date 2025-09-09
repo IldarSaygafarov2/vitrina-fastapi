@@ -98,6 +98,7 @@ class AdvertisementRepo(BaseRepo):
             select(Advertisement)
             .where(Advertisement.unique_id == unique_id)
             .options(
+                selectinload(Advertisement.user),
                 selectinload(Advertisement.images),
                 selectinload(Advertisement.category),
                 selectinload(Advertisement.district),
@@ -118,7 +119,6 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def get_filtered_advertisements(self, _filter: AdvertisementFilter):
-        # Создаем базовый запрос для фильтрации
         # Создаем базовый запрос для фильтрации
         query = select(Advertisement).filter(Advertisement.is_moderated == True)
 
