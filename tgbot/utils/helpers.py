@@ -34,11 +34,17 @@ def get_media_group(photos, message: str | None = None) -> list[InputMediaPhoto]
 async def send_message_to_rent_topic(
         bot: Bot,
         price: int,
+        operation_type: str,
         media_group: list[InputMediaPhoto],
 ):
-    topic_data = config.super_group.make_forum_topics_data()
+    topic_data = config.super_group.make_forum_topics_data(operation_type)
     prices = list(topic_data.items())
-    supergroup_id = config.super_group.rent_supergroup_id
+
+    # supergroups ids
+    rent_supergroup_id = config.super_group.rent_supergroup_id
+    buy_supergroup_id = config.super_group.buy_supergroup_id
+
+    supergroup_id = rent_supergroup_id if operation_type == 'Аренда' else buy_supergroup_id
 
     for thread_id, _price in prices:
         a, b = _price

@@ -14,7 +14,6 @@ routers_list = [
     realtor_states_router,
     common_menu_router,
     update_router,
-
 ]
 
 
