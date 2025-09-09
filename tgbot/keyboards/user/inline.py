@@ -126,7 +126,7 @@ def realtor_advertisements_kb(
             text=">", callback_data=f"next_page:{start}:{finish}:{page}:{total_pages}"
         ),
     )
-    kb.row(InlineKeyboardButton(text='Поиск по ID', callback_data='search_by_id'))
+    # kb.row(InlineKeyboardButton(text='Поиск по ID', callback_data='search_by_id'))
     kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
 
     return kb.as_markup()
