@@ -3,9 +3,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, ContentType
 
 from infrastructure.database.repo.requests import RequestsRepo
-from tgbot.keyboards.admin.inline import admin_start_kb
-from tgbot.keyboards.user.inline import realtor_advertisements_kb, realtor_start_kb, advertisement_actions_kb
-from tgbot.keyboards.admin.inline import delete_advertisement_kb
+from tgbot.keyboards.admin.inline import admin_start_kb, delete_advertisement_kb
+from tgbot.keyboards.user.inline import realtor_advertisements_kb, realtor_start_kb, advertisement_actions_kb, \
+    return_home_kb
 from tgbot.misc.common import AdvertisementSearchStates
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.utils.helpers import get_media_group
@@ -68,7 +68,7 @@ async def next_page(
     if int(page) == int(total_pages):
         return await call.answer("Это последняя страница", show_alert=True)
 
-    await call.message.edit_reply_markup(
+    return await call.message.edit_reply_markup(
         reply_markup=realtor_advertisements_kb(
             advertisements=state_data["advertisements"],
             start=int(start) + 15,
@@ -132,15 +132,19 @@ async def get_searched_advertisement(
 
     is_group_director = user.role.value == 'group_director'
 
+
     if not advertisement:
-        return await message.answer(f'Объявление с ID: {message.text} не найдено, перепроверьте правильность ID')
+        text = f'Объявление с ID: {message.text} не найдено, перепроверьте правильность ID'
+        return await message.answer(text, reply_markup=return_home_kb())
 
-    if is_group_director:
-        director_agents = await repo.users.get_director_agents(director_chat_id=user.tg_chat_id)
-
-
-    if advertisement.user != user:
-        return await message.answer(f'Объявление с ID: {message.text} не найдено либо не является вашим объявлением, перепроверьте правильность ID')
+    elif is_group_director:
+        agents = await repo.users.get_director_agents(director_chat_id=user.tg_chat_id)
+        if advertisement.user not in agents:
+            text = f'Объявление с ID: {message.text} не добавлено вашей командой, перепроверьте правильность ID'
+            return await message.answer(text, reply_markup=return_home_kb())
+    elif advertisement.user != user:
+        text = f'Объявление с ID: {message.text} не найдено либо не является вашим объявлением, перепроверьте правильность ID'
+        return await message.answer(text, reply_markup=return_home_kb())
 
 
     advertisement_message = realtor_advertisement_completed_text(
