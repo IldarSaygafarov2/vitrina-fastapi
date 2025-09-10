@@ -9,6 +9,7 @@ from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
 from tgbot.keyboards.admin.inline import manage_realtor_kb
 from tgbot.misc.realtor_states import RealtorCreationState
+from tgbot.utils.helpers import download_file
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -75,9 +76,7 @@ async def get_profile_image_create_user(
 
     photo_id = message.photo[-1].file_id
 
-    file_obj = await message.bot.get_file(photo_id)
-    filename = file_obj.file_path.split("/")[-1]
-    file = await message.bot.download_file(file_obj.file_path)
+    file, filename = await download_file(bot=message.bot, file_id=photo_id)
 
     user_image_folder = upload_dir / "users"
     user_image_folder.mkdir(parents=True, exist_ok=True)

@@ -47,7 +47,7 @@ from tgbot.templates.advertisement_creation import (
     price_text,
     realtor_advertisement_completed_text,
 )
-from tgbot.utils.helpers import filter_digits, get_media_group
+from tgbot.utils.helpers import filter_digits, get_media_group, download_file
 
 router = Router()
 
@@ -78,25 +78,6 @@ async def get_operation_type_set_category(
         reply_markup=categories_kb(categories=categories),
     )
 
-
-# @router.callback_query(F.data.startswith("chosen_category"))
-# async def get_category_set_photos_quantity(
-#         call: CallbackQuery,
-#         repo: "RequestsRepo",
-#         state: FSMContext,
-# ):
-#     await call.answer()
-#
-#     category_id = int(call.data.split(":")[-1])
-#
-#     category = await repo.categories.get_category_by_id(category_id=category_id)
-#
-#     message = await call.message.answer(
-#         text="Напишите сколько фотографий будет у объявления",
-#     )
-#
-#     await state.update_data(category=category, photos_qty_message=message)
-#     await state.set_state(AdvertisementCreationState.photos_quantity)
 
 @router.callback_query(F.data.startswith("chosen_category"))
 async def get_category_set_photos_quantity(
@@ -162,11 +143,6 @@ async def get_photos_set_title(
     current_state = await state.get_data()
     current_state["photos"].append(message.photo[-1].file_id)
 
-    # try:
-    #     await message.delete()
-    # except Exception as e:
-    #     print(e)
-
     if current_state["photos_quantity"] == len(current_state["photos"]):
         cur_message = await message.answer(text=get_title_text(), reply_markup=None)
 
@@ -194,7 +170,6 @@ async def get_title_set_description(
         state: FSMContext,
 ):
     state_data = await state.get_data()
-    print(state_data)
     title_message = state_data.pop("title_message")
 
     title_message = await title_message.answer(text=get_title_text(lang="uz"))
@@ -232,7 +207,6 @@ async def get_description_set_description_uz(
         state: FSMContext,
 ):
     try:
-
         current_data = await state.get_data()
         description_text = current_data.pop("description_text")
 
@@ -487,37 +461,6 @@ async def get_price(
         )
 
 
-# @router.callback_query(
-#     F.data.startswith("is_studio"),
-#     AdvertisementCreationState.is_studio,
-# )
-# async def get_is_studio(
-#         call: CallbackQuery,
-#         repo: "RequestsRepo",
-#         state: FSMContext,
-# ):
-#     await call.answer()
-#     try:
-#         state_data = await state.get_data()
-#
-#         cur_message = state_data.pop("cur_message")
-#         _, is_studio_state = call.data.split(":")
-#
-#         is_studio = True if is_studio_state == "yes" else False
-#
-#         cur_message = await cur_message.answer(
-#             text="Количество комнат: ", reply_markup=None
-#         )
-#         await state.update_data(is_studio=is_studio, cur_message=cur_message)
-#         await state.set_state(AdvertisementCreationState.rooms_quantity)
-#
-#     except Exception as e:
-#         await call.bot.send_message(chat_id=config.tg_bot.main_chat_id, text=f"ошибка в get_is_studio")
-#         await call.bot.send_message(
-#             chat_id=config.tg_bot.main_chat_id, text=f"{e}\n{e.__class__.__name__}"
-#         )
-
-
 @router.message(AdvertisementCreationState.rooms_quantity)
 async def get_rooms_to(
         message: Message,
@@ -751,7 +694,6 @@ async def get_repair_type(
         repair_type_status_uz = RepairTypeUz(REPAIR_TYPE_MAPPING_UZ[repair_type])
 
         photos = state_data.get("photos")
-        # first_photo = photos[0]
         date_str = datetime.now().strftime("%Y-%m-%d")
         owner_phone_number = state_data.get("owner_phone_number")
 
@@ -759,27 +701,18 @@ async def get_repair_type(
         advertisements_folder.mkdir(parents=True, exist_ok=True)
         files_locations = []
 
-        # preview
-        # preview_file_obj = await call.bot.get_file(first_photo)
-        # preview_filename = preview_file_obj.file_path.split("/")[-1]
-        # preview_file = await call.bot.download_file(preview_file_obj.file_path)
-        # preview_file_location = advertisements_folder / preview_filename
-        # with open(preview_file_location, "wb") as f:
-        #     shutil.copyfileobj(preview_file, f)  # type: ignore
-
         preview_file_id = state_data.get("preview_file_id")
-        preview_file_obj = await call.bot.get_file(preview_file_id)
-        preview_filename = preview_file_obj.file_path.split("/")[-1]
-        preview_file = await call.bot.download_file(preview_file_obj.file_path)
+
+        preview_file, preview_filename = await download_file(bot=call.bot, file_id=preview_file_id)
         preview_file_location = advertisements_folder / preview_filename
+
         with open(preview_file_location, "wb") as f:
             shutil.copyfileobj(preview_file, f)
 
         # other photos
         for photo_id in photos:
-            file_obj = await call.bot.get_file(photo_id)
-            filename = file_obj.file_path.split("/")[-1]
-            file = await call.bot.download_file(file_obj.file_path)
+
+            file, filename = await download_file(bot=call.bot, file_id=photo_id)
 
             file_location = advertisements_folder / filename
             files_locations.append((file_location, photo_id))

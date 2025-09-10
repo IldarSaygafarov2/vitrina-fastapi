@@ -10,7 +10,6 @@ from tgbot.keyboards.user.inline import (
     advertisement_update_kb,
     categories_kb,
     districts_kb,
-    is_studio_kb,
     return_back_kb,
 )
 from tgbot.misc.user_states import AdvertisementUpdateState
@@ -33,7 +32,7 @@ from tgbot.templates.advertisement_updating import (
     update_rooms_text,
 )
 
-from tgbot.utils.helpers import get_media_group
+from tgbot.utils.helpers import get_media_group, download_file
 
 router = Router()
 
@@ -41,8 +40,6 @@ router = Router()
 @router.callback_query(F.data.startswith("advertisement_update"))
 async def process_advertisement_update(
         call: types.CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -80,11 +77,10 @@ async def get_new_name(
         state: FSMContext,
 ):
     data = await state.get_data()
-    text = message.text
 
     updated = await repo.advertisements.update_advertisement(
         advertisement_id=data["advertisement_id"],
-        name=text,
+        name=message.text,
     )
     await message.answer(
         realtor_advertisement_completed_text(updated),
@@ -119,11 +115,10 @@ async def get_new_name_uz(
         state: FSMContext,
 ):
     data = await state.get_data()
-    text = message.text
 
     updated = await repo.advertisements.update_advertisement(
         advertisement_id=data["advertisement_id"],
-        name_uz=text,
+        name_uz=message.text,
     )
     await message.answer(
         realtor_advertisement_completed_text(updated, lang="uz"),
@@ -220,15 +215,8 @@ async def update_gallery(
     if not photos:
         photos = [obj.url for obj in images]
 
-    # media_group: list[types.InputMediaPhoto] = [
-    #     (
-    #         types.InputMediaPhoto(media=img)
-    #         if i == 0
-    #         else types.InputMediaPhoto(media=img)
-    #     )
-    #     for i, img in enumerate(photos)
-    # ]
     media_group = get_media_group(photos)
+
     await call.message.answer_media_group(media=media_group)
     await call.message.answer(
         text="Выберите фотографию которую хотите обновить",
@@ -588,11 +576,10 @@ async def get_new_quadrature(
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
 
-    quadrature = message.text
 
     updated = await repo.advertisements.update_advertisement(
         advertisement_id=advertisement_id,
-        quadrature=int(quadrature),
+        quadrature=int(message.text),
     )
     await message.answer(
         text=realtor_advertisement_completed_text(updated),
@@ -650,10 +637,8 @@ async def update_rooms(
         advertisement_id=advertisement_id
     )
 
-    current = f"{advertisement.rooms_quantity}"
-
     await call.message.edit_text(
-        text=update_rooms_text(current=current),
+        text=update_rooms_text(current=f"{advertisement.rooms_quantity}"),
         reply_markup=return_back_kb(f"advertisement_update:{advertisement_id}"),
     )
     await state.update_data(advertisement_id=advertisement_id)
@@ -669,10 +654,8 @@ async def get_new_rooms_qty(
     data = await state.get_data()
     advertisement_id = data.get("advertisement_id")
 
-    rooms_quantity = int(message.text)
-
     updated = await repo.advertisements.update_advertisement(
-        advertisement_id=advertisement_id, rooms_quantity=rooms_quantity
+        advertisement_id=advertisement_id, rooms_quantity=int(message.text)
     )
     await message.answer(
         text=realtor_advertisement_completed_text(updated),
@@ -766,50 +749,6 @@ async def get_new_house_quadrature(
     )
 
 
-# @router.callback_query(F.data.startswith("update_advertisement_is_studio"))
-# async def update_is_studio(
-#         call: types.CallbackQuery,
-#         repo: "RequestsRepo",
-#         state: FSMContext,
-# ):
-#     await call.answer()
-#
-#     advertisement_id = int(call.data.split(":")[-1])
-#     advertisement = await repo.advertisements.get_advertisement_by_id(
-#         advertisement_id=advertisement_id
-#     )
-#
-#     is_studio_text = "Да" if advertisement.is_studio else "Нет"
-#
-#     await call.message.edit_text(
-#         text=update_is_studio_text(current=is_studio_text),
-#         reply_markup=is_studio_kb(for_update=True),
-#     )
-#     await state.update_data(advertisement_id=advertisement_id)
-
-
-# @router.callback_query(F.data.startswith("update_is_studio"))
-# async def get_new_is_studio(
-#         call: types.CallbackQuery,
-#         repo: "RequestsRepo",
-#         state: FSMContext,
-# ):
-#     await call.answer()
-#     data = await state.get_data()
-#     advertisement_id = data.get("advertisement_id")
-#     _, is_studio = call.data.split(":")
-#     is_studio = True if is_studio == "Да" else False
-#
-#     updated = await repo.advertisements.update_advertisement(
-#         advertisement_id=advertisement_id,
-#         is_studio=is_studio,
-#     )
-#     await call.message.edit_text(
-#         text=realtor_advertisement_completed_text(updated),
-#         reply_markup=advertisement_update_kb(advertisement_id),
-#     )
-
-
 @router.callback_query(F.data.startswith("update_advertisement_floor"))
 async def update_advertisement_floor(
         call: types.CallbackQuery,
@@ -895,9 +834,9 @@ async def get_new_image(
     # adding new image
     new_image_id = message.photo[-1].file_id
     current_image_dir = "/".join(image.url.split("/")[:-1])
-    file_obj = await message.bot.get_file(new_image_id)
-    filename = file_obj.file_path.split("/")[-1]
-    file = await message.bot.download_file(file_obj.file_path)
+
+    file, filename = await download_file(bot=message.bot, file_id=new_image_id)
+
     file_location = Path(current_image_dir) / filename
 
     with open(file_location, "wb") as f:

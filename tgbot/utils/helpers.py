@@ -67,13 +67,8 @@ def correct_advertisement_dict(data: dict):
     return data
 
 
-async def check_bot_membership(bot: Bot, chat_id: str, bot_user_id: int):
-    try:
-        member = await bot.get_chat_member(chat_id, bot_user_id)
-        if member.status in ['member', 'administrator', 'creator']:
-            return True
-        else:
-            return False
-    except Exception as e:
-        print(f"Error checking bot membership: {e}")
-        return False
+async def download_file(bot: Bot, file_id: str):
+    preview_file_obj = await bot.get_file(file_id)
+    filename = preview_file_obj.file_path.split("/")[-1]
+    file = await bot.download_file(preview_file_obj.file_path)
+    return file, filename

@@ -35,7 +35,7 @@ from tgbot.templates.messages import (
     buy_channel_advertisement_message,
 )
 from tgbot.templates.realtor_texts import get_realtor_info
-from tgbot.utils.helpers import get_media_group, send_message_to_rent_topic, correct_advertisement_dict
+from tgbot.utils.helpers import get_media_group, send_message_to_rent_topic, correct_advertisement_dict, download_file
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -489,9 +489,8 @@ async def update_profile_image(
         await message.bot.send_message(chat_id=config.tg_bot.main_chat_id, text=str(e))
 
     photo_id = message.photo[-1].file_id
-    file_obj = await message.bot.get_file(photo_id)
-    filename = file_obj.file_path.split("/")[-1]
-    file = await message.bot.download_file(file_obj.file_path)
+
+    file, filename = await download_file(bot=message.bot, file_id=photo_id)
 
     user_image_folder = upload_dir / "users"
     user_image_folder.mkdir(parents=True, exist_ok=True)
