@@ -71,7 +71,7 @@ async def get_advertisement(
     return advertisement
 
 
-@router.get('/{unique_id}', response_model=AdvertisementDTO)
+@router.get('/unique/{unique_id}', response_model=AdvertisementDTO)
 async def get_advertisement_by_unique_id(
         unique_id: str,
         repo: Annotated[RequestsRepo, Depends(get_repo)],
