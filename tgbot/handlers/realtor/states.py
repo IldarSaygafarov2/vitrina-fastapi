@@ -741,7 +741,9 @@ async def get_repair_type(
         advertisements_folder.mkdir(parents=True, exist_ok=True)
         files_locations = []
 
-        preview_file_id = state_data.get("preview_file_id")
+        # preview_file_id = state_data.get("preview_file_id")
+
+        preview_file_id = photos[0]
 
         preview_file, preview_filename = await download_file(bot=call.bot, file_id=preview_file_id)
         preview_file_location = advertisements_folder / preview_filename
