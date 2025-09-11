@@ -22,8 +22,6 @@ ID: {advertisement.unique_id}
 @{advertisement.user.tg_username}
 {advertisement.user.phone_number} {advertisement.user.first_name}
 
-Больше вариантов в нашей удобной платформе, жмите и переходите на сайт 👇
-
 🔽Наш удобный сайт🔽
 
 <a href='https://tr.ee/vitrina'>🔘НАЙТИ КВАРТИРУ🔘</a>
@@ -54,8 +52,6 @@ ID: {advertisement.unique_id}
 
 Подробности по телефону: {advertisement.user.phone_number} {advertisement.user.first_name}
 @{advertisement.user.tg_username}
-
-Выберите квартиру на удобном сайте👇
 
 🔽Наш удобный сайт🔽
 
