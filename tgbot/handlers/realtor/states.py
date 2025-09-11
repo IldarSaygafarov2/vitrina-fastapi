@@ -79,6 +79,29 @@ async def get_operation_type_set_category(
     )
 
 
+# @router.callback_query(F.data.startswith("chosen_category"))
+# async def get_category_set_photos_quantity(
+#         call: CallbackQuery,
+#         repo: "RequestsRepo",
+#         state: FSMContext,
+# ):
+#     await call.answer()
+#
+#     category_id = int(call.data.split(":")[-1])
+#
+#     category = await repo.categories.get_category_by_id(category_id=category_id)
+#
+#     message = await call.message.answer(
+#         text="""Отправьте заставку объявления
+# Фотография будет отображаться на странице списка объявлений
+# (Не добавляйте фотографии унитазов, ванной комнаты, и других непрезентабельных комнат)
+#         """
+#     )
+#
+#     await state.update_data(category=category, photos_qty_message=message)
+#     await state.set_state(AdvertisementCreationState.preview)
+
+
 @router.callback_query(F.data.startswith("chosen_category"))
 async def get_category_set_photos_quantity(
         call: CallbackQuery,
@@ -92,14 +115,12 @@ async def get_category_set_photos_quantity(
     category = await repo.categories.get_category_by_id(category_id=category_id)
 
     message = await call.message.answer(
-        text="""Отправьте заставку объявления
-Фотография будет отображаться на странице списка объявлений
-(Не добавляйте фотографии унитазов, ванной комнаты, и других непрезентабельных комнат)
-        """
+        text="Напишите сколько фотографий будет у объявления"
     )
 
     await state.update_data(category=category, photos_qty_message=message)
-    await state.set_state(AdvertisementCreationState.preview)
+    await state.set_state(AdvertisementCreationState.photos_quantity)
+
 
 
 @router.message(AdvertisementCreationState.preview)
@@ -170,6 +191,8 @@ async def get_title_set_description(
         state: FSMContext,
 ):
     state_data = await state.get_data()
+    # await message.answer_photo(state_data['photos'][0])
+
     title_message = state_data.pop("title_message")
 
     title_message = await title_message.answer(text=get_title_text(lang="uz"))
@@ -623,6 +646,7 @@ async def get_floor_to(
 
         await state.update_data(floor_to=floor_to, cur_message=cur_message)
         await state.set_state(AdvertisementCreationState.repair_type)
+        # await state.set_state(AdvertisementCreationState.check_preview)
     except Exception as e:
         await message.bot.send_message(
             chat_id=config.tg_bot.main_chat_id, text=f"ошибка в get_floor_to"
@@ -630,6 +654,22 @@ async def get_floor_to(
         await message.bot.send_message(
             chat_id=config.tg_bot.main_chat_id, text=f"{e}\n{e.__class__.__name__}"
         )
+
+
+# @router.callback_query(
+#     F.data.startswith('repair_type'),
+#     AdvertisementCreationState.check_preview
+# )
+# async def check_preview_photo(
+#         call: CallbackQuery,
+#         state: FSMContext,
+# ):
+#     await call.answer()
+#     state_data = await state.get_data()
+#
+#     _, repair_type = call.data.split(':')
+#     first_photo = state_data.get('photos')[0]
+#     await call.bot.send_photo(chat_id=call.message.chat.id, photo=first_photo)
 
 
 @router.callback_query(

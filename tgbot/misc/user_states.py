@@ -37,6 +37,8 @@ class AdvertisementCreationState(StatesGroup):
     photos_quantity = State()
     photos = State()
 
+    check_preview = State()
+
 
 class AdvertisementModerationState(StatesGroup):
     message = State()

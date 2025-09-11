@@ -24,7 +24,7 @@ ID: {advertisement.unique_id}
 
 Больше вариантов в нашей удобной платформе, жмите и переходите на сайт 👇
 
-<a href='https://ivitrina-nedvizhimosti.com/'>📱 НАШ САЙТ</a>
+<a href='https://ivitrina-nedvizhimosti.com/'>Найти квартиру</a>
 """
 
 
@@ -55,9 +55,5 @@ ID: {advertisement.unique_id}
 
 Выберите квартиру на удобном сайте👇
 
-<a href='https://ivitrina-nedvizhimosti.com/'>📱 НАШ САЙТ</a>
-
-<a href='https://t.me/vitrinanedvizhimosti'>📱 АРЕНДА НЕДВИЖИМОСТИ</a>
-
-<a href='https://www.instagram.com/vitrina.uz?igsh=d3J6emEyeGE3N3V6'>📱  НАШ Instagram</a>
+<a href='https://t.me/vitrinanedvizhimosti'>Найти квартиру</a>
 """

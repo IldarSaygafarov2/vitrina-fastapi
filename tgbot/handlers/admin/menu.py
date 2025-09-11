@@ -541,8 +541,6 @@ async def process_moderation_confirm(
         chat_id = config.tg_bot.buy_channel_name
         advertisement_message = buy_channel_advertisement_message(advertisement)
 
-    print('channel id:', chat_id)
-
     media_group = get_media_group(photos, advertisement_message)
 
     month = datetime.datetime.now().month
