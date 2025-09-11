@@ -69,3 +69,14 @@ async def get_advertisement(
         return {"detail": "Advertisement not found"}
 
     return advertisement
+
+
+@router.get('/{unique_id}', response_model=AdvertisementDTO)
+async def get_advertisement_by_unique_id(
+        unique_id: str,
+        repo: Annotated[RequestsRepo, Depends(get_repo)],
+):
+    advertisement = await repo.advertisements.get_advertisement_by_unique_id(unique_id=unique_id)
+    if advertisement is None:
+        return {"detail": "Advertisement not found"}
+    return AdvertisementDTO.model_validate(advertisement, from_attributes=True)
