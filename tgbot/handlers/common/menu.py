@@ -121,10 +121,33 @@ async def search_by_id(
     )
 
 
+async def _send_searched_advertisement(
+        message: Message,
+        advertisement,
+        is_group_director,
+):
+    advertisement_message = realtor_advertisement_completed_text(
+        advertisement=advertisement,
+    )
+    photos = [obj.tg_image_hash for obj in advertisement.images]
+    media_group = get_media_group(photos, advertisement_message)
+    if media_group:
+        await message.answer_media_group(media=media_group)
+
+    if not is_group_director:
+        return await message.answer(
+            text="Выберите действие над этим объявлением",
+            reply_markup=advertisement_actions_kb(advertisement_id=advertisement.id),
+        )
+    return await message.answer(
+        text="Выберите действие над этим объявлением",
+        reply_markup=delete_advertisement_kb(advertisement_id=advertisement.id),
+    )
+
+
 @router.message(AdvertisementSearchStates.id)
 async def get_searched_advertisement(
         message: Message,
-        state: FSMContext,
         repo: RequestsRepo
 ):
     advertisement = await repo.advertisements.get_advertisement_by_unique_id(unique_id=message.text)
@@ -132,6 +155,8 @@ async def get_searched_advertisement(
 
     is_group_director = user.role.value == 'group_director'
 
+    if user.is_superadmin:
+        return await _send_searched_advertisement(message, advertisement, is_group_director)
 
     if not advertisement:
         text = f'Объявление с ID: {message.text} не найдено, перепроверьте правильность ID'
@@ -146,27 +171,8 @@ async def get_searched_advertisement(
         text = f'Объявление с ID: {message.text} не найдено либо не является вашим объявлением, перепроверьте правильность ID'
         return await message.answer(text, reply_markup=return_home_kb())
 
-
-    advertisement_message = realtor_advertisement_completed_text(
-        advertisement=advertisement,
-    )
-
     try:
-        photos = [obj.tg_image_hash for obj in advertisement.images]
-        media_group = get_media_group(photos, advertisement_message)
-        if media_group:
-            await message.answer_media_group(media=media_group)
-
-
-        if not is_group_director:
-            return await message.answer(
-                text="Выберите действие над этим объявлением",
-                reply_markup=advertisement_actions_kb(advertisement_id=advertisement.id),
-            )
-        return await message.answer(
-            text="Выберите действие над этим объявлением",
-            reply_markup=delete_advertisement_kb(advertisement_id=advertisement.id),
-        )
+        return await _send_searched_advertisement(message, advertisement, is_group_director)
     except Exception as e:
         error_message = (
             f"{str(e)}\n{e.__class__.__name__}\nID: {advertisement.unique_id}"
