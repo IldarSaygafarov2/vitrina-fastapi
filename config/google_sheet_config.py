@@ -18,6 +18,7 @@ class GoogleSheetConfig:
 class ReportSheetConfig:
     rent_report_sheet_link: str
     buy_report_sheet_link: str
+    full_rent_report_sheet_link: str
     config_filename: str
 
     @staticmethod
@@ -25,5 +26,6 @@ class ReportSheetConfig:
         return ReportSheetConfig(
             rent_report_sheet_link=env.str("RENT_REPORT_SHEET_LINK"),
             buy_report_sheet_link=env.str("BUY_REPORT_SHEET_LINK"),
+            full_rent_report_sheet_link=env.str("FULL_RENT_REPORT_SHEET_LINK"),
             config_filename=env.str("REPORT_SHEET_CONFIG"),
         )

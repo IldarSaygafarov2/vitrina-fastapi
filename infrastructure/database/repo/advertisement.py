@@ -248,6 +248,20 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+    async def get_all_moderated_advertisements(self):
+        stmt = (
+            select(Advertisement)
+            .where(Advertisement.is_moderated == True)
+            .options(
+                selectinload(Advertisement.user),
+                selectinload(Advertisement.category),
+                selectinload(Advertisement.district),
+            )
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+
     async def update_advertisement_unique_id(
         self, advertisement_id: int, unique_id: str
     ):

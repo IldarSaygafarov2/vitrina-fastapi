@@ -1,12 +1,10 @@
 import asyncio
-import random
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from config.loader import load_config
-from infrastructure.database.models import Advertisement
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
 
