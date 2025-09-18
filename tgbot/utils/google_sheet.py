@@ -52,7 +52,7 @@ def fill_row_with_data(spread: Spreadsheet, worksheet_name: str, data: dict):
 
 def get_sheet_values(spread: Spreadsheet, worksheet_name: str):
     worksheet = spread.worksheet(worksheet_name)
-    return worksheet.get_all_values()
+    return worksheet.get_all_records()
 
 
 def main() -> None:
@@ -65,10 +65,13 @@ def main() -> None:
     # add_row_titles(rent_spread, list(ROW_FIELDS.values()))
     # print(buy_spread, rent_spread)
 
-    full_rent_report_spread = get_table_by_url(client, config.report_sheet.full_rent_report_sheet_link)
-    create_worksheets(full_rent_report_spread, list(MONTHS_DICT.values()))
-    add_row_titles(full_rent_report_spread, list(ROW_FIELDS.values()))
-    print(full_rent_report_spread)
+    # full_rent_report_spread = get_table_by_url(client, config.report_sheet.full_rent_report_sheet_link)
+    buy_full_report_spread = get_table_by_url(client, config.report_sheet.full_buy_report_sheet_link)
+    # create_worksheets(full_rent_report_spread, list(MONTHS_DICT.values()))
+    create_worksheets(buy_full_report_spread, list(MONTHS_DICT.values()))
+    # add_row_titles(full_rent_report_spread, list(ROW_FIELDS.values()))
+    add_row_titles(buy_full_report_spread, list(ROW_FIELDS.values()))
+    print('done')
 
 
 if __name__ == '__main__':
