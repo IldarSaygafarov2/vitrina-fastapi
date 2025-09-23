@@ -339,7 +339,7 @@ class AdvertisementImageRepo(BaseRepo):
         result = await self.session.execute(query)
         return result.scalars().all()
 
-    async def update_image_hash(self, image_id: int, image_hash: int):
+    async def update_image_hash(self, image_id: int, image_hash: str):
         query = (
             update(AdvertisementImage)
             .values(image_hash=image_hash)
@@ -349,3 +349,11 @@ class AdvertisementImageRepo(BaseRepo):
         result = await self.session.execute(query)
         await self.session.commit()
         return result.scalar_one()
+
+    async def get_all_hashes(self):
+        query = (
+            select(AdvertisementImage)
+            .where(AdvertisementImage.image_hash != None)
+        )
+        result = await self.session.execute(query)
+        return result.scalars().all()

@@ -47,7 +47,7 @@ from tgbot.templates.advertisement_creation import (
     realtor_advertisement_completed_text,
 )
 from tgbot.utils.helpers import filter_digits, get_media_group, download_advertisement_photo
-from tgbot.utils.image_checker import is_image_same, get_image_hash_as_int, get_image_hash_hex
+from tgbot.utils.image_checker import is_image_same, get_image_hash_as_int, get_image_hash_hex, is_duplicate
 
 # from tgbot.utils.image_checker import is_image_same
 
@@ -169,7 +169,6 @@ async def get_photos_set_title(
 
     if current_state["photos_quantity"] == len(current_state["photos"]):
         cur_message = await message.answer(text=get_title_text(), reply_markup=None)
-        operation_type = current_state.get('operation_type').upper()
 
         current_state["message_ids"].append(cur_message.message_id)
 
@@ -181,33 +180,18 @@ async def get_photos_set_title(
             bot=message.bot, file_id=current_state['photos'][0], folder=advertisements_folder
         )
 
+        duplicates = await is_duplicate(preview_file_location, repo)
+        if not duplicates:
+            await message.answer('дубликатов первой отправленной вами фотографии не найдено')
+        else:
+            await message.answer(f'количество дубликатов первой отправленной вами фотографии: {len(duplicates)}')
+
         files_locations = []
 
         # other photos
         for photo_id in current_state['photos']:
             file_location = await download_advertisement_photo(message.bot, photo_id, advertisements_folder)
             files_locations.append((file_location, photo_id))
-
-
-#         current_advertisements = await repo.advertisements.get_all_moderated_advertisements(
-#             operation_type=operation_type
-#         )
-#
-#         for adv in current_advertisements:
-#             img = None
-#             for file_location, _ in files_locations:
-#                 img = file_location
-#
-#             for image in adv.images:
-#                 print(f'''
-# adv_id={adv.id},
-# adv_img_url={image.url},
-# cur_image={img},
-# is_same={is_image_same(img, image.url)}
-# ''')
-#
-#             print('='*50)
-
 
         await state.update_data(
             photos=current_state["photos"],
