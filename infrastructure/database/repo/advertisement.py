@@ -335,6 +335,7 @@ class AdvertisementImageRepo(BaseRepo):
     async def get_all_images(self):
         query = (
             select(AdvertisementImage)
+            .where(AdvertisementImage.image_hash == None)
         )
         result = await self.session.execute(query)
         return result.scalars().all()

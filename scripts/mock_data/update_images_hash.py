@@ -10,14 +10,14 @@ async def update_images_hash(session):
     repo = RequestsRepo(session)
 
     images = await repo.advertisement_images.get_all_images()
-    for image in images:
+    for idx, image in enumerate(images, start=1):
         try:
             image_hash = get_image_hash_hex(image.url)
         except Exception as e:
             image_hash = ''
             print(e)
         updated = await repo.advertisement_images.update_image_hash(image_id=image.id, image_hash=image_hash)
-        print(updated.url, updated.image_hash)
+        print(idx, updated.url, updated.image_hash)
 
 
 async def main():
