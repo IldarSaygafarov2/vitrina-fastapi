@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, BIGINT
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -133,6 +133,7 @@ class Advertisement(Base, IntIdMixin):
 class AdvertisementImage(Base, IntIdMixin):
     url: Mapped[str]
     tg_image_hash: Mapped[str] = mapped_column(nullable=True)
+    image_hash: Mapped[str] = mapped_column(String(16), nullable=True)
 
     advertisement_id: Mapped[int] = mapped_column(
         ForeignKey("advertisements.id", ondelete="CASCADE")

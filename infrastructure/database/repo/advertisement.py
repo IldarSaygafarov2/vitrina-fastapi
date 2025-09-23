@@ -50,13 +50,13 @@ class AdvertisementRepo(BaseRepo):
         operation_type_uz,
         property_type_uz,
         repair_type_uz,
-        unique_id,
+            # unique_id,
         owner_phone_number: str,
     ):
         stmt = (
             insert(Advertisement)
             .values(
-                unique_id=unique_id,
+                # unique_id=unique_id,
                 preview=preview,
                 operation_type=operation_type,
                 category_id=category,
@@ -257,6 +257,7 @@ class AdvertisementRepo(BaseRepo):
                 selectinload(Advertisement.user),
                 selectinload(Advertisement.category),
                 selectinload(Advertisement.district),
+                selectinload(Advertisement.images),
             )
         )
         result = await self.session.execute(stmt)
@@ -292,15 +293,17 @@ class AdvertisementRepo(BaseRepo):
 
 class AdvertisementImageRepo(BaseRepo):
     async def insert_advertisement_image(
-        self,
-        advertisement_id: int,
-        url: str,
-        tg_image_hash: str,
+            self,
+            advertisement_id: int,
+            url: str,
+            tg_image_hash: str,
+            image_hash: str
     ):
         stmt = insert(AdvertisementImage).values(
             advertisement_id=advertisement_id,
             url=url,
             tg_image_hash=tg_image_hash,
+            image_hash=image_hash
         )
         await self.session.execute(stmt)
         await self.session.commit()
@@ -318,5 +321,31 @@ class AdvertisementImageRepo(BaseRepo):
             .returning(AdvertisementImage)
         )
         result = await self.session.execute(stmt)
+        await self.session.commit()
+        return result.scalar_one()
+
+    async def get_advertisement_images(self, advertisement_id: int):
+        query = (
+            select(AdvertisementImage)
+            .where(AdvertisementImage.advertisement_id == advertisement_id)
+        )
+        result = await self.session.execute(query)
+        return result.scalars().all()
+
+    async def get_all_images(self):
+        query = (
+            select(AdvertisementImage)
+        )
+        result = await self.session.execute(query)
+        return result.scalars().all()
+
+    async def update_image_hash(self, image_id: int, image_hash: int):
+        query = (
+            update(AdvertisementImage)
+            .values(image_hash=image_hash)
+            .where(AdvertisementImage.id == image_id)
+            .returning(AdvertisementImage)
+        )
+        result = await self.session.execute(query)
         await self.session.commit()
         return result.scalar_one()

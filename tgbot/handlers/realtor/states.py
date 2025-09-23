@@ -1,4 +1,4 @@
-import shutil
+# import shutil
 from datetime import datetime
 from pathlib import Path
 
@@ -16,7 +16,6 @@ from infrastructure.database.models.advertisement import (
     RepairTypeUz,
 )
 from infrastructure.database.repo.requests import RequestsRepo
-from infrastructure.utils.helpers import generate_code
 from tgbot.keyboards.admin.inline import advertisement_moderation_kb
 from tgbot.keyboards.user.inline import (
     advertisement_actions_kb,
@@ -47,7 +46,10 @@ from tgbot.templates.advertisement_creation import (
     price_text,
     realtor_advertisement_completed_text,
 )
-from tgbot.utils.helpers import filter_digits, get_media_group, download_file
+from tgbot.utils.helpers import filter_digits, get_media_group, download_advertisement_photo
+from tgbot.utils.image_checker import is_image_same, get_image_hash_as_int, get_image_hash_hex
+
+# from tgbot.utils.image_checker import is_image_same
 
 router = Router()
 
@@ -160,18 +162,59 @@ async def get_photos_quantity_set_get_photos(
 async def get_photos_set_title(
         message: Message,
         state: FSMContext,
+        repo: "RequestsRepo"
 ):
     current_state = await state.get_data()
     current_state["photos"].append(message.photo[-1].file_id)
 
     if current_state["photos_quantity"] == len(current_state["photos"]):
         cur_message = await message.answer(text=get_title_text(), reply_markup=None)
+        operation_type = current_state.get('operation_type').upper()
 
         current_state["message_ids"].append(cur_message.message_id)
+
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        advertisements_folder = upload_dir / "advertisements" / date_str
+        advertisements_folder.mkdir(parents=True, exist_ok=True)
+
+        preview_file_location = await download_advertisement_photo(
+            bot=message.bot, file_id=current_state['photos'][0], folder=advertisements_folder
+        )
+
+        files_locations = []
+
+        # other photos
+        for photo_id in current_state['photos']:
+            file_location = await download_advertisement_photo(message.bot, photo_id, advertisements_folder)
+            files_locations.append((file_location, photo_id))
+
+
+#         current_advertisements = await repo.advertisements.get_all_moderated_advertisements(
+#             operation_type=operation_type
+#         )
+#
+#         for adv in current_advertisements:
+#             img = None
+#             for file_location, _ in files_locations:
+#                 img = file_location
+#
+#             for image in adv.images:
+#                 print(f'''
+# adv_id={adv.id},
+# adv_img_url={image.url},
+# cur_image={img},
+# is_same={is_image_same(img, image.url)}
+# ''')
+#
+#             print('='*50)
+
 
         await state.update_data(
             photos=current_state["photos"],
             title_message=cur_message,
+
+            files_locations=files_locations,
+            preview_file_location=preview_file_location
         )
         await state.set_state(AdvertisementCreationState.title)
 
@@ -191,12 +234,9 @@ async def get_title_set_description(
         state: FSMContext,
 ):
     state_data = await state.get_data()
-    # await message.answer_photo(state_data['photos'][0])
 
     title_message = state_data.pop("title_message")
-
     title_message = await title_message.answer(text=get_title_text(lang="uz"))
-
     await state.update_data(title=message.text, title_message=title_message)
     await state.set_state(AdvertisementCreationState.title_uz)
 
@@ -689,7 +729,7 @@ async def get_repair_type(
     )
 
     try:
-        unique_id = generate_code()
+        # unique_id = generate_code()
         _, repair_type = call.data.split(":")
         state_data = await state.get_data()
 
@@ -734,36 +774,13 @@ async def get_repair_type(
         repair_type_status_uz = RepairTypeUz(REPAIR_TYPE_MAPPING_UZ[repair_type])
 
         photos = state_data.get("photos")
-        date_str = datetime.now().strftime("%Y-%m-%d")
+
         owner_phone_number = state_data.get("owner_phone_number")
 
-        advertisements_folder = upload_dir / "advertisements" / date_str
-        advertisements_folder.mkdir(parents=True, exist_ok=True)
-        files_locations = []
-
-        # preview_file_id = state_data.get("preview_file_id")
-
-        preview_file_id = photos[0]
-
-        preview_file, preview_filename = await download_file(bot=call.bot, file_id=preview_file_id)
-        preview_file_location = advertisements_folder / preview_filename
-
-        with open(preview_file_location, "wb") as f:
-            shutil.copyfileobj(preview_file, f)
-
-        # other photos
-        for photo_id in photos:
-
-            file, filename = await download_file(bot=call.bot, file_id=photo_id)
-
-            file_location = advertisements_folder / filename
-            files_locations.append((file_location, photo_id))
-
-            with open(file_location, "wb") as f:
-                shutil.copyfileobj(file, f)  # type: ignore
+        files_locations = state_data.get('files_locations')
+        preview_file_location = state_data.get('preview_file_location')
 
         new_advertisement = await repo.advertisements.create_advertisement(
-            unique_id=unique_id,
             operation_type=operation_type_status,
             category=category.id,
             district=district.id,
@@ -796,10 +813,12 @@ async def get_repair_type(
         )
 
         for file_location, photo_id in files_locations:
+            image_hash = get_image_hash_hex(file_location)
             await repo.advertisement_images.insert_advertisement_image(
                 advertisement_id=new_advertisement.id,
                 url=str(file_location),
                 tg_image_hash=photo_id,
+                image_hash=image_hash
             )
 
         media_group = get_media_group(photos, advertisement_message)

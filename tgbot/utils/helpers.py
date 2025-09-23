@@ -1,4 +1,7 @@
 import json
+import shutil
+from pathlib import Path
+from typing import BinaryIO
 
 from aiogram import Bot
 from aiogram.types import InputMediaPhoto
@@ -72,3 +75,11 @@ async def download_file(bot: Bot, file_id: str):
     filename = preview_file_obj.file_path.split("/")[-1]
     file = await bot.download_file(preview_file_obj.file_path)
     return file, filename
+
+
+async def download_advertisement_photo(bot: Bot, file_id: str, folder: Path):
+    file, filename = await download_file(bot, file_id)
+    location = folder / filename
+    with open(location, "wb") as f:
+        shutil.copyfileobj(file, f)  # type: ignore
+    return location
