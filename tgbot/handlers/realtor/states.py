@@ -47,7 +47,8 @@ from tgbot.templates.advertisement_creation import (
     realtor_advertisement_completed_text,
 )
 from tgbot.utils.helpers import filter_digits, get_media_group, download_advertisement_photo
-from tgbot.utils.image_checker import is_image_same, get_image_hash_as_int, get_image_hash_hex, is_duplicate
+from tgbot.utils.image_checker import  get_image_hash_hex, is_duplicate
+from infrastructure.utils.helpers import get_unique_code
 
 # from tgbot.utils.image_checker import is_image_same
 
@@ -65,12 +66,14 @@ async def get_operation_type_set_category(
         repo: "RequestsRepo",
         state: FSMContext,
 ):
+    unique_code = await get_unique_code(repo)
+
     await call.answer()
     _, operation_type = call.data.split(":")
 
     operation_type_text = OPERATION_TYPE_MAPPING[operation_type]
 
-    await state.update_data(operation_type=operation_type)
+    await state.update_data(operation_type=operation_type, unique_code=unique_code)
     await state.set_state(AdvertisementCreationState.category)
 
     categories = await repo.categories.get_categories()
@@ -713,9 +716,11 @@ async def get_repair_type(
     )
 
     try:
-        # unique_id = generate_code()
+
         _, repair_type = call.data.split(":")
         state_data = await state.get_data()
+
+        unique_id = state_data.get('unique_code')
 
         operation_type = state_data.get("operation_type")
         category = state_data.get("category")
@@ -765,6 +770,7 @@ async def get_repair_type(
         preview_file_location = state_data.get('preview_file_location')
 
         new_advertisement = await repo.advertisements.create_advertisement(
+            unique_id=unique_id,
             operation_type=operation_type_status,
             category=category.id,
             district=district.id,

@@ -50,7 +50,7 @@ class Advertisement(Base, IntIdMixin):
     name_uz: Mapped[str] = mapped_column(String, nullable=True)
 
     unique_id: Mapped[str] = mapped_column(
-        String(6), nullable=True, default=generate_code()
+        String(6), nullable=True
     )
 
     owner_phone_number: Mapped[str] = mapped_column(nullable=True)

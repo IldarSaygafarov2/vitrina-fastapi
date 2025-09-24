@@ -25,38 +25,38 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def create_advertisement(
-        self,
-        category: int,
-        district: int,
-        title: str,
-        title_uz: str,
-        description: str,
-        description_uz: str,
-        address: str,
-        address_uz: str,
-        creation_year: int,
-        price: int,
-        rooms_quantity: int,
-        quadrature: int,
-        floor_from: int,
-        floor_to: int,
-        house_quadrature_from: int,
-        house_quadrature_to: int,
-        user: int,
-        preview: str,
-        operation_type,
-        property_type,
-        repair_type,
-        operation_type_uz,
-        property_type_uz,
-        repair_type_uz,
-            # unique_id,
-        owner_phone_number: str,
+            self,
+            category: int,
+            district: int,
+            title: str,
+            title_uz: str,
+            description: str,
+            description_uz: str,
+            address: str,
+            address_uz: str,
+            creation_year: int,
+            price: int,
+            rooms_quantity: int,
+            quadrature: int,
+            floor_from: int,
+            floor_to: int,
+            house_quadrature_from: int,
+            house_quadrature_to: int,
+            user: int,
+            preview: str,
+            operation_type,
+            property_type,
+            repair_type,
+            operation_type_uz,
+            property_type_uz,
+            repair_type_uz,
+            unique_id,
+            owner_phone_number: str,
     ):
         stmt = (
             insert(Advertisement)
             .values(
-                # unique_id=unique_id,
+                unique_id=unique_id,
                 preview=preview,
                 operation_type=operation_type,
                 category_id=category,
@@ -263,9 +263,8 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-
     async def update_advertisement_unique_id(
-        self, advertisement_id: int, unique_id: str
+            self, advertisement_id: int, unique_id: str
     ):
         stmt = (
             update(Advertisement)
@@ -276,6 +275,14 @@ class AdvertisementRepo(BaseRepo):
         updated = await self.session.execute(stmt)
         await self.session.commit()
         return updated.scalar_one()
+
+    async def get_all_unique_ids(self):
+        stmt = (
+            select(Advertisement.unique_id)
+            .distinct()
+        )
+        result = await self.session.execute(stmt)
+        return [row[0] for row in result.fetchall()]
 
     async def get_advertisements_by_category_id_and_operation_type(self, category_id: int,
                                                                    operation_type: str):
