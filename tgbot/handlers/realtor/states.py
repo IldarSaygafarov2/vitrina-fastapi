@@ -183,11 +183,11 @@ async def get_photos_set_title(
             bot=message.bot, file_id=current_state['photos'][0], folder=advertisements_folder
         )
 
-        duplicates = await is_duplicate(preview_file_location, repo)
-        if not duplicates:
-            await message.answer('дубликатов первой отправленной вами фотографии не найдено')
-        else:
-            await message.answer(f'количество дубликатов первой отправленной вами фотографии: {len(duplicates)}')
+        # duplicates = await is_duplicate(preview_file_location, repo)
+        # if not duplicates:
+        #     await message.answer('дубликатов первой отправленной вами фотографии не найдено')
+        # else:
+        #     await message.answer(f'количество дубликатов первой отправленной вами фотографии: {len(duplicates)}')
 
         files_locations = []
 
