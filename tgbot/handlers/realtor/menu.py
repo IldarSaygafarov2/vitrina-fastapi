@@ -28,9 +28,12 @@ router.callback_query.filter(RoleFilter(role="realtor"))
 
 
 @router.message(CommandStart())
-async def start(message: Message, repo: RequestsRepo):
+async def start(message: Message, repo: RequestsRepo, state: FSMContext):
     username = message.from_user.username
     chat_id = message.from_user.id
+
+    await state.clear()
+    print(await state.get_data())
 
     await repo.users.update_user_chat_id(
         tg_username=username,

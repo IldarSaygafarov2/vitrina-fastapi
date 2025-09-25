@@ -168,40 +168,22 @@ async def get_photos_set_title(
         repo: "RequestsRepo"
 ):
     current_state = await state.get_data()
+    print(current_state)
+
     current_state["photos"].append(message.photo[-1].file_id)
 
     if current_state["photos_quantity"] == len(current_state["photos"]):
+
         cur_message = await message.answer(text=get_title_text(), reply_markup=None)
 
         current_state["message_ids"].append(cur_message.message_id)
-
-        date_str = datetime.now().strftime("%Y-%m-%d")
-        advertisements_folder = upload_dir / "advertisements" / date_str
-        advertisements_folder.mkdir(parents=True, exist_ok=True)
-
-        preview_file_location = await download_advertisement_photo(
-            bot=message.bot, file_id=current_state['photos'][0], folder=advertisements_folder
-        )
-
-        # duplicates = await is_duplicate(preview_file_location, repo)
-        # if not duplicates:
-        #     await message.answer('дубликатов первой отправленной вами фотографии не найдено')
-        # else:
-        #     await message.answer(f'количество дубликатов первой отправленной вами фотографии: {len(duplicates)}')
-
-        files_locations = []
-
-        # other photos
-        for photo_id in current_state['photos']:
-            file_location = await download_advertisement_photo(message.bot, photo_id, advertisements_folder)
-            files_locations.append((file_location, photo_id))
 
         await state.update_data(
             photos=current_state["photos"],
             title_message=cur_message,
 
-            files_locations=files_locations,
-            preview_file_location=preview_file_location
+            # files_locations=files_locations,
+            # preview_file_location=preview_file_location
         )
         await state.set_state(AdvertisementCreationState.title)
 
@@ -764,10 +746,22 @@ async def get_repair_type(
 
         photos = state_data.get("photos")
 
-        owner_phone_number = state_data.get("owner_phone_number")
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        advertisements_folder = upload_dir / "advertisements" / date_str
+        advertisements_folder.mkdir(parents=True, exist_ok=True)
 
-        files_locations = state_data.get('files_locations')
-        preview_file_location = state_data.get('preview_file_location')
+        preview_file_location = await download_advertisement_photo(
+            bot=call.bot, file_id=photos[0], folder=advertisements_folder
+        )
+
+        files_locations = []
+
+        # other photos
+        for photo_id in photos:
+            file_location = await download_advertisement_photo(call.bot, photo_id, advertisements_folder)
+            files_locations.append((file_location, photo_id))
+
+        owner_phone_number = state_data.get("owner_phone_number")
 
         new_advertisement = await repo.advertisements.create_advertisement(
             unique_id=unique_id,
