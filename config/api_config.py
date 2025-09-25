@@ -26,6 +26,7 @@ class ApiV1Prefix:
     request: str = "/request"
     consultation: str = "/consultation"
     agents: str = "/agents"
+    dev: str = '/dev'
 
 
 @dataclass

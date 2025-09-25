@@ -21,6 +21,11 @@ class UserAdvertisementObjectDTO(BaseModel):
     profile_image: Optional[str]
 
 
+class UserShortDTO(BaseModel):
+    id: int
+    fullname: Optional[str]
+
+
 class UserCreateDTO(BaseModel):
     first_name: str
     lastname: str

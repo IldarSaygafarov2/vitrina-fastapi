@@ -263,6 +263,15 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+    async def count_advertisements_by_operation_type(self, operation_type: str) -> int:
+        stmt = (
+            select(func.count())
+            .where(Advertisement.operation_type == operation_type)
+            .where(Advertisement.is_moderated == True)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
+
     async def update_advertisement_unique_id(
             self, advertisement_id: int, unique_id: str
     ):
@@ -297,6 +306,26 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+    async def get_advertisements_by_operation_type(
+            self,
+            operation_type: str,
+            limit: int = 20,
+            offset: int = 0
+    ):
+        stmt = (
+            select(Advertisement)
+            .options(
+                selectinload(Advertisement.user),
+                selectinload(Advertisement.category),
+                selectinload(Advertisement.district),
+            )
+            .where(Advertisement.operation_type == operation_type)
+            .where(Advertisement.is_moderated == True)
+            .limit(limit)
+            .offset(offset)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
 
 class AdvertisementImageRepo(BaseRepo):
     async def insert_advertisement_image(

@@ -12,3 +12,8 @@ class DistrictDTO(BaseModel):
     name: str
     name_uz: Optional[str]
     slug: str
+
+class DistrictShortDTO(BaseModel):
+    id: int
+    name: str
+

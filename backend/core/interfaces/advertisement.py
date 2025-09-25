@@ -3,9 +3,9 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from backend.core.interfaces.category import CategoryDTO
-from backend.core.interfaces.district import DistrictDTO
-from backend.core.interfaces.user import UserAdvertisementObjectDTO
+from backend.core.interfaces.category import CategoryDTO, CategoryShortDTO
+from backend.core.interfaces.district import DistrictDTO, DistrictShortDTO
+from backend.core.interfaces.user import UserAdvertisementObjectDTO, UserShortDTO
 
 
 class AdvertisementForReportDTO(BaseModel):
@@ -21,16 +21,32 @@ class AdvertisementForReportDTO(BaseModel):
     floor_from: int
     floor_to: int
     operation_type: str
-    district: Optional[DistrictDTO]
-    category: Optional[CategoryDTO]
-    user: Optional[UserAdvertisementObjectDTO]
+    district: Optional[DistrictShortDTO]
+    category: Optional[CategoryShortDTO]
+    user: Optional[UserShortDTO]
     is_moderated: bool
     created_at: datetime
     unique_id: str
     rooms_quantity: int
     quadrature: int
     owner_phone_number: Optional[str]
-   
+
+
+# class PaginatedAdvertisementForReportDTO(BaseModel):
+#     total: int
+#     limit: int = 20
+#     offset: int = 0
+#     pages: int
+#     current_page: int
+#     advertisements: list[AdvertisementForReportDTO]
+
+
+class PaginatedAdvertisementForReportDTO(BaseModel):
+    total: int
+    page: int
+    page_size: int
+    pages: int
+    advertisements: list[AdvertisementForReportDTO]
 
 
 class AdvertisementDTO(BaseModel):
