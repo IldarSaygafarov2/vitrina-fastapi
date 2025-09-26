@@ -20,9 +20,9 @@ def camel_case_to_snake_case(input_str: str, pluralize_word: bool = True) -> str
 
 
 def pluralize(word: str) -> str:
-    if word.endswith(('s', 'x', 'z', 'ch', 'sh')):
-        return word + 'es'
-    elif word.endswith('y') and word[-2] not in 'aeiou':
-        return word[:-1] + 'ies'
+    if word.endswith(("s", "x", "z", "ch", "sh")):
+        return word + "es"
+    elif word.endswith("y") and word[-2] not in "aeiou":
+        return word[:-1] + "ies"
     else:
-        return word + 's'
+        return word + "s"

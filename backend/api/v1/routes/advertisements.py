@@ -53,9 +53,11 @@ async def get_advertisement(
         _advertisement, from_attributes=True
     )
 
-    related_objects = await repo.advertisements.get_advertisements_by_category_id_and_operation_type(
-        category_id=advertisement.category.id,
-        operation_type=_advertisement.operation_type,
+    related_objects = (
+        await repo.advertisements.get_advertisements_by_category_id_and_operation_type(
+            category_id=advertisement.category.id,
+            operation_type=_advertisement.operation_type,
+        )
     )
 
     advertisement.related_objects = related_objects
@@ -71,12 +73,14 @@ async def get_advertisement(
     return advertisement
 
 
-@router.get('/unique/{unique_id}', response_model=AdvertisementDTO)
+@router.get("/unique/{unique_id}", response_model=AdvertisementDTO)
 async def get_advertisement_by_unique_id(
-        unique_id: str,
-        repo: Annotated[RequestsRepo, Depends(get_repo)],
+    unique_id: str,
+    repo: Annotated[RequestsRepo, Depends(get_repo)],
 ):
-    advertisement = await repo.advertisements.get_advertisement_by_unique_id(unique_id=unique_id)
+    advertisement = await repo.advertisements.get_advertisement_by_unique_id(
+        unique_id=unique_id
+    )
     if advertisement is None:
         return {"detail": "Advertisement not found"}
     return AdvertisementDTO.model_validate(advertisement, from_attributes=True)

@@ -11,15 +11,13 @@ class AdvertisementRepo(BaseRepo):
     async def get_advertisements_by_month(self, month: int):
         query = (
             select(Advertisement)
-            .filter(
-                func.extract('month', Advertisement.created_at) == month
-            )
+            .filter(func.extract("month", Advertisement.created_at) == month)
             .options(
                 selectinload(Advertisement.user),
                 selectinload(Advertisement.category),
                 selectinload(Advertisement.district),
-
             )
+            .where(Advertisement.is_moderated == True)
         )
         result = await self.session.execute(query)
         return result.scalars().all()
@@ -286,15 +284,13 @@ class AdvertisementRepo(BaseRepo):
         return updated.scalar_one()
 
     async def get_all_unique_ids(self):
-        stmt = (
-            select(Advertisement.unique_id)
-            .distinct()
-        )
+        stmt = select(Advertisement.unique_id).distinct()
         result = await self.session.execute(stmt)
         return [row[0] for row in result.fetchall()]
 
-    async def get_advertisements_by_category_id_and_operation_type(self, category_id: int,
-                                                                   operation_type: str):
+    async def get_advertisements_by_category_id_and_operation_type(
+            self, category_id: int, operation_type: str
+    ):
         stmt = (
             select(Advertisement)
             .where(Advertisement.category_id == category_id)
@@ -307,10 +303,7 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def get_advertisements_by_operation_type(
-            self,
-            operation_type: str,
-            limit: int = 20,
-            offset: int = 0
+            self, operation_type: str, limit: int = 20, offset: int = 0
     ):
         stmt = (
             select(Advertisement)
@@ -327,19 +320,16 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+
 class AdvertisementImageRepo(BaseRepo):
     async def insert_advertisement_image(
-            self,
-            advertisement_id: int,
-            url: str,
-            tg_image_hash: str,
-            image_hash: str
+            self, advertisement_id: int, url: str, tg_image_hash: str, image_hash: str
     ):
         stmt = insert(AdvertisementImage).values(
             advertisement_id=advertisement_id,
             url=url,
             tg_image_hash=tg_image_hash,
-            image_hash=image_hash
+            image_hash=image_hash,
         )
         await self.session.execute(stmt)
         await self.session.commit()
@@ -361,18 +351,14 @@ class AdvertisementImageRepo(BaseRepo):
         return result.scalar_one()
 
     async def get_advertisement_images(self, advertisement_id: int):
-        query = (
-            select(AdvertisementImage)
-            .where(AdvertisementImage.advertisement_id == advertisement_id)
+        query = select(AdvertisementImage).where(
+            AdvertisementImage.advertisement_id == advertisement_id
         )
         result = await self.session.execute(query)
         return result.scalars().all()
 
     async def get_all_images(self):
-        query = (
-            select(AdvertisementImage)
-            .where(AdvertisementImage.image_hash == None)
-        )
+        query = select(AdvertisementImage).where(AdvertisementImage.image_hash == None)
         result = await self.session.execute(query)
         return result.scalars().all()
 
@@ -388,9 +374,6 @@ class AdvertisementImageRepo(BaseRepo):
         return result.scalar_one()
 
     async def get_all_hashes(self):
-        query = (
-            select(AdvertisementImage)
-            .where(AdvertisementImage.image_hash != None)
-        )
+        query = select(AdvertisementImage).where(AdvertisementImage.image_hash != None)
         result = await self.session.execute(query)
         return result.scalars().all()

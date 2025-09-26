@@ -4,8 +4,12 @@ from aiogram.types import CallbackQuery, Message, ContentType
 
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.keyboards.admin.inline import admin_start_kb, delete_advertisement_kb
-from tgbot.keyboards.user.inline import realtor_advertisements_kb, realtor_start_kb, advertisement_actions_kb, \
-    return_home_kb
+from tgbot.keyboards.user.inline import (
+    realtor_advertisements_kb,
+    realtor_start_kb,
+    advertisement_actions_kb,
+    return_home_kb,
+)
 from tgbot.misc.common import AdvertisementSearchStates
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.utils.helpers import get_media_group
@@ -104,27 +108,21 @@ async def prev_page(
     )
 
 
-@router.callback_query(F.data.startswith('search_by_id'))
-async def search_by_id(
-        call: CallbackQuery,
-        state: FSMContext
-):
+@router.callback_query(F.data.startswith("search_by_id"))
+async def search_by_id(call: CallbackQuery, state: FSMContext):
     chat_id = call.message.chat.id
 
     await call.answer()
     await state.set_state(AdvertisementSearchStates.id)
     await state.update_data(chat_id=chat_id)
 
-    await call.message.edit_text(
-        'Напиши ID объявления!',
-        reply_markup=None
-    )
+    await call.message.edit_text("Напиши ID объявления!", reply_markup=None)
 
 
 async def _send_searched_advertisement(
-        message: Message,
-        advertisement,
-        is_group_director,
+    message: Message,
+    advertisement,
+    is_group_director,
 ):
     advertisement_message = realtor_advertisement_completed_text(
         advertisement=advertisement,
@@ -132,7 +130,7 @@ async def _send_searched_advertisement(
     photos = [obj.tg_image_hash for obj in advertisement.images]
     media_group = get_media_group(photos, advertisement_message)
     if media_group:
-        await message.answer_media_group(media=media_group)
+        await message.answer_media_group(media=media_group)  # type: ignore
 
     if not is_group_director:
         return await message.answer(
@@ -146,33 +144,38 @@ async def _send_searched_advertisement(
 
 
 @router.message(AdvertisementSearchStates.id)
-async def get_searched_advertisement(
-        message: Message,
-        repo: RequestsRepo
-):
-    advertisement = await repo.advertisements.get_advertisement_by_unique_id(unique_id=message.text)
+async def get_searched_advertisement(message: Message, repo: RequestsRepo):
+    advertisement = await repo.advertisements.get_advertisement_by_unique_id(
+        unique_id=message.text
+    )
     user = await repo.users.get_user_by_chat_id(tg_chat_id=message.chat.id)
 
-    is_group_director = user.role.value == 'group_director'
+    is_group_director = user.role.value == "group_director"
 
     if user.is_superadmin:
-        return await _send_searched_advertisement(message, advertisement, is_group_director)
+        return await _send_searched_advertisement(
+            message, advertisement, is_group_director
+        )
 
     if not advertisement:
-        text = f'Объявление с ID: {message.text} не найдено, перепроверьте правильность ID'
+        text = (
+            f"Объявление с ID: {message.text} не найдено, перепроверьте правильность ID"
+        )
         return await message.answer(text, reply_markup=return_home_kb())
 
     elif is_group_director:
         agents = await repo.users.get_director_agents(director_chat_id=user.tg_chat_id)
         if advertisement.user not in agents:
-            text = f'Объявление с ID: {message.text} не добавлено вашей командой, перепроверьте правильность ID'
+            text = f"Объявление с ID: {message.text} не добавлено вашей командой, перепроверьте правильность ID"
             return await message.answer(text, reply_markup=return_home_kb())
     elif advertisement.user != user:
-        text = f'Объявление с ID: {message.text} не найдено либо не является вашим объявлением, перепроверьте правильность ID'
+        text = f"Объявление с ID: {message.text} не найдено либо не является вашим объявлением, перепроверьте правильность ID"
         return await message.answer(text, reply_markup=return_home_kb())
 
     try:
-        return await _send_searched_advertisement(message, advertisement, is_group_director)
+        return await _send_searched_advertisement(
+            message, advertisement, is_group_director
+        )
     except Exception as e:
         error_message = (
             f"{str(e)}\n{e.__class__.__name__}\nID: {advertisement.unique_id}"
