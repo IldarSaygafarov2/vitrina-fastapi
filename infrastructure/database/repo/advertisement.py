@@ -8,10 +8,11 @@ from .base import BaseRepo
 
 
 class AdvertisementRepo(BaseRepo):
-    async def get_advertisements_by_month(self, month: int):
+    async def get_advertisements_by_month(self, month: int, operation_type: str):
         query = (
             select(Advertisement)
             .filter(func.extract("month", Advertisement.created_at) == month)
+            .where(Advertisement.operation_type == operation_type)
             .options(
                 selectinload(Advertisement.user),
                 selectinload(Advertisement.category),

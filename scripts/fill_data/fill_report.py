@@ -18,11 +18,12 @@ async def fill_report(session):
     client = client_init_json()
     buy_table = get_table_by_url(client, config.report_sheet.buy_report_sheet_link)
 
-    advertisements = await repo.advertisements.get_advertisements_by_month(6)
+    advertisements = await repo.advertisements.get_advertisements_by_month(6, 'BUY')
     advertisements = [
         AdvertisementForReportDTO.model_validate(obj, from_attributes=True).model_dump()
         for obj in advertisements
     ]
+    print(len(advertisements))
     for adv in advertisements:
         adv = correct_advertisement_dict(adv)
         fill_row_with_data(buy_table, MONTHS_DICT[6], adv)
