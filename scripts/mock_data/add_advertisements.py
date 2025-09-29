@@ -10,7 +10,7 @@ from datetime import datetime
 
 
 async def add_advertisements(session: AsyncSession):
-    advertisements = read_json("output.json")
+    advertisements = read_json("buy_6_output_clean.json")
 
 
     result = []
