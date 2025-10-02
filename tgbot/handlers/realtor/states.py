@@ -1,5 +1,4 @@
-# import shutil
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from aiogram import F, Router
@@ -50,7 +49,6 @@ from tgbot.utils.helpers import filter_digits, get_media_group, download_adverti
 from tgbot.utils.image_checker import  get_image_hash_hex, is_duplicate
 from infrastructure.utils.helpers import get_unique_code
 
-# from tgbot.utils.image_checker import is_image_same
 
 router = Router()
 
@@ -790,6 +788,11 @@ async def get_repair_type(
             repair_type_uz=repair_type_status_uz,
             user=user.id,
             owner_phone_number=owner_phone_number,
+        )
+
+        same_images = await is_duplicate(
+            new_image_path=new_advertisement.preview,
+            repo=repo
         )
 
         advertisement_message = realtor_advertisement_completed_text(

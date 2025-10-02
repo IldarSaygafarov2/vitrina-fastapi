@@ -1,10 +1,9 @@
 import enum
 
-from sqlalchemy import ForeignKey, String, BIGINT
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from infrastructure.utils.helpers import generate_code
 from .base import Base, created_at
 from .mixins.id_int_pk import IntIdMixin
 
@@ -126,6 +125,7 @@ class Advertisement(Base, IntIdMixin):
     category = relationship("Category", back_populates="advertisement")
     district = relationship("District", back_populates="advertisement")
     user = relationship("User", back_populates="advertisement")
+    duplicated = relationship("AdvertisementDuplicated", back_populates="advertisement")
 
     created_at: Mapped[created_at]
 

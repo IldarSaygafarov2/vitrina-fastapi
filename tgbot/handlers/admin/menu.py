@@ -570,7 +570,8 @@ async def process_moderation_confirm(
                 media=media_group,
             )
     except Exception as e:
-        return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id, text=f'ошибка при отправке медиа группы\n{str(e)}')
+        return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id,
+                                           text=f'ошибка при отправке медиа группы\n{str(e)}')
 
     await call.message.edit_text("Спасибо! Объявление отправлено в канал")
     await call.bot.send_message(
@@ -605,7 +606,8 @@ async def get_advertisement_for_base_channel(
             media=media_group,
         )
     except Exception as e:
-        await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id, text='Ошибка при отправке в резервный канал')
+        await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id,
+                                    text='Ошибка при отправке в резервный канал')
         return await call.bot.send_message(chat_id=config.tg_bot.main_chat_id, text=f'{chat_id=} {e}')
 
     await call.message.edit_text("Спасибо! Объявление отправлено в резервный канал")
@@ -734,7 +736,6 @@ async def process_advertisement_deletion_message(
     )
     await message.bot.send_message(user.tg_chat_id, f"Причина: {message.text}")
     await state.clear()
-
 
 # @router.message(Command('get_report'))
 # async def get_month_report(message: Message, repo: "RequestsRepo"):

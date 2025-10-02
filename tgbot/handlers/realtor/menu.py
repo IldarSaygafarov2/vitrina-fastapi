@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
@@ -33,7 +35,6 @@ async def start(message: Message, repo: RequestsRepo, state: FSMContext):
     chat_id = message.from_user.id
 
     await state.clear()
-    print(await state.get_data())
 
     await repo.users.update_user_chat_id(
         tg_username=username,
