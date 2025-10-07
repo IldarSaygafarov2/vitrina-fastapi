@@ -6,7 +6,7 @@ from pathlib import Path
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, ContentType, Message
+from aiogram.types import CallbackQuery, ContentType, Message, ReplyKeyboardRemove
 
 from backend.core.interfaces.advertisement import AdvertisementForReportDTO
 from celery_tasks.tasks import fill_report
@@ -534,10 +534,12 @@ async def send_after_confirmation(
         operation_type=advertisement.operation_type.value
     )
     try:
+        # отправка в канал (Аренда/Покупка)
         await call.bot.send_media_group(
             chat_id=chat_id,
             media=media_group,
         )
+        # Отправка в базовый канал
         if advertisement.operation_type.value == 'Покупка':
             await call.bot.send_media_group(
                 chat_id=config.tg_bot.base_channel_name,
@@ -547,12 +549,12 @@ async def send_after_confirmation(
         return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id,
                                            text=f'ошибка при отправке медиа группы\n{str(e)}')
 
-    await call.message.edit_text("Спасибо! Объявление отправлено в канал")
+    # await call.message.edit_text("Спасибо! Объявление отправлено в канал")
     await call.bot.send_message(
         chat_id=user.tg_chat_id, text="Объявление прошло модерацию"
     )
 
-    return await call.message.delete()
+    return
 
 
 @router.callback_query(F.data.startswith("moderation_confirm"))
@@ -598,10 +600,11 @@ async def process_moderation_confirm(
     advertisement_data = AdvertisementForReportDTO.model_validate(advertisement, from_attributes=True).model_dump()
     advertisement_data = correct_advertisement_dict(advertisement_data)
 
-    await call.message.answer(f'объявление добавлено в очередь, будет отправлено в {time_to_send}')
+    await call.message.edit_reply_markup(reply_markup=None)
+    await call.message.answer(f'объявление добавлено в очередь, будет отправлено в {time_to_send}', reply_markup=None)
 
-    # fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
-    #                   data=advertisement_data)
+    fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
+                      data=advertisement_data)
 
     # TODO: получить все не оптравленные объявления
     # TODO: если есть такие, то к времени последнего объявления добавить +5 минут, если нету, получить текущее время и прибавить 5 минут
