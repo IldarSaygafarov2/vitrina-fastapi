@@ -32,6 +32,7 @@ from tgbot.misc.constants import (
     REPAIR_TYPE_MAPPING_UZ,
 )
 from tgbot.misc.user_states import AdvertisementCreationState
+
 from tgbot.templates.advertisement_creation import (
     choose_category_text,
     choose_photos_text,
@@ -790,10 +791,11 @@ async def get_repair_type(
             owner_phone_number=owner_phone_number,
         )
 
-        same_images = await is_duplicate(
-            new_image_path=new_advertisement.preview,
-            repo=repo
-        )
+
+        # same_images = await is_duplicate(
+        #     new_image_path=new_advertisement.preview,
+        #     repo=repo
+        # )
 
         advertisement_message = realtor_advertisement_completed_text(
             new_advertisement, lang="uz"

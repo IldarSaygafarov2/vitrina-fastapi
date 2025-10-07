@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .advertisement import AdvertisementRepo, AdvertisementImageRepo
+from .advertisement import AdvertisementRepo, AdvertisementImageRepo, AdvertisementQueueRepo
 from .category import CategoryRepo
 from .consultation import ConsultationRepo
 from .district import DistrictRepo
@@ -33,6 +33,10 @@ class RequestsRepo:
     @property
     def advertisement_images(self) -> AdvertisementImageRepo:
         return AdvertisementImageRepo(self.session)
+
+    @property
+    def advertisement_queue(self) -> AdvertisementQueueRepo:
+        return AdvertisementQueueRepo(self.session)
 
     @property
     def user_request(self) -> UserRequestRepo:

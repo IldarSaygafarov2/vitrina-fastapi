@@ -1,9 +1,11 @@
+from datetime import datetime
+
 from sqlalchemy import delete, desc, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
 from backend.core.filters.advertisement import AdvertisementFilter
-from infrastructure.database.models import Advertisement, AdvertisementImage
+from infrastructure.database.models import Advertisement, AdvertisementImage, AdvertisementQueue
 from .base import BaseRepo
 
 
@@ -378,3 +380,36 @@ class AdvertisementImageRepo(BaseRepo):
         query = select(AdvertisementImage).where(AdvertisementImage.image_hash != None)
         result = await self.session.execute(query)
         return result.scalars().all()
+
+
+class AdvertisementQueueRepo(BaseRepo):
+    async def add_advertisement_to_queue(self, advertisement_id: int, time_to_send: datetime):
+        stmt = (
+            insert(AdvertisementQueue)
+            .values(advertisement_id=advertisement_id, time_to_send=time_to_send)
+            .returning(AdvertisementQueue)
+        )
+        result = await self.session.execute(stmt)
+        await self.session.commit()
+        return result.scalar_one()
+
+    async def update_advertisement_queue(self, advertisement_id: int):
+        stmt = (
+            update(AdvertisementQueue)
+            .values(is_sent=True)
+            .where(AdvertisementQueue.advertisement_id == advertisement_id)
+            .returning(AdvertisementQueue)
+        )
+        result = await self.session.execute(stmt)
+        await self.session.commit()
+        return result.scalar_one_or_none()
+
+    async def get_all_not_sent_advertisements(self):
+        stmt = (
+            select(AdvertisementQueue)
+            .where(AdvertisementQueue.is_sent == False)
+            .order_by(AdvertisementQueue.time_to_send)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+

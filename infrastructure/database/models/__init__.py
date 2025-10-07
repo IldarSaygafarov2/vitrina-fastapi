@@ -1,4 +1,4 @@
-from .advertisement import Advertisement, AdvertisementImage
+from .advertisement import Advertisement, AdvertisementImage, AdvertisementQueue
 from .base import Base
 from .category import Category
 from .consultation import ConsultationRequest

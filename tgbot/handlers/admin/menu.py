@@ -29,6 +29,7 @@ from tgbot.misc.user_states import (
     AdvertisementDeletionState,
     AdvertisementModerationState,
 )
+from tgbot.scheduler.main import scheduler
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.messages import (
     rent_channel_advertisement_message,
@@ -517,6 +518,43 @@ async def update_profile_image(
     )
 
 
+async def send_after_confirmation(
+        call: CallbackQuery,
+        advertisement,
+        media_group,
+        chat_id,
+        user,
+        repo: "RequestsRepo"
+):
+    await repo.advertisement_queue.update_advertisement_queue(advertisement_id=advertisement.id)
+    await send_message_to_rent_topic(
+        bot=call.bot,
+        price=advertisement.price,
+        media_group=media_group,
+        operation_type=advertisement.operation_type.value
+    )
+    try:
+        await call.bot.send_media_group(
+            chat_id=chat_id,
+            media=media_group,
+        )
+        if advertisement.operation_type.value == 'Покупка':
+            await call.bot.send_media_group(
+                chat_id=config.tg_bot.base_channel_name,
+                media=media_group,
+            )
+    except Exception as e:
+        return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id,
+                                           text=f'ошибка при отправке медиа группы\n{str(e)}')
+
+    await call.message.edit_text("Спасибо! Объявление отправлено в канал")
+    await call.bot.send_message(
+        chat_id=user.tg_chat_id, text="Объявление прошло модерацию"
+    )
+
+    return await call.message.delete()
+
+
 @router.callback_query(F.data.startswith("moderation_confirm"))
 async def process_moderation_confirm(
         call: CallbackQuery,
@@ -525,6 +563,18 @@ async def process_moderation_confirm(
     await call.answer()
 
     advertisement_id = int(call.data.split(":")[-1])
+
+    not_sent_advertisements = await repo.advertisement_queue.get_all_not_sent_advertisements()
+    if not not_sent_advertisements:
+        time_to_send = datetime.datetime.now() + datetime.timedelta(minutes=5)
+    else:
+        time_to_send = not_sent_advertisements[-1].time_to_send + datetime.timedelta(minutes=5)
+
+
+    new_advertisement_in_queue = await repo.advertisement_queue.add_advertisement_to_queue(
+        advertisement_id=advertisement_id,
+        time_to_send=time_to_send
+    )
 
     advertisement = await repo.advertisements.update_advertisement(
         advertisement_id=advertisement_id, is_moderated=True
@@ -548,36 +598,25 @@ async def process_moderation_confirm(
     advertisement_data = AdvertisementForReportDTO.model_validate(advertisement, from_attributes=True).model_dump()
     advertisement_data = correct_advertisement_dict(advertisement_data)
 
-    fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
-                      data=advertisement_data)
+    await call.message.answer(f'объявление добавлено в очередь, будет отправлено в {time_to_send}')
+
+    # fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
+    #                   data=advertisement_data)
+
+    # TODO: получить все не оптравленные объявления
+    # TODO: если есть такие, то к времени последнего объявления добавить +5 минут, если нету, получить текущее время и прибавить 5 минут
+    # TODO: сделать отправку сообщения об очереди относительно того, есть ли добавленные элементы или нет
+
 
     # отправка данных в топики супергруппы
-    await send_message_to_rent_topic(
-        bot=call.bot,
-        price=advertisement.price,
-        media_group=media_group,
-        operation_type=advertisement.operation_type.value
+    scheduler.add_job(
+        send_after_confirmation,
+        'date',
+        run_date=time_to_send,
+        args=[call, advertisement, media_group, chat_id, user, repo],
+        id=f"ad_{advertisement_id}",
+        replace_existing=True
     )
-
-    try:
-        await call.bot.send_media_group(
-            chat_id=chat_id,
-            media=media_group,
-        )
-        if advertisement.operation_type.value == 'Покупка':
-            await call.bot.send_media_group(
-                chat_id=config.tg_bot.base_channel_name,
-                media=media_group,
-            )
-    except Exception as e:
-        return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id,
-                                           text=f'ошибка при отправке медиа группы\n{str(e)}')
-
-    await call.message.edit_text("Спасибо! Объявление отправлено в канал")
-    await call.bot.send_message(
-        chat_id=user.tg_chat_id, text="Объявление прошло модерацию"
-    )
-    return await call.message.delete()
 
 
 @router.callback_query(F.data.startswith("for_base_channel"))

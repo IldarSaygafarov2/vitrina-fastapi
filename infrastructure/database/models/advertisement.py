@@ -1,4 +1,5 @@
 import enum
+from datetime import datetime
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import ENUM
@@ -125,7 +126,7 @@ class Advertisement(Base, IntIdMixin):
     category = relationship("Category", back_populates="advertisement")
     district = relationship("District", back_populates="advertisement")
     user = relationship("User", back_populates="advertisement")
-    duplicated = relationship("AdvertisementDuplicated", back_populates="advertisement")
+    queue = relationship("AdvertisementQueue", back_populates="advertisement")
 
     created_at: Mapped[created_at]
 
@@ -139,3 +140,12 @@ class AdvertisementImage(Base, IntIdMixin):
         ForeignKey("advertisements.id", ondelete="CASCADE")
     )
     advertisement: Mapped["Advertisement"] = relationship(back_populates="images")
+
+
+class AdvertisementQueue(Base, IntIdMixin):
+    advertisement_id: Mapped[int] = mapped_column(
+        ForeignKey("advertisements.id", ondelete="CASCADE")
+    )
+    advertisement: Mapped["Advertisement"] = relationship(back_populates="queue")
+    time_to_send: Mapped[datetime] = mapped_column(nullable=True)
+    is_sent: Mapped[bool] = mapped_column(default=False)
