@@ -572,7 +572,6 @@ async def process_moderation_confirm(
     else:
         time_to_send = not_sent_advertisements[-1].time_to_send + datetime.timedelta(minutes=5)
 
-
     new_advertisement_in_queue = await repo.advertisement_queue.add_advertisement_to_queue(
         advertisement_id=advertisement_id,
         time_to_send=time_to_send
@@ -602,6 +601,10 @@ async def process_moderation_confirm(
 
     await call.message.edit_reply_markup(reply_markup=None)
     await call.message.answer(f'объявление добавлено в очередь, будет отправлено в {time_to_send}', reply_markup=None)
+    await call.bot.send_message(
+        user.tg_chat_id,
+        f'объявление добавлено в очередь, будет отправлено в {time_to_send}', reply_markup=None
+    )
 
     fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
                       data=advertisement_data)
@@ -609,7 +612,6 @@ async def process_moderation_confirm(
     # TODO: получить все не оптравленные объявления
     # TODO: если есть такие, то к времени последнего объявления добавить +5 минут, если нету, получить текущее время и прибавить 5 минут
     # TODO: сделать отправку сообщения об очереди относительно того, есть ли добавленные элементы или нет
-
 
     # отправка данных в топики супергруппы
     scheduler.add_job(
