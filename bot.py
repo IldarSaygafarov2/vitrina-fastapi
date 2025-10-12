@@ -12,7 +12,7 @@ from infrastructure.database.setup import create_engine, create_session_pool
 from tgbot.handlers import routers_list
 from tgbot.middlewares.config import ConfigMiddleware
 from tgbot.middlewares.database import DatabaseMiddleware
-from tgbot.scheduler.main import scheduler
+# from tgbot.scheduler.main import scheduler
 
 
 def setup_logging():
@@ -41,7 +41,7 @@ def register_global_middlewares(dp: Dispatcher, config: Config, session_pool=Non
 async def main():
     setup_logging()
 
-    scheduler.start()
+    # scheduler.start()
 
     config = load_config(".env")
     storage = MemoryStorage()
