@@ -605,8 +605,8 @@ async def process_moderation_confirm(
         f'объявление добавлено в очередь, будет отправлено в {time_to_send}', reply_markup=None
     )
 
-    # fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
-    #                   data=advertisement_data)
+    fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
+                      data=advertisement_data)
 
     # await repo.advertisement_queue.update_advertisement_queue(advertisement_id=advertisement.id)
     await send_message_to_rent_topic(
