@@ -599,11 +599,11 @@ async def process_moderation_confirm(
     advertisement_data = AdvertisementForReportDTO.model_validate(advertisement, from_attributes=True).model_dump()
     advertisement_data = correct_advertisement_dict(advertisement_data)
 
-    await call.message.answer(f'объявление добавлено в очередь, будет отправлено в {time_to_send}', reply_markup=None)
-    await call.bot.send_message(
-        user.tg_chat_id,
-        f'объявление добавлено в очередь, будет отправлено в {time_to_send}', reply_markup=None
-    )
+    # await call.message.answer(f'объявление добавлено в очередь, будет отправлено в {time_to_send}', reply_markup=None)
+    # await call.bot.send_message(
+    #     user.tg_chat_id,
+    #     f'объявление добавлено в очередь, будет отправлено в {time_to_send}', reply_markup=None
+    # )
 
     fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
                       data=advertisement_data)
