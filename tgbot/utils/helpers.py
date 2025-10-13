@@ -1,9 +1,10 @@
 import json
 import shutil
 from pathlib import Path
-from typing import BinaryIO
+
 
 from aiogram import Bot
+from aiogram.client.default import Default
 from aiogram.types import InputMediaPhoto
 
 from backend.app.config import config
@@ -19,7 +20,6 @@ def filter_digits(message: str):
 
 
 def get_media_group(photos, message: str | None = None) -> list[InputMediaPhoto]:
-
     media_group: list[InputMediaPhoto] = [
         (
             InputMediaPhoto(media=img, caption=message)
@@ -31,7 +31,20 @@ def get_media_group(photos, message: str | None = None) -> list[InputMediaPhoto]
     return media_group
 
 
+def serialize_media_group(media_group: list[InputMediaPhoto]) -> list[dict]:
+    serialized = []
+    for m in media_group:
+        serialized.append({
+            "type": "photo",
+            "media": m.media,
+            "caption": getattr(m, "caption", None),
+            "parse_mode": None if isinstance(getattr(m, "parse_mode", None), Default) else getattr(m, "parse_mode", None),
+        })
+    return serialized
 
+
+def deserialize_media_group(media_data: list[dict]) -> list[InputMediaPhoto]:
+    return [InputMediaPhoto(**item) for item in media_data]
 
 
 async def send_message_to_rent_topic(

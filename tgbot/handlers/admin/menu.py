@@ -1,4 +1,6 @@
+import asyncio
 import datetime
+import json
 import os
 import shutil
 from pathlib import Path
@@ -9,7 +11,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message, ReplyKeyboardRemove
 
 from backend.core.interfaces.advertisement import AdvertisementForReportDTO
-from celery_tasks.tasks import fill_report
+from celery_tasks.tasks import fill_report, send_delayed_message
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
@@ -36,7 +38,8 @@ from tgbot.templates.messages import (
     buy_channel_advertisement_message,
 )
 from tgbot.templates.realtor_texts import get_realtor_info
-from tgbot.utils.helpers import get_media_group, send_message_to_rent_topic, correct_advertisement_dict, download_file
+from tgbot.utils.helpers import get_media_group, send_message_to_rent_topic, correct_advertisement_dict, download_file, \
+    serialize_media_group
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -518,45 +521,6 @@ async def update_profile_image(
     )
 
 
-async def send_after_confirmation(
-        call: CallbackQuery,
-        advertisement,
-        media_group,
-        chat_id,
-        user,
-        repo: "RequestsRepo"
-):
-    await repo.advertisement_queue.update_advertisement_queue(advertisement_id=advertisement.id)
-    await send_message_to_rent_topic(
-        bot=call.bot,
-        price=advertisement.price,
-        media_group=media_group,
-        operation_type=advertisement.operation_type.value
-    )
-    try:
-        # отправка в канал (Аренда/Покупка)
-        await call.bot.send_media_group(
-            chat_id=chat_id,
-            media=media_group,
-        )
-        # Отправка в базовый канал
-        if advertisement.operation_type.value == 'Покупка':
-            await call.bot.send_media_group(
-                chat_id=config.tg_bot.base_channel_name,
-                media=media_group,
-            )
-    except Exception as e:
-        return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id,
-                                           text=f'ошибка при отправке медиа группы\n{str(e)}')
-
-    # await call.message.edit_text("Спасибо! Объявление отправлено в канал")
-    await call.bot.send_message(
-        chat_id=user.tg_chat_id, text="Объявление прошло модерацию"
-    )
-
-    return
-
-
 @router.callback_query(F.data.startswith("moderation_confirm"))
 async def process_moderation_confirm(
         call: CallbackQuery,
@@ -565,17 +529,6 @@ async def process_moderation_confirm(
     await call.answer()
 
     advertisement_id = int(call.data.split(":")[-1])
-
-    not_sent_advertisements = await repo.advertisement_queue.get_all_not_sent_advertisements()
-    if not not_sent_advertisements:
-        time_to_send = datetime.datetime.now() + datetime.timedelta(minutes=5)
-    else:
-        time_to_send = not_sent_advertisements[-1].time_to_send + datetime.timedelta(minutes=5)
-
-    new_advertisement_in_queue = await repo.advertisement_queue.add_advertisement_to_queue(
-        advertisement_id=advertisement_id,
-        time_to_send=time_to_send
-    )
 
     advertisement = await repo.advertisements.update_advertisement(
         advertisement_id=advertisement_id, is_moderated=True
@@ -599,16 +552,10 @@ async def process_moderation_confirm(
     advertisement_data = AdvertisementForReportDTO.model_validate(advertisement, from_attributes=True).model_dump()
     advertisement_data = correct_advertisement_dict(advertisement_data)
 
-    # await call.message.answer(f'объявление добавлено в очередь, будет отправлено в {time_to_send}', reply_markup=None)
-    # await call.bot.send_message(
-    #     user.tg_chat_id,
-    #     f'объявление добавлено в очередь, будет отправлено в {time_to_send}', reply_markup=None
-    # )
-
     fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
                       data=advertisement_data)
 
-    # await repo.advertisement_queue.update_advertisement_queue(advertisement_id=advertisement.id)
+
     await send_message_to_rent_topic(
         bot=call.bot,
         price=advertisement.price,
@@ -616,17 +563,35 @@ async def process_moderation_confirm(
         operation_type=advertisement.operation_type.value
     )
     try:
-        # отправка в канал (Аренда/Покупка)
-        await call.bot.send_media_group(
-            chat_id=chat_id,
-            media=media_group,
-        )
         # Отправка в базовый канал
         if advertisement.operation_type.value == 'Покупка':
+            print('for base channel')
             await call.bot.send_media_group(
                 chat_id=config.tg_bot.base_channel_name,
                 media=media_group,
             )
+
+
+        # отправка в канал (Аренда/Покупка)
+        if advertisement.operation_type.value == 'Покупка':
+            # await asyncio.sleep(60)
+            print('waiting 60 sec then send')
+            send_delayed_message.apply_async(
+                args=[chat_id, serialize_media_group(media_group)],
+                eta=datetime.datetime.utcnow() + datetime.timedelta(minutes=5),
+            )
+
+            # await call.bot.send_media_group(
+            #     chat_id=chat_id,
+            #     media=media_group,
+            # )
+        elif advertisement.operation_type == 'Аренда':
+            await call.bot.send_media_group(
+                chat_id=chat_id,
+                media=media_group,
+            )
+
+
     except Exception as e:
         return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id,
                                            text=f'ошибка при отправке медиа группы\n{str(e)}')
@@ -637,20 +602,6 @@ async def process_moderation_confirm(
     )
 
     return await call.message.delete()
-
-    # TODO: получить все не оптравленные объявления
-    # TODO: если есть такие, то к времени последнего объявления добавить +5 минут, если нету, получить текущее время и прибавить 5 минут
-    # TODO: сделать отправку сообщения об очереди относительно того, есть ли добавленные элементы или нет
-
-    # отправка данных в топики супергруппы
-    # scheduler.add_job(
-    #     send_after_confirmation,
-    #     'date',
-    #     run_date=time_to_send,
-    #     args=[call, advertisement, media_group, chat_id, user, repo],
-    #     id=f"ad_{advertisement_id}",
-    #     replace_existing=True
-    # )
 
 
 @router.callback_query(F.data.startswith("for_base_channel"))
