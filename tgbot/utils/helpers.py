@@ -38,7 +38,7 @@ def serialize_media_group(media_group: list[InputMediaPhoto]) -> list[dict]:
             "type": "photo",
             "media": m.media,
             "caption": getattr(m, "caption", None),
-            "parse_mode": None if isinstance(getattr(m, "parse_mode", None), Default) else getattr(m, "parse_mode", None),
+            "parse_mode": "HTML",
         })
     return serialized
 
