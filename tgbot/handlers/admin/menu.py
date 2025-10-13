@@ -556,12 +556,12 @@ async def process_moderation_confirm(
                       data=advertisement_data)
 
 
-    await send_message_to_rent_topic(
-        bot=call.bot,
-        price=advertisement.price,
-        media_group=media_group,
-        operation_type=advertisement.operation_type.value
-    )
+    # await send_message_to_rent_topic(
+    #     bot=call.bot,
+    #     price=advertisement.price,
+    #     media_group=media_group,
+    #     operation_type=advertisement.operation_type.value
+    # )
     try:
         # Отправка в базовый канал
         if advertisement.operation_type.value == 'Покупка':
@@ -576,9 +576,13 @@ async def process_moderation_confirm(
         if advertisement.operation_type.value == 'Покупка':
             # await asyncio.sleep(60)
             print('waiting 60 sec then send')
+            time_to_send = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
+            time_for_info = datetime.datetime.now() + datetime.timedelta(minutes=5)
+            await call.message.answer(f'Объявление в бот будет отправлено в {time_for_info}')
+            await call.bot.send_message(user.tg_chat_id, f'Объявление будет отпарвлено в {time_for_info}')
             send_delayed_message.apply_async(
                 args=[chat_id, serialize_media_group(media_group)],
-                eta=datetime.datetime.utcnow() + datetime.timedelta(minutes=5),
+                eta=time_to_send,
             )
 
             # await call.bot.send_media_group(
