@@ -556,12 +556,12 @@ async def process_moderation_confirm(
                       data=advertisement_data)
 
 
-    # await send_message_to_rent_topic(
-    #     bot=call.bot,
-    #     price=advertisement.price,
-    #     media_group=media_group,
-    #     operation_type=advertisement.operation_type.value
-    # )
+    await send_message_to_rent_topic(
+        bot=call.bot,
+        price=advertisement.price,
+        media_group=media_group,
+        operation_type=advertisement.operation_type.value
+    )
     try:
         # Отправка в базовый канал
         if advertisement.operation_type.value == 'Покупка':
