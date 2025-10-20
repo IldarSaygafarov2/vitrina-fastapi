@@ -114,11 +114,12 @@ class Advertisement(Base, IntIdMixin):
 
     floor_from: Mapped[int]
     floor_to: Mapped[int]
-    # is_studio: Mapped[bool]
     is_moderated: Mapped[bool] = mapped_column(nullable=True)
 
     preview: Mapped[str] = mapped_column(nullable=True)
     for_base_channel: Mapped[bool] = mapped_column(nullable=True, default=False)
+    reminder_time: Mapped[datetime] = mapped_column(nullable=True)
+    is_reminded: Mapped[bool] = mapped_column(nullable=True)
 
     images: Mapped[list["AdvertisementImage"]] = relationship(
         back_populates="advertisement"
@@ -127,8 +128,6 @@ class Advertisement(Base, IntIdMixin):
     district = relationship("District", back_populates="advertisement")
     user = relationship("User", back_populates="advertisement")
     queue = relationship("AdvertisementQueue", back_populates="advertisement")
-    # duplication_queue = relationship("AdvertisementDuplicationQueue", back_populates="advertisement")
-
     created_at: Mapped[created_at]
 
 
@@ -150,12 +149,3 @@ class AdvertisementQueue(Base, IntIdMixin):
     advertisement: Mapped["Advertisement"] = relationship(back_populates="queue")
     time_to_send: Mapped[datetime] = mapped_column(nullable=True)
     is_sent: Mapped[bool] = mapped_column(default=False)
-
-
-# class AdvertisementDuplicationQueue(Base, IntIdMixin):
-#     advertisement_id: Mapped[int] = mapped_column(
-#         ForeignKey("advertisements.id", ondelete="CASCADE")
-#     )
-#     advertisement: Mapped["Advertisement"] = relationship(back_populates="duplication_queue")
-#     time_to_send: Mapped[datetime] = mapped_column(nullable=True)
-#     is_sent: Mapped[bool] = mapped_column(default=False)

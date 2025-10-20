@@ -66,3 +66,8 @@ class AdvertisementUpdateState(StatesGroup):
     floor = State()
     owner_phone_number = State()
     image = State()
+
+
+class AdvertisementRelevanceState(StatesGroup):
+    is_price_actual = State()
+    new_price = State()

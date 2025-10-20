@@ -53,6 +53,8 @@ class AdvertisementRepo(BaseRepo):
             repair_type_uz,
             unique_id,
             owner_phone_number: str,
+            reminder_time: datetime,
+            is_reminded: bool = False
     ):
         stmt = (
             insert(Advertisement)
@@ -83,6 +85,8 @@ class AdvertisementRepo(BaseRepo):
                 property_type_uz=property_type_uz,
                 repair_type_uz=repair_type_uz,
                 owner_phone_number=owner_phone_number,
+                reminder_time=reminder_time,
+                is_reminded=is_reminded
             )
             .options(
                 selectinload(Advertisement.category),
@@ -93,6 +97,32 @@ class AdvertisementRepo(BaseRepo):
         result = await self.session.execute(stmt)
         await self.session.commit()
         return result.scalar_one()
+
+    async def update_advertisement_is_reminded(self, advertisement_id: int):
+        stmt = (
+            update(Advertisement)
+            .where(Advertisement.id == advertisement_id)
+            .values(is_reminded=True)
+        )
+        await self.session.execute(stmt)
+        await self.session.commit()
+
+    async def get_all_not_reminded_advertisements(self):
+        stmt = (
+            select(Advertisement.id, Advertisement.user_id, Advertisement.reminder_time)
+            .where(Advertisement.is_reminded == False)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+    async def update_advertisement_reminder_time(self, advertisement_id: int, reminder_time: datetime):
+        stmt = (
+            update(Advertisement)
+            .where(Advertisement.id == advertisement_id)
+            .values(reminder_time=reminder_time)
+        )
+        await self.session.execute(stmt)
+        await self.session.commit()
 
     async def get_advertisement_by_unique_id(self, unique_id: str):
         query = (
@@ -383,7 +413,7 @@ class AdvertisementImageRepo(BaseRepo):
 
 
 class AdvertisementQueueRepo(BaseRepo):
-    async def add_advertisement_to_queue(self, advertisement_id: int, time_to_send: datetime):
+    async def add_advertisement_to_queue(self, advertisement_id: int, time_to_send: datetime | None = None):
         stmt = (
             insert(AdvertisementQueue)
             .values(advertisement_id=advertisement_id, time_to_send=time_to_send)

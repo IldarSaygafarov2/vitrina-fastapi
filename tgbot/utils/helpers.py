@@ -1,5 +1,6 @@
 import json
 import shutil
+from datetime import datetime, timedelta
 from pathlib import Path
 
 
@@ -96,3 +97,9 @@ async def download_advertisement_photo(bot: Bot, file_id: str, folder: Path):
     with open(location, "wb") as f:
         shutil.copyfileobj(file, f)  # type: ignore
     return location
+
+
+def get_reminder_time_by_operation_type(operation_type: str) -> datetime:
+    if operation_type == 'Покупка':
+        return datetime.utcnow() + timedelta(days=3)
+    return datetime.utcnow() + timedelta(days=1)  # для аренды

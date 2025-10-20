@@ -5,6 +5,8 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from backend.core.interfaces.advertisement import AdvertisementForReportDTO
+from celery_tasks.tasks import remind_agent_to_update_advertisement
 from config.loader import load_config
 from infrastructure.database.models.advertisement import (
     OperationType,
@@ -15,13 +17,14 @@ from infrastructure.database.models.advertisement import (
     RepairTypeUz,
 )
 from infrastructure.database.repo.requests import RequestsRepo
-from tgbot.keyboards.admin.inline import advertisement_moderation_kb
+from tgbot.keyboards.admin.inline import advertisement_moderation_kb, delete_advertisement_kb
 from tgbot.keyboards.user.inline import (
     advertisement_actions_kb,
     categories_kb,
     districts_kb,
     property_type_kb,
     repair_type_kb,
+    realtor_start_kb, is_price_actual_kb
 )
 from tgbot.misc.constants import (
     OPERATION_TYPE_MAPPING,
@@ -31,7 +34,7 @@ from tgbot.misc.constants import (
     REPAIR_TYPE_MAPPING,
     REPAIR_TYPE_MAPPING_UZ,
 )
-from tgbot.misc.user_states import AdvertisementCreationState
+from tgbot.misc.user_states import AdvertisementCreationState, AdvertisementRelevanceState
 
 from tgbot.templates.advertisement_creation import (
     choose_category_text,
@@ -46,10 +49,10 @@ from tgbot.templates.advertisement_creation import (
     price_text,
     realtor_advertisement_completed_text,
 )
-from tgbot.utils.helpers import filter_digits, get_media_group, download_advertisement_photo
-from tgbot.utils.image_checker import  get_image_hash_hex, is_duplicate
+from tgbot.utils.helpers import filter_digits, get_media_group, download_advertisement_photo, \
+    get_reminder_time_by_operation_type, send_message_to_rent_topic, correct_advertisement_dict
+from tgbot.utils.image_checker import get_image_hash_hex, is_duplicate
 from infrastructure.utils.helpers import get_unique_code
-
 
 router = Router()
 
@@ -126,7 +129,6 @@ async def get_category_set_photos_quantity(
     await state.set_state(AdvertisementCreationState.photos_quantity)
 
 
-
 @router.message(AdvertisementCreationState.preview)
 async def get_preview(
         message: Message,
@@ -172,7 +174,6 @@ async def get_photos_set_title(
     current_state["photos"].append(message.photo[-1].file_id)
 
     if current_state["photos_quantity"] == len(current_state["photos"]):
-
         cur_message = await message.answer(text=get_title_text(), reply_markup=None)
 
         current_state["message_ids"].append(cur_message.message_id)
@@ -762,6 +763,11 @@ async def get_repair_type(
 
         owner_phone_number = state_data.get("owner_phone_number")
 
+        if operation_type == 'rent':
+            time_to_remind = datetime.utcnow() + timedelta(minutes=1)
+        else:
+            time_to_remind = datetime.utcnow() + timedelta(minutes=2)
+
         new_advertisement = await repo.advertisements.create_advertisement(
             unique_id=unique_id,
             operation_type=operation_type_status,
@@ -789,13 +795,8 @@ async def get_repair_type(
             repair_type_uz=repair_type_status_uz,
             user=user.id,
             owner_phone_number=owner_phone_number,
+            reminder_time=time_to_remind
         )
-
-
-        # same_images = await is_duplicate(
-        #     new_image_path=new_advertisement.preview,
-        #     repo=repo
-        # )
 
         advertisement_message = realtor_advertisement_completed_text(
             new_advertisement, lang="uz"
@@ -838,11 +839,7 @@ async def get_repair_type(
             except Exception as e:
                 await call.bot.send_message(
                     chat_id=config.tg_bot.main_chat_id,
-                    text=f"ошибка при отправке руководителям",
-                )
-                await call.bot.send_message(
-                    chat_id=config.tg_bot.main_chat_id,
-                    text=f"{e}\n{e.__class__.__name__}",
+                    text=f"ошибка при отправке руководителям\n{e}\n{e.__class__.__name__}",
                 )
 
         await call.message.answer(
@@ -860,3 +857,187 @@ async def get_repair_type(
         )
 
     await call.answer(text="Операция выполнена", show_alert=True)
+
+
+# @router.callback_query(
+#     F.data.startswith('actual'),
+# )
+# async def react_to_advertisement_actual(
+#         call: CallbackQuery,
+#         repo: "RequestsRepo"
+# ):
+#     await call.answer()
+#
+#     chat_id = call.message.chat.id
+#
+#     advertisement_id = int(call.data.split(':')[-1])
+#     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+#     photos = await repo.advertisement_images.get_advertisement_images(advertisement_id)
+#     advertisement_message = realtor_advertisement_completed_text(advertisement)
+#
+#     hashes = [i.tg_image_hash for i in photos]
+#     media_group = get_media_group(hashes, advertisement_message)
+#
+#     await call.bot.send_media_group(chat_id=chat_id, media=media_group)
+#     await call.bot.send_message(chat_id=chat_id, text='Поменялась ли цена данного объявления?',
+#                                 reply_markup=is_price_actual_kb(advertisement_id))
+
+    # новое время для проверки актуальности
+    # reminder_time = get_reminder_time_by_operation_type(
+    #     operation_type=advertisement.operation_type.value
+    # )
+    #
+    # # обновляем время слудеющего напоминания для проверки актуальности объявления
+    # await repo.advertisements.update_advertisement_reminder_time(advertisement_id=advertisement.id,
+    #                                                              reminder_time=reminder_time)
+    # await call.message.answer('Спасибо за ответ', reply_markup=realtor_start_kb(call.message.chat.id))
+
+
+# @router.callback_query(F.data.startswith("price_actual"))
+# async def react_to_price_actual(call: CallbackQuery, repo: "RequestsRepo"):
+#     await call.answer()
+#
+#     chat_id = call.message.chat.id
+#     advertisement_id = int(call.data.split(":")[-1])
+#     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+#
+#     operation_type = advertisement.operation_type.value
+#     reminder_time = get_reminder_time_by_operation_type(operation_type)
+#
+#     remind_agent_to_update_advertisement.apply_async(
+#         args=[advertisement.unique_id, chat_id, advertisement_id],
+#         eta=reminder_time
+#     )
+#
+#
+# @router.callback_query(F.data.startswith("price_not_actual"))
+# async def react_to_price_not_actual(call: CallbackQuery,  repo: "RequestsRepo", state: FSMContext):
+#     await call.answer()
+#
+#     advertisement_id = int(call.data.split(":")[-1])
+#
+#     await call.message.edit_text("Напишите новую цену для объявления")
+#     await state.set_state(AdvertisementRelevanceState.new_price)
+#     await state.update_data(advertisement_id=advertisement_id)
+#
+#
+# @router.message(AdvertisementRelevanceState.new_price)
+# async def get_new_price_for_advertisement(message: Message, repo: "RequestsRepo", state: FSMContext):
+#     state_data = await state.get_data()
+#     advertisement_id = state_data.get("advertisement_id")
+#     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+#     agent = await repo.users.get_user_by_id(user_id=advertisement.user_id)
+#     director_chat_id = agent.added_by
+#
+#
+#     operation_type = advertisement.operation_type.value
+#     new_price = int(message.text)
+#     updated = await repo.advertisements.update_advertisement(price=new_price)
+#
+#     if operation_type == 'Аренда':
+#         pass
+#     elif operation_type == 'Покупка':
+#         pass
+
+
+
+
+
+# @router.callback_query(
+#     F.data.startswith('not_actual')
+# )
+# async def react_to_advertisement_not_actual(
+#         call: CallbackQuery,
+#         repo: "RequestsRepo",
+#         state: FSMContext
+# ):
+#     await call.answer()
+#
+#     chat_id = call.message.chat.id
+#
+#     advertisement_id = int(call.data.split(':')[-1])
+#     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+#     advertisement_message = realtor_advertisement_completed_text(advertisement)
+#
+#     # фотографии объявления
+#     photos = await repo.advertisement_images.get_advertisement_images(advertisement_id=advertisement_id)
+#     hashes = [photo.tg_image_hash for photo in photos]
+#     media_group = get_media_group(hashes, advertisement_message)
+#     await call.bot.send_media_group(chat_id=chat_id, media=media_group)
+#     await call.bot.send_message(chat_id=chat_id, text="Выберите один из пунктов ниже",
+#                                 reply_markup=delete_advertisement_kb(advertisement_id))
+#
+#
+#
+#
+#
+# @router.message(AdvertisementRelevanceState.new_price)
+# async def set_new_price_for_advertisement(
+#         message: Message,
+#         repo: "RequestsRepo",
+#         state: FSMContext,
+# ):
+#     state_data = await state.get_data()
+#     advertisement_id = state_data.get('advertisement_id')
+#
+#     price = filter_digits(message.text)
+#
+#     # обновляем цену и получаем объявление
+#     advertisement = await repo.advertisements.update_advertisement(advertisement_id=advertisement_id, price=int(price))
+#
+#     advertisement_data = AdvertisementForReportDTO.model_validate(advertisement, from_attributes=True).model_dump()
+#     advertisement_data = correct_advertisement_dict(advertisement_data)
+#
+#     # фотографии объявления
+#     advertisement_photos = await repo.advertisement_images.get_advertisement_images(advertisement_id=advertisement.id)
+#     advertisement_photos = [i.tg_image_hash for i in advertisement_photos]
+#
+#     advertisement_message = realtor_advertisement_completed_text(
+#         advertisement, lang="uz"
+#     )
+#
+#     media_group = get_media_group(advertisement_photos, advertisement_message)
+#
+#     agent = await repo.users.get_user_by_id(user_id=advertisement.user_id)  # агент добавивиший объявление
+#     director = await repo.users.get_user_by_chat_id(tg_chat_id=agent.added_by)  # РГ к которому привязан агент
+#
+#     operation_type = advertisement.operation_type.value
+#     new_reminder_time = get_reminder_time_by_operation_type(operation_type=operation_type)
+#
+#     if operation_type == 'Покупка':
+#         realtor_fullname = f'{agent.first_name} {agent.lastname}'
+#         await message.bot.send_message(
+#             director.tg_chat_id,
+#             f"Риелтор: {realtor_fullname} добавил новое объявление",
+#         )
+#         await message.bot.send_media_group(
+#             director.tg_chat_id, media=media_group
+#         )
+#         await message.bot.send_message(
+#             director.tg_chat_id,
+#             f"Объявление прошло модерацию?",
+#             reply_markup=advertisement_moderation_kb(advertisement.id),
+#         )
+#     elif operation_type == 'Аренда':
+#         # await send_message_to_rent_topic(
+#         #     bot=message.bot,
+#         #     operation_type=operation_type,
+#         #     price=advertisement.price,
+#         #     media_group=media_group
+#         # )
+#         await message.bot.send_media_group(
+#             chat_id=config.tg_bot.rent_channel_name,
+#             media=media_group
+#         )
+#
+#     await repo.advertisements.update_advertisement_reminder_time(advertisement_id=advertisement_id,
+#                                                                  reminder_time=new_reminder_time)
+#
+#     # создаем задачу чтобы напомнить об объявление после изменения объявления
+#     remind_agent_to_update_advertisement.apply_async(
+#         args=[advertisement_data, agent.tg_chat_id, advertisement.id],
+#         eta=new_reminder_time,
+#     )
+#     await message.answer('Изменения внесены', reply_markup=realtor_start_kb(message.chat.id))
+#
+#

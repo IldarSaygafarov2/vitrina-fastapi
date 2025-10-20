@@ -211,3 +211,18 @@ def advertisement_images_kb(images: list[AdvertisementImage]):
 
     kb.adjust(2)
     return kb.as_markup()
+
+
+def is_advertisement_actual_kb(advertisement_id: int):
+    kb = InlineKeyboardBuilder()
+
+    kb.add(InlineKeyboardButton(text='Да', callback_data=f'actual:{advertisement_id}'))
+    kb.add(InlineKeyboardButton(text='Нет', callback_data=f'not_actual:{advertisement_id}'))
+    return kb.as_markup()
+
+
+def is_price_actual_kb(advertisement_id: int):
+    kb = InlineKeyboardBuilder()
+    kb.add(InlineKeyboardButton(text='Да', callback_data=f'price_actual:{advertisement_id}'))
+    kb.add(InlineKeyboardButton(text='Нет', callback_data=f'price_not_actual:{advertisement_id}'))
+    return kb.as_markup()

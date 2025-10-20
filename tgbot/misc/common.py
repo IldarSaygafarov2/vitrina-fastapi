@@ -6,7 +6,4 @@ class AdvertisementSearchStates(StatesGroup):
 
 
 class DevStates(StatesGroup):
-    # photos = State()
-    # title = State()
-    rent = State()
-    buy = State()
+    text = State()

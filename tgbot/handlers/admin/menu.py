@@ -1,6 +1,4 @@
-import asyncio
 import datetime
-import json
 import os
 import shutil
 from pathlib import Path
@@ -8,10 +6,10 @@ from pathlib import Path
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, ContentType, Message, ReplyKeyboardRemove
+from aiogram.types import CallbackQuery, ContentType, Message
 
 from backend.core.interfaces.advertisement import AdvertisementForReportDTO
-from celery_tasks.tasks import fill_report, send_delayed_message
+from celery_tasks.tasks import fill_report, send_delayed_message, remind_agent_to_update_advertisement
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
@@ -45,6 +43,7 @@ router = Router()
 router.message.filter(RoleFilter(role="group_director"))
 router.callback_query.filter(RoleFilter(role="group_director"))
 
+# path to folder for uploading images
 upload_dir = Path("media")
 upload_dir.mkdir(parents=True, exist_ok=True)
 
@@ -552,6 +551,15 @@ async def process_moderation_confirm(
     advertisement_data = AdvertisementForReportDTO.model_validate(advertisement, from_attributes=True).model_dump()
     advertisement_data = correct_advertisement_dict(advertisement_data)
 
+    # добавляем запись в таблицу очереди
+
+    if advertisement.operation_type.value == 'Покупка':
+        await call.bot.send_media_group(
+            chat_id=config.tg_bot.base_channel_name,
+            media=media_group,
+        )
+
+    # TODO: не забыть убрать с комментария при заливке на гитхаб
     fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
                       data=advertisement_data)
 
@@ -562,20 +570,16 @@ async def process_moderation_confirm(
         media_group=media_group,
         operation_type=advertisement.operation_type.value
     )
+
+    remind_agent_to_update_advertisement.apply_async(
+        args=[advertisement.unique_id, user.tg_chat_id, advertisement.id],
+        eta=advertisement.reminder_time
+    )
+
     try:
         # Отправка в базовый канал
         if advertisement.operation_type.value == 'Покупка':
-            print('for base channel')
-            await call.bot.send_media_group(
-                chat_id=config.tg_bot.base_channel_name,
-                media=media_group,
-            )
-
-
-        # отправка в канал (Аренда/Покупка)
-        if advertisement.operation_type.value == 'Покупка':
-            # await asyncio.sleep(60)
-            print('waiting 60 sec then send')
+            # отложенная отправка в основной канал покупки
             time_to_send = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
             time_for_info = datetime.datetime.now() + datetime.timedelta(minutes=5)
             await call.message.answer(f'Объявление в бот будет отправлено в {time_for_info}')
@@ -584,23 +588,17 @@ async def process_moderation_confirm(
                 args=[chat_id, serialize_media_group(media_group)],
                 eta=time_to_send,
             )
-
-            # await call.bot.send_media_group(
-            #     chat_id=chat_id,
-            #     media=media_group,
-            # )
         elif advertisement.operation_type == 'Аренда':
             await call.bot.send_media_group(
                 chat_id=chat_id,
                 media=media_group,
             )
 
-
     except Exception as e:
         return await call.bot.send_message(chat_id=config.tg_bot.test_main_chat_id,
                                            text=f'ошибка при отправке медиа группы\n{str(e)}')
 
-    # await call.message.edit_text("Спасибо! Объявление отправлено в канал")
+    await call.message.edit_text("Спасибо! Объявление отправлено в канал")
     await call.bot.send_message(
         chat_id=user.tg_chat_id, text="Объявление прошло модерацию"
     )
@@ -642,7 +640,7 @@ async def get_advertisement_for_base_channel(
     await call.bot.send_message(
         chat_id=user.tg_chat_id, text="Объявление отправлено в резервный канал"
     )
-    await call.message.delete()
+    return await call.message.delete()
 
 
 @router.callback_query(F.data.startswith("moderation_deny"))
@@ -764,16 +762,3 @@ async def process_advertisement_deletion_message(
     )
     await message.bot.send_message(user.tg_chat_id, f"Причина: {message.text}")
     await state.clear()
-
-# @router.message(Command('get_report'))
-# async def get_month_report(message: Message, repo: "RequestsRepo"):
-#     month = datetime.now().month
-#     advertisements = await repo.advertisements.get_advertisements_by_month(month)
-#     advertisements = [AdvertisementForReportDTO.model_validate(item, from_attributes=True).model_dump() for item in advertisements]
-#
-#     result = fill_advertisements_report.delay(month=month, advertisements=advertisements)
-#     if result.ready():
-#         await message.delete()
-#         await message.answer('Отчет успешно сгенерирован')
-#     else:
-#         await message.answer('Отчет генерируется')
