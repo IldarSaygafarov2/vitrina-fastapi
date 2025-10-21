@@ -106,6 +106,7 @@ class Advertisement(Base, IntIdMixin):
     address_uz: Mapped[str] = mapped_column(nullable=True)
 
     price: Mapped[int]
+    updated_price: Mapped[int] = mapped_column(default=0, nullable=True)
     rooms_quantity: Mapped[int] = mapped_column(nullable=True)
     quadrature_from: Mapped[int] = mapped_column(nullable=True)
     quadrature_to: Mapped[int] = mapped_column(nullable=True)
