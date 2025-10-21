@@ -90,7 +90,16 @@ class UserRepo(BaseRepo):
     async def get_user_by_username(self, username: str):
         stmt = select(User).where(User.tg_username == username)
         result = await self.session.execute(stmt)
-        return result.scalar_one()
+        return result.scalar_one_or_none()
+
+    async def get_user_by_phone_number(self, phone_number: str):
+        stmt = (
+            select(User)
+            .where(User.phone_number == phone_number)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
 
     async def get_users_by_role(self, role: str):
         stmt = select(User).where(User.role == role)

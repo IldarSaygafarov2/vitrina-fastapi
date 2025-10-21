@@ -3,7 +3,7 @@ from pathlib import Path
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ContentType
+from aiogram.types import Message, ContentType, CallbackQuery
 
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
@@ -14,15 +14,25 @@ from tgbot.utils.helpers import download_file
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
 
-
 upload_dir = Path("media")
 upload_dir.mkdir(parents=True, exist_ok=True)
 
 
+@router.callback_query(F.data == "rg_realtors_add")
+async def add_new_realtor(
+        call: CallbackQuery,
+        state: FSMContext,
+):
+    await call.answer()
+
+    await call.message.edit_text(text="Напишите имя", reply_markup=None)
+    await state.set_state(RealtorCreationState.first_name)
+
+
 @router.message(RealtorCreationState.first_name)
 async def get_first_name_set_lastname(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     chat_id = message.from_user.id
 
@@ -34,8 +44,8 @@ async def get_first_name_set_lastname(
 
 @router.message(RealtorCreationState.lastname)
 async def get_lastname_set_phone_number(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
 ):
     await state.update_data(lastname=message.text)
     await state.set_state(RealtorCreationState.phone_number)
@@ -45,32 +55,48 @@ async def get_lastname_set_phone_number(
 
 @router.message(RealtorCreationState.phone_number)
 async def get_phone_number_set_tg_username(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
+        repo: RequestsRepo
 ):
-    await state.update_data(phone_number=message.text)
-    await state.set_state(RealtorCreationState.tg_username)
+    phone_number = message.text
 
-    await message.answer(text="Напишите username без @")
+
+    user = await repo.users.get_user_by_phone_number(phone_number=phone_number)
+    if user is not None:
+        await state.set_state(RealtorCreationState.phone_number)
+        await message.answer("Пользователь с таким номером телефона уже существует")
+        return await message.answer("Проверьте номер телефона и напишите его еще раз")
+
+    await state.update_data(phone_number=phone_number)
+    await state.set_state(RealtorCreationState.tg_username)
+    return await message.answer(text="Напишите username без @")
 
 
 @router.message(RealtorCreationState.tg_username)
 async def get_tg_username_set_profile_image(
-    message: Message,
-    state: FSMContext,
+        message: Message,
+        state: FSMContext,
+        repo: RequestsRepo
 ):
+    username = message.text
+
+    user = await repo.users.get_user_by_username(username=username)
+    if user is not None:
+        await state.set_state(RealtorCreationState.tg_username)
+        await message.answer("Пользователь с таким username уже существует")
+        return await message.answer("Проверьте правильность и напишите его еще раз")
 
     await state.set_state(RealtorCreationState.photo)
-    await state.update_data(tg_username=message.text)
-
-    await message.answer("Отправьте фото агента")
+    await state.update_data(tg_username=username)
+    return await message.answer("Отправьте фото агента")
 
 
 @router.message(RealtorCreationState.photo, F.content_type == ContentType.PHOTO)
 async def get_profile_image_create_user(
-    message: Message,
-    repo: "RequestsRepo",
-    state: FSMContext,
+        message: Message,
+        repo: "RequestsRepo",
+        state: FSMContext,
 ):
     data = await state.get_data()
 
