@@ -223,6 +223,6 @@ def is_advertisement_actual_kb(advertisement_id: int):
 
 def is_price_actual_kb(advertisement_id: int):
     kb = InlineKeyboardBuilder()
-    kb.add(InlineKeyboardButton(text='Да', callback_data=f'price_actual:{advertisement_id}'))
-    kb.add(InlineKeyboardButton(text='Нет', callback_data=f'price_not_actual:{advertisement_id}'))
+    kb.add(InlineKeyboardButton(text='Да', callback_data=f'price_changed:{advertisement_id}'))
+    kb.add(InlineKeyboardButton(text='Нет', callback_data=f'price_not_changed:{advertisement_id}'))
     return kb.as_markup()

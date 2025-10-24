@@ -5,7 +5,6 @@ from pathlib import Path
 
 
 from aiogram import Bot
-from aiogram.client.default import Default
 from aiogram.types import InputMediaPhoto
 
 from backend.app.config import config
@@ -101,5 +100,6 @@ async def download_advertisement_photo(bot: Bot, file_id: str, folder: Path):
 
 def get_reminder_time_by_operation_type(operation_type: str) -> datetime:
     if operation_type == 'Покупка':
-        return datetime.utcnow() + timedelta(days=3)
-    return datetime.utcnow() + timedelta(days=1)  # для аренды
+        return datetime.utcnow() + timedelta(days=config.reminder_config.buy_reminder_days)
+    return datetime.utcnow() + timedelta(days=config.reminder_config.rent_reminder_days)  # для аренды
+
