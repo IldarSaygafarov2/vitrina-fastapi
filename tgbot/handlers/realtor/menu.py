@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta
-
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
@@ -100,9 +98,7 @@ async def get_realtor_advertisement_detail(
         advertisement=advertisement,
     )
     try:
-
         photos = [obj.tg_image_hash for obj in advertisement.images]
-
         media_group = get_media_group(photos, advertisement_message)
         await call.message.edit_text(text=advertisement_message)
         if media_group:

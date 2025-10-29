@@ -196,10 +196,7 @@ async def get_realtor_advertisement(
     photos = [obj.tg_image_hash for obj in advertisement.images]
 
     try:
-        if all(photos):
-            media_group = get_media_group(photos, advertisement_message)
-        else:
-            media_group = []
+        media_group = get_media_group(photos, advertisement_message) if all(photos) else []
 
         if media_group:
             await call.message.answer_media_group(
@@ -281,8 +278,9 @@ async def process_moderation_confirm(
             # отложенная отправка в основной канал покупки
             time_to_send = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
             time_for_info = datetime.datetime.now() + datetime.timedelta(minutes=5)
+
             await call.message.answer(f'Объявление в бот будет отправлено в {time_for_info}')
-            await call.bot.send_message(user.tg_chat_id, f'Объявление будет отпарвлено в {time_for_info}')
+            await call.bot.send_message(user.tg_chat_id, f'Объявление будет отправлено в {time_for_info.strftime("%Y-%m-%d %H:M%:%S")}')
             send_delayed_message.apply_async(
                 args=[chat_id, serialize_media_group(media_group)],
                 eta=time_to_send,
