@@ -256,15 +256,15 @@ async def process_moderation_confirm(
         )
 
     # TODO: не забыть убрать с комментария при заливке на гитхаб
-    # fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
-    #                   data=advertisement_data)
+    fill_report.delay(month=month, operation_type=advertisement.operation_type.value,
+                      data=advertisement_data)
 
-    # await send_message_to_rent_topic(
-    #     bot=call.bot,
-    #     price=advertisement.price,
-    #     media_group=media_group,
-    #     operation_type=advertisement.operation_type.value
-    # )
+    await send_message_to_rent_topic(
+        bot=call.bot,
+        price=advertisement.price,
+        media_group=media_group,
+        operation_type=advertisement.operation_type.value
+    )
 
     remind_agent_to_update_advertisement.apply_async(
         args=[advertisement.unique_id, user.tg_chat_id, advertisement.id],
