@@ -7,7 +7,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from backend.core.interfaces.advertisement import AdvertisementForReportDTO
-from celery_tasks.tasks import fill_report, send_delayed_message, remind_agent_to_update_advertisement
+from celery_tasks.tasks import (
+    fill_report,
+    send_delayed_message,
+    remind_agent_to_update_advertisement,
+    # send_message_by_queue
+)
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
@@ -228,6 +233,7 @@ async def process_moderation_confirm(
     advertisement = await repo.advertisements.update_advertisement(
         advertisement_id=advertisement_id, is_moderated=True
     )
+    operation_type = advertisement.operation_type.value
 
     photos = [obj.tg_image_hash for obj in advertisement.images]
 
@@ -249,7 +255,7 @@ async def process_moderation_confirm(
 
     # добавляем запись в таблицу очереди
 
-    if advertisement.operation_type.value == 'Покупка':
+    if operation_type == 'Покупка':
         await call.bot.send_media_group(
             chat_id=config.tg_bot.base_channel_name,
             media=media_group,
@@ -266,15 +272,42 @@ async def process_moderation_confirm(
         operation_type=advertisement.operation_type.value
     )
 
-    remind_agent_to_update_advertisement.apply_async(
-        args=[advertisement.unique_id, user.tg_chat_id, advertisement.id],
-        eta=advertisement.reminder_time
-    )
+    # получаем все не отправленные объявления из очереди
+    # not_sent_advertisements = await repo.advertisement_queue.get_all_not_sent_advertisements()
+    # not_sent_advertisements_ids = [item.advertisement_id for item in not_sent_advertisements]
+    #
+    # if advertisement.id not in not_sent_advertisements_ids:
+    #     time_to_send = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
+    #     await repo.advertisement_queue.add_advertisement_to_queue(advertisement.id, time_to_send)
+    # else:
+    #     time_to_send = not_sent_advertisements[-1].time_to_send + datetime.timedelta(minutes=5)
+
+
+
+    # send_message_by_queue.apply_async(
+    #     args=[advertisement.id, advertisement.price, serialize_media_group(media_group), operation_type, chat_id],
+    #     eta=time_to_send,
+    # )
+    #
+    # # отправляем сообщения руководителю и агенту
+    # await call.message.answer(
+    #     f"Объявление добавлено в очередь, будет отправлено в {time_to_send.strftime('%Y-%m-%d %H:%M%:%S')}"
+    # )
+    # await call.bot.send_message(
+    #     user.tg_chat_id,
+    #     f"Объявление добавлено в очередь, будет отправлено в {time_to_send.strftime('%Y-%m-%d %H:%M%:%S')}"
+    # )
+
+
+    # remind_agent_to_update_advertisement.apply_async(
+    #     args=[advertisement.unique_id, user.tg_chat_id, advertisement.id],
+    #     eta=advertisement.reminder_time
+    # )
 
 
     try:
         # Отправка в базовый канал
-        if advertisement.operation_type.value == 'Покупка':
+        if operation_type == 'Покупка':
             # отложенная отправка в основной канал покупки
             time_to_send = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
             time_for_info = datetime.datetime.now() + datetime.timedelta(minutes=5)
@@ -285,7 +318,7 @@ async def process_moderation_confirm(
                 args=[chat_id, serialize_media_group(media_group)],
                 eta=time_to_send,
             )
-        elif advertisement.operation_type == 'Аренда':
+        elif operation_type == 'Аренда':
             await call.bot.send_media_group(
                 chat_id=chat_id,
                 media=media_group,
