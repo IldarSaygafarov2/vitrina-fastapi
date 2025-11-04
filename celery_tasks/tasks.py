@@ -43,22 +43,22 @@ def send_delayed_message(chat_id, media_group):
     asyncio.run(send_media_group())
 
 
-@celery_app.task
-def remind_agent_to_update_advertisement(unique_id, agent_chat_id: int, advertisement_id: int):
-    import asyncio
-    from aiogram import Bot
-
-    async def send_reminder():
-        bot = Bot(token=config.tg_bot.token)
-        msg = f"""
-Объявление: №{unique_id} является актуальным?
-"""
-        await bot.send_message(
-            agent_chat_id, msg, parse_mode='HTML', reply_markup=is_advertisement_actual_kb(advertisement_id)
-        )
-        await bot.session.close()
-
-    asyncio.run(send_reminder())
+# @celery_app.task
+# def remind_agent_to_update_advertisement(unique_id, agent_chat_id: int, advertisement_id: int):
+#     import asyncio
+#     from aiogram import Bot
+#
+#     async def send_reminder():
+#         bot = Bot(token=config.tg_bot.token)
+#         msg = f"""
+# Объявление: №{unique_id} является актуальным?
+# """
+#         await bot.send_message(
+#             agent_chat_id, msg, parse_mode='HTML', reply_markup=is_advertisement_actual_kb(advertisement_id)
+#         )
+#         await bot.session.close()
+#
+#     asyncio.run(send_reminder())
 
 
 # @celery_app.task

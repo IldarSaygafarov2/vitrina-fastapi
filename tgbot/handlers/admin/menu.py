@@ -10,7 +10,7 @@ from backend.core.interfaces.advertisement import AdvertisementForReportDTO
 from celery_tasks.tasks import (
     fill_report,
     send_delayed_message,
-    remind_agent_to_update_advertisement,
+    # remind_agent_to_update_advertisement,
     # send_message_by_queue
 )
 from config.loader import load_config
@@ -333,14 +333,14 @@ async def process_moderation_confirm(
         chat_id=user.tg_chat_id, text="Объявление прошло модерацию"
     )
 
-    formatted_reminder_time = advertisement.reminder_time.strftime('%Y-%m-%d %H:%M%:%S')
-    await call.message.answer(
-        f"Уведомление для проверки актуальности отправится агенту в \n<b>{formatted_reminder_time}</b>"
-    )
-    await call.bot.send_message(
-        user.tg_chat_id,
-        f'Уведомление для проверки актуальности будет отправлено в \n<b>{formatted_reminder_time}</b>'
-    )
+    # formatted_reminder_time = advertisement.reminder_time.strftime('%Y-%m-%d %H:%M%:%S')
+    # await call.message.answer(
+    #     f"Уведомление для проверки актуальности отправится агенту в \n<b>{formatted_reminder_time}</b>"
+    # )
+    # await call.bot.send_message(
+    #     user.tg_chat_id,
+    #     f'Уведомление для проверки актуальности будет отправлено в \n<b>{formatted_reminder_time}</b>'
+    # )
 
     return await call.message.delete()
 

@@ -53,7 +53,7 @@ class AdvertisementRepo(BaseRepo):
             repair_type_uz,
             unique_id,
             owner_phone_number: str,
-            reminder_time: datetime,
+            reminder_time: datetime | None,
             is_reminded: bool = False
     ):
         stmt = (
