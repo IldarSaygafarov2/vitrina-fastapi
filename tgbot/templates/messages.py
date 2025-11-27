@@ -15,7 +15,7 @@ def rent_channel_advertisement_message(advertisement: Advertisement):
 
 ID: {advertisement.unique_id}
 
-🔹Цена - {advertisement.price}$
+🔹Цена - {advertisement.price}
 
 Комиссия агентства - 50%
 
@@ -48,7 +48,7 @@ def buy_channel_advertisement_message(advertisement: Advertisement):
 
 ID: {advertisement.unique_id}
 
-Цена: {advertisement.price}$
+Цена: {advertisement.price}
 
 Подробности по телефону: {advertisement.user.phone_number} {advertisement.user.first_name}
 @{advertisement.user.tg_username}
