@@ -1,12 +1,13 @@
 from celery import Celery
+from backend.app.config import config
 
-celery_app = Celery(
-    "celery_tasks",
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0",
+celery_app_dev = Celery(
+    "dev_celery_tasks",
+    broker=config.redis_config.broker_url,
+    backend=config.redis_config.backend_url,
 )
 
-celery_app.conf.update(
+celery_app_dev.conf.update(
     task_serializer="json",
     result_serializer="json",
     accept_content=["json"],
