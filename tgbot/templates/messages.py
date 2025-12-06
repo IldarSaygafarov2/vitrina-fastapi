@@ -1,7 +1,20 @@
 from infrastructure.database.models import Advertisement
 
 
+def _get_new_price_if_exists(advertisement: Advertisement):
+    if advertisement.operation_type.value == 'Аренда':
+        return f"\n                  {advertisement.price}" if advertisement.new_price else ""
+    return f"\n           {advertisement.price}" if advertisement.new_price else ""
+
+
+def advertisement_reminder_message(reminder_time):
+    return f"Уведомление для проверки актуальности данного объявления будет отправлено в <b>{reminder_time}</b>"
+
+
 def rent_channel_advertisement_message(advertisement: Advertisement):
+    new_price = _get_new_price_if_exists(advertisement)
+    old_price = f"{advertisement.old_price}" if not advertisement.new_price else f"<s>{advertisement.old_price}</s>"
+
     return f"""
 🔹{advertisement.name}
 
@@ -15,7 +28,7 @@ def rent_channel_advertisement_message(advertisement: Advertisement):
 
 ID: {advertisement.unique_id}
 
-🔹Цена - {advertisement.price}
+🔹Цена - {old_price}{new_price}
 
 Комиссия агентства - 50%
 
@@ -34,6 +47,9 @@ def buy_channel_advertisement_message(advertisement: Advertisement):
         if advertisement.category.slug == "doma"
         else ""
     )
+
+    new_price = _get_new_price_if_exists(advertisement)
+    old_price = f"{advertisement.old_price}" if not advertisement.new_price else f"<s>{advertisement.old_price}</s>"
     return f"""
 {advertisement.name}
 
@@ -48,7 +64,7 @@ def buy_channel_advertisement_message(advertisement: Advertisement):
 
 ID: {advertisement.unique_id}
 
-Цена: {advertisement.price}
+Цена: {old_price}{new_price}
 
 Подробности по телефону: {advertisement.user.phone_number} {advertisement.user.first_name}
 @{advertisement.user.tg_username}

@@ -772,7 +772,7 @@ async def get_repair_type(
         )
 
         group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
-        group_directors.append(dev_user)
+        #group_directors.append(dev_user)
 
         await call.message.answer_media_group(media=media_group)
 
