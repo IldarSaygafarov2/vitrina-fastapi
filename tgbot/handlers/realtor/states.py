@@ -710,14 +710,14 @@ async def get_repair_type(
 
         owner_phone_number = state_data.get("owner_phone_number")
 
-        if operation_type == "rent":
-            time_to_remind = datetime.utcnow() + timedelta(
-                minutes=config.reminder_config.rent_reminder_minutes
-            )
-        else:
-            time_to_remind = datetime.utcnow() + timedelta(
-                minutes=config.reminder_config.buy_reminder_minutes
-            )
+        # if operation_type == "rent":
+        #     time_to_remind = datetime.utcnow() + timedelta(
+        #         minutes=config.reminder_config.rent_reminder_minutes
+        #     )
+        # else:
+        #     time_to_remind = datetime.utcnow() + timedelta(
+        #         minutes=config.reminder_config.buy_reminder_minutes
+        #     )
 
         new_advertisement = await repo.advertisements.create_advertisement(
             unique_id=unique_id,
@@ -746,7 +746,7 @@ async def get_repair_type(
             repair_type_uz=repair_type_status_uz,
             user=user.id,
             owner_phone_number=owner_phone_number,
-            reminder_time=time_to_remind,
+            reminder_time=None,
         )
         new_advertisement = await repo.advertisements.update_advertisement(
             advertisement_id=new_advertisement.id, old_price=int(price)
@@ -767,12 +767,12 @@ async def get_repair_type(
 
         media_group = get_media_group(photos, advertisement_message)
 
-        dev_user = await repo.users.get_user_by_chat_id(
-            tg_chat_id=config.tg_bot.test_main_chat_id
-        )
+        # dev_user = await repo.users.get_user_by_chat_id(
+        #     tg_chat_id=config.tg_bot.test_main_chat_id
+        # )
 
         group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
-        #group_directors.append(dev_user)
+        # group_directors.append(dev_user)
 
         await call.message.answer_media_group(media=media_group)
 

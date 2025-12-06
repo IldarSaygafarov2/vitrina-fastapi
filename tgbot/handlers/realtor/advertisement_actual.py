@@ -5,7 +5,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from backend.app.config import config
-from celery_tasks.tasks import remind_agent_to_update_advertisement_extended
+
+# from celery_tasks.tasks import remind_agent_to_update_advertisement_extended
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.keyboards.admin.inline import (
     advertisement_moderation_kb,
@@ -163,15 +164,15 @@ async def react_to_advertisement_price_not_changed(
             text=f"ошибка при отправке медиа группы\n{str(e)}",
         )
 
-    remind_agent_to_update_advertisement_extended.apply_async(
-        args=[
-            advertisement.unique_id,
-            advertisement.id,
-            agent.tg_chat_id,
-            helpers.serialize_media_group(advertisement_media_group_for_remind),
-        ],
-        eta=reminder_time,
-    )
+    # remind_agent_to_update_advertisement_extended.apply_async(
+    #     args=[
+    #         advertisement.unique_id,
+    #         advertisement.id,
+    #         agent.tg_chat_id,
+    #         helpers.serialize_media_group(advertisement_media_group_for_remind),
+    #     ],
+    #     eta=reminder_time,
+    # )
 
     await call.message.answer(
         f"Уведомление для проверки актуальности отправится агенту в \n<b>{formatted_reminder_time}</b>"

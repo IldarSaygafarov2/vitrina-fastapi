@@ -45,7 +45,9 @@ def send_delayed_message(chat_id, media_group):
 
 
 @celery_app_dev.task
-def remind_agent_to_update_advertisement(unique_id, agent_chat_id: int, advertisement_id: int):
+def remind_agent_to_update_advertisement(
+    unique_id, agent_chat_id: int, advertisement_id: int
+):
     import asyncio
     from aiogram import Bot
 
@@ -55,46 +57,50 @@ def remind_agent_to_update_advertisement(unique_id, agent_chat_id: int, advertis
 Объявление: №{unique_id} актуально?
 """
         await bot.send_message(
-            agent_chat_id, msg, parse_mode='HTML', reply_markup=is_advertisement_actual_kb(advertisement_id)
+            agent_chat_id,
+            msg,
+            parse_mode="HTML",
+            reply_markup=is_advertisement_actual_kb(advertisement_id),
         )
         await bot.session.close()
 
     asyncio.run(send_reminder())
 
 
-@celery_app_dev.task
-def remind_agent_to_update_advertisement_extended(
-        advertisement_unique_id,
-        advertisement_id,
-        agent_chat_id,
-        media_group
-):
-    import asyncio
-    from aiogram import Bot
+# @celery_app_dev.task
+# def remind_agent_to_update_advertisement_extended(
+#         advertisement_unique_id,
+#         advertisement_id,
+#         agent_chat_id,
+#         media_group
+# ):
+#     import asyncio
+#     from aiogram import Bot
 
-    async def send_reminder():
-        bot = Bot(token=config.tg_bot.token)
-        await bot.send_message(agent_chat_id, "Проверка актуальности")
-        await bot.send_media_group(chat_id=agent_chat_id, media=media_group)
-        await bot.send_message(
-            chat_id=agent_chat_id,
-            text=f"Объявление: №{advertisement_unique_id} актуально?",
-            reply_markup=is_advertisement_actual_kb(advertisement_id)
-        )
+#     async def send_reminder():
+#         bot = Bot(token=config.tg_bot.token)
+#         await bot.send_message(agent_chat_id, "Проверка актуальности")
+#         await bot.send_media_group(chat_id=agent_chat_id, media=media_group)
+#         await bot.send_message(
+#             chat_id=agent_chat_id,
+#             text=f"Объявление: №{advertisement_unique_id} актуально?",
+#             reply_markup=is_advertisement_actual_kb(advertisement_id)
+#         )
 
-        await bot.session.close()
+#         await bot.session.close()
 
-    asyncio.run(send_reminder())
+#     asyncio.run(send_reminder())
+
 
 @celery_app_dev.task
 def send_message_by_queue(
-        advertisement_id,
-        price,
-        media_group,
-        operation_type,
-        channel_name,
-        user_chat_id,
-        director_chat_id
+    advertisement_id,
+    price,
+    media_group,
+    operation_type,
+    channel_name,
+    user_chat_id,
+    director_chat_id,
 ):
     import asyncio
     from aiogram import Bot
@@ -111,13 +117,12 @@ def send_message_by_queue(
             repo = RequestsRepo(session)
 
         # обновляем объявление в очереди
-        await repo.advertisement_queue.update_advertisement_queue(advertisement_id=advertisement_id)
+        await repo.advertisement_queue.update_advertisement_queue(
+            advertisement_id=advertisement_id
+        )
 
         await send_message_to_rent_topic(
-            bot=bot,
-            price=price,
-            media_group=media_group,
-            operation_type=operation_type
+            bot=bot, price=price, media_group=media_group, operation_type=operation_type
         )
 
         try:
@@ -126,8 +131,10 @@ def send_message_by_queue(
                 media=media_group,
             )
         except Exception as e:
-            await bot.send_message(chat_id=config.tg_bot.test_main_chat_id,
-                                               text=f'ошибка при отправке медиа группы\n{str(e)}')
+            await bot.send_message(
+                chat_id=config.tg_bot.test_main_chat_id,
+                text=f"ошибка при отправке медиа группы\n{str(e)}",
+            )
 
         await bot.session.close()  # closing bot session
 

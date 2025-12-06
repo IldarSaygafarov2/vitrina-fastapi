@@ -9,7 +9,7 @@ from aiogram.types import CallbackQuery, Message
 from backend.core.interfaces.advertisement import AdvertisementForReportDTO
 from celery_tasks.tasks import (
     fill_report,
-    remind_agent_to_update_advertisement_extended,
+    # remind_agent_to_update_advertisement_extended,
     send_message_by_queue,
 )
 from config.loader import load_config
@@ -305,7 +305,7 @@ async def process_moderation_confirm(
         ],
         eta=time_to_send,
     )
-    
+
     await call.bot.send_message(
         chat_id=user.tg_chat_id, text="Объявление прошло модерацию"
     )
@@ -333,29 +333,28 @@ async def process_moderation_confirm(
     )
 
     # создаем задачу для проверки актуальности по определенному времени
-    remind_agent_to_update_advertisement_extended.apply_async(
-        args=[
-            advertisement.unique_id,
-            advertisement.id,
-            user.tg_chat_id,
-            serialize_media_group(advertisement_media_group_for_remind),
-        ],
-        eta=advertisement.reminder_time,
-    )
+    # remind_agent_to_update_advertisement_extended.apply_async(
+    #     args=[
+    #         advertisement.unique_id,
+    #         advertisement.id,
+    #         user.tg_chat_id,
+    #         serialize_media_group(advertisement_media_group_for_remind),
+    #     ],
+    #     eta=advertisement.reminder_time,
+    # )
 
     await call.message.edit_text("Спасибо! Объявление отправлено в канал")
-    
 
-    formatted_reminder_time = (
-        advertisement.reminder_time + datetime.timedelta(hours=5)
-    ).strftime("%Y-%m-%d %H:%M:%S")
+    # formatted_reminder_time = (
+    #     advertisement.reminder_time + datetime.timedelta(hours=5)
+    # ).strftime("%Y-%m-%d %H:%M:%S")
 
-    await call.message.answer(
-        f"Уведомление для проверки актуальности отправится агенту в \n<b>{formatted_reminder_time}</b>"
-    )
-    await call.bot.send_message(
-        user.tg_chat_id, text=advertisement_reminder_message(formatted_reminder_time)
-    )
+    # await call.message.answer(
+    #     f"Уведомление для проверки актуальности отправится агенту в \n<b>{formatted_reminder_time}</b>"
+    # )
+    # await call.bot.send_message(
+    #     user.tg_chat_id, text=advertisement_reminder_message(formatted_reminder_time)
+    # )
 
     return await call.message.delete()
 
