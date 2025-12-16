@@ -24,7 +24,7 @@ class AdvertisementForReportDTO(BaseModel):
     district: Optional[DistrictShortDTO]
     category: Optional[CategoryShortDTO]
     user: Optional[UserShortDTO]
-    is_moderated: bool
+    is_moderated: bool | None
     created_at: datetime
     unique_id: str
     rooms_quantity: int
