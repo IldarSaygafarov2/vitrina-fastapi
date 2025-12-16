@@ -9,9 +9,10 @@ from backend.app.config import config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.messages import (
-    rent_channel_advertisement_message,
     buy_channel_advertisement_message,
+    rent_channel_advertisement_message,
 )
+from backend.core.interfaces.category import CategoryShortDTO
 
 
 def filter_digits(message: str) -> str:
@@ -49,10 +50,10 @@ def deserialize_media_group(media_data: list[dict]) -> list[InputMediaPhoto]:
 
 
 async def send_message_to_rent_topic(
-    bot: Bot,
-    price: int,
-    operation_type: str,
-    media_group: list[InputMediaPhoto],
+        bot: Bot,
+        price: int,
+        operation_type: str,
+        media_group: list[InputMediaPhoto],
 ) -> None:
     """Отправляем сообщение в супер группу фильтруя по цене."""
 
@@ -120,7 +121,7 @@ async def get_advertisement_photos(advertisement_id: int, repo: "RequestsRepo"):
 
 
 async def collect_media_group_for_advertisement(
-    advertisement, repo: RequestsRepo
+        advertisement, repo: RequestsRepo
 ) -> list[InputMediaPhoto]:
     """собираем медиа группу для отправки."""
     advertisement_photos = await get_advertisement_photos(advertisement.id, repo)
@@ -140,10 +141,33 @@ def get_channel_name_and_message_by_operation_type(advertisement) -> tuple[str, 
     return channel_name, advertisement_message
 
 
-async def send_error_message_to_dev(bot: Bot, message: str, exception: Exception) -> None:
+async def send_error_message_to_dev(
+        bot: Bot | None, message: str, exception: Exception
+) -> None:
+    await bot.send_message(chat_id=config.tg_bot.main_chat_id, text=f"ошибка {message}")
     await bot.send_message(
-        chat_id=config.tg_bot.main_chat_id, text=f"ошибка {message}"
+        chat_id=config.tg_bot.main_chat_id,
+        text=f"{exception}\n{exception.__class__.__name__}",
     )
-    await bot.send_message(
-        chat_id=config.tg_bot.main_chat_id, text=f"{exception}\n{exception.__class__.__name__}"
-    )
+
+
+async def convert_categories_from_db(repo: RequestsRepo) -> list[dict]:
+    """Конвертируем категории с базы данных в список словарей"""
+    result = []
+    categories = [
+        CategoryShortDTO.model_validate(category, from_attributes=True).model_dump()
+        for category in await repo.categories.get_categories()
+    ]
+    for category in categories:
+        if category["name"] == "Новостройки":
+            category["name"] = "Первичка"
+        result.append(category)
+    return result
+
+
+def get_category_by_id(categories: list[dict], category_id) -> dict | None:
+    for category in categories:
+        if category_id == category["id"]:
+            return category
+    return None
+

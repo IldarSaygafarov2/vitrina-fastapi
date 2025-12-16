@@ -10,6 +10,7 @@ from infrastructure.database.models import (
     AdvertisementImage,
     AdvertisementQueue,
 )
+
 from .base import BaseRepo
 
 
@@ -356,6 +357,19 @@ class AdvertisementRepo(BaseRepo):
             .offset(offset)
         )
         result = await self.session.execute(stmt)
+        return result.scalars().all()
+
+    async def get_not_reminded_advertisements(self):
+        query = (
+            select(Advertisement)
+            .options(
+                selectinload(Advertisement.user),
+                selectinload(Advertisement.category),
+                selectinload(Advertisement.images),
+            )
+            .where(Advertisement.is_reminded == False)
+        )
+        result = await self.session.execute(query)
         return result.scalars().all()
 
 

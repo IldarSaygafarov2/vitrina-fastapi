@@ -3,6 +3,7 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from backend.core.interfaces.advertisement import AdvertisementForReportDTO
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
@@ -33,6 +34,14 @@ async def start(message: Message, repo: RequestsRepo, state: FSMContext):
     chat_id = message.from_user.id
 
     await state.clear()
+
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id=66)
+
+    advertisement_data = AdvertisementForReportDTO.model_validate(
+        advertisement,
+        from_attributes=True,
+    ).model_dump()
+    print(advertisement_data)
 
     await repo.users.update_user_chat_id(
         tg_username=username,

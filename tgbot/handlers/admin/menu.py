@@ -24,6 +24,7 @@ from tgbot.keyboards.admin.inline import (
     realtors_kb,
 )
 from tgbot.keyboards.user.inline import realtor_advertisements_kb
+from tgbot.misc.constants import CATEGORIES_DICT
 from tgbot.misc.user_states import (
     AdvertisementDeletionState,
     AdvertisementModerationState,
@@ -258,6 +259,7 @@ async def process_moderation_confirm(
         advertisement,
         from_attributes=True,
     ).model_dump()
+    advertisement_data["category"]["name"] = CATEGORIES_DICT.get(advertisement_data["category"]["id"])
     advertisement_data = correct_advertisement_dict(advertisement_data)
 
     if operation_type == "Покупка":

@@ -1,4 +1,5 @@
 from infrastructure.database.models import Advertisement
+from tgbot.misc.constants import CATEGORIES_DICT
 
 
 def choose_operation_type_text() -> str:
@@ -114,6 +115,8 @@ def realtor_advertisement_completed_text(
         else ""
     )
 
+    category_name = CATEGORIES_DICT.get(advertisement.category_id)
+
     return f"""
 <b>№</b> <i>{advertisement.unique_id}</i>
 <b>Заголовок:</b><i>{advertisement.name}</i>{name_uz}
@@ -121,7 +124,7 @@ def realtor_advertisement_completed_text(
 <b>Описание: </b><i>{advertisement.description}</i>{description_uz}
 <b>Район: </b><i>{advertisement.district.name}</i>
 <b>Адрес: </b><i>{advertisement.address}</i>{address_uz}{owner_phone_number}
-<b>Категория недвижимости: </b><i>{advertisement.category.name}</i>
+<b>Категория недвижимости: </b><i>{category_name}</i>
 <b>Тип недвижимости: </b><i>{advertisement.property_type.value}</i>{creation_year}
 <b>Цена: </b><i>{advertisement.price}</i>{house_quadrature}
 {rooms_from_to}

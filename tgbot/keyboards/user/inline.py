@@ -1,5 +1,6 @@
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from typing import Sequence
 
 from infrastructure.database.models import (
     Advertisement,
@@ -34,16 +35,16 @@ def operation_type_kb():
     return kb.as_markup()
 
 
-def categories_kb(categories: list["Category"], for_update: bool = False):
+def categories_kb(categories: list[dict], for_update: bool = False):
     kb = InlineKeyboardBuilder()
 
     for category in categories:
         callback = (
-            f"update_chosen_category:{category.id}"
+            f"update_chosen_category:{category['id']}"
             if for_update
-            else f"chosen_category:{category.id}"
+            else f"chosen_category:{category['id']}"
         )
-        kb.button(text=category.name, callback_data=callback)
+        kb.button(text=category["name"], callback_data=callback)
 
     kb.adjust(2)
     return kb.as_markup()
@@ -70,7 +71,6 @@ def property_type_kb():
     kb.button(text="Новостройка", callback_data=f"property_type:new")
     kb.button(text="Вторичный фонд", callback_data=f"property_type:old")
     return kb.as_markup()
-
 
 
 def repair_type_kb(repair_types: dict):
@@ -114,7 +114,7 @@ def realtor_advertisements_kb(
             text=">", callback_data=f"next_page:{start}:{finish}:{page}:{total_pages}"
         ),
     )
-    kb.row(InlineKeyboardButton(text='Поиск по ID', callback_data='search_by_id'))
+    kb.row(InlineKeyboardButton(text="Поиск по ID", callback_data="search_by_id"))
     kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
 
     return kb.as_markup()
@@ -143,7 +143,6 @@ def advertisement_update_kb(advertisement_id: int):
     kb.adjust(2)
     kb.row(InlineKeyboardButton(text="На главную", callback_data="return_home"))
     return kb.as_markup()
-
 
 
 def return_back_kb(callback: str):
@@ -189,13 +188,23 @@ def advertisement_images_kb(images: list[AdvertisementImage]):
 def is_advertisement_actual_kb(advertisement_id: int):
     kb = InlineKeyboardBuilder()
 
-    kb.add(InlineKeyboardButton(text='Да', callback_data=f'actual:{advertisement_id}'))
-    kb.add(InlineKeyboardButton(text='Нет', callback_data=f'not_actual:{advertisement_id}'))
+    kb.add(InlineKeyboardButton(text="Да", callback_data=f"actual:{advertisement_id}"))
+    kb.add(
+        InlineKeyboardButton(text="Нет", callback_data=f"not_actual:{advertisement_id}")
+    )
     return kb.as_markup()
 
 
 def is_price_actual_kb(advertisement_id: int):
     kb = InlineKeyboardBuilder()
-    kb.add(InlineKeyboardButton(text='Да', callback_data=f'price_changed:{advertisement_id}'))
-    kb.add(InlineKeyboardButton(text='Нет', callback_data=f'price_not_changed:{advertisement_id}'))
+    kb.add(
+        InlineKeyboardButton(
+            text="Да", callback_data=f"price_changed:{advertisement_id}"
+        )
+    )
+    kb.add(
+        InlineKeyboardButton(
+            text="Нет", callback_data=f"price_not_changed:{advertisement_id}"
+        )
+    )
     return kb.as_markup()
