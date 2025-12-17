@@ -1,19 +1,17 @@
 import time
-from datetime import datetime, timedelta
 
 from backend.app.config import config
 from celery_tasks.app import celery_app_dev
-from tgbot.keyboards.user.inline import is_advertisement_actual_kb
+from infrastructure.database.repo.requests import RequestsRepo
+from infrastructure.database.setup import create_engine, create_session_pool
+from tgbot.keyboards.user.inline import is_advertisement_actual_kb, actual_checking_kb
 from tgbot.misc.constants import MONTHS_DICT
 from tgbot.utils.google_sheet import (
     client_init_json,
     get_table_by_url,
     fill_row_with_data,
 )
-from tgbot.utils.helpers import deserialize_media_group
-from infrastructure.database.setup import create_engine, create_session_pool
-from infrastructure.database.repo.requests import RequestsRepo
-from tgbot.utils.helpers import send_message_to_rent_topic
+from tgbot.utils.helpers import deserialize_media_group, send_message_to_rent_topic
 
 
 @celery_app_dev.task
@@ -46,7 +44,7 @@ def send_delayed_message(chat_id, media_group):
 
 @celery_app_dev.task
 def remind_agent_to_update_advertisement(
-    unique_id, agent_chat_id: int, advertisement_id: int
+        unique_id, agent_chat_id: int, advertisement_id: int
 ):
     import asyncio
     from aiogram import Bot
@@ -67,40 +65,15 @@ def remind_agent_to_update_advertisement(
     asyncio.run(send_reminder())
 
 
-# @celery_app_dev.task
-# def remind_agent_to_update_advertisement_extended(
-#         advertisement_unique_id,
-#         advertisement_id,
-#         agent_chat_id,
-#         media_group
-# ):
-#     import asyncio
-#     from aiogram import Bot
-
-#     async def send_reminder():
-#         bot = Bot(token=config.tg_bot.token)
-#         await bot.send_message(agent_chat_id, "Проверка актуальности")
-#         await bot.send_media_group(chat_id=agent_chat_id, media=media_group)
-#         await bot.send_message(
-#             chat_id=agent_chat_id,
-#             text=f"Объявление: №{advertisement_unique_id} актуально?",
-#             reply_markup=is_advertisement_actual_kb(advertisement_id)
-#         )
-
-#         await bot.session.close()
-
-#     asyncio.run(send_reminder())
-
-
 @celery_app_dev.task
 def send_message_by_queue(
-    advertisement_id,
-    price,
-    media_group,
-    operation_type,
-    channel_name,
-    user_chat_id,
-    director_chat_id,
+        advertisement_id,
+        price,
+        media_group,
+        operation_type,
+        channel_name,
+        user_chat_id,
+        director_chat_id,
 ):
     import asyncio
     from aiogram import Bot
@@ -139,3 +112,52 @@ def send_message_by_queue(
         await bot.session.close()  # closing bot session
 
     asyncio.run(send_test())
+
+
+@celery_app_dev.task
+def remind_agent_to_update_advertisement_by_date(current_date: str):
+    import asyncio
+    from aiogram import Bot
+
+    engine = create_engine(config.db)
+    session_pool = create_session_pool(engine=engine)
+
+    bot = Bot(token=config.tg_bot.token)
+
+    async def send_reminder():
+        async with session_pool() as session:
+            repo = RequestsRepo(session)
+
+        users = await repo.users.get_users_by_role(role="REALTOR")
+
+        # advertisements = await repo.advertisements.get_advertisements_by_reminder_date(date_str=current_date)
+
+        result = {}
+
+        for user in users:
+            advertisements = await repo.advertisements.get_advertisements_by_reminder_date(
+                date_str=current_date,
+                user_id=user.id
+            )
+            result[user.tg_chat_id] = advertisements
+
+        # result = {
+        #     a.user.tg_chat_id: [] for a in advertisements
+        # }
+        #
+        # for advertisement in advertisements:
+        #     agent = await repo.users.get_user_by_id(user_id=advertisement.user_id)
+        #     result[agent.tg_chat_id].append(advertisement)
+
+        print(result)
+
+        for chat_id, advertisements in result.items():
+            if not advertisements:
+                return await bot.send_message(chat_id, "Нету объявлений для проверки актуальности")
+
+            await bot.send_message(chat_id, "Проверка актуальности",
+                                   reply_markup=actual_checking_kb(advertisements))
+
+        await bot.session.close()
+
+    asyncio.run(send_reminder())

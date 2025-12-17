@@ -1,5 +1,5 @@
 import enum
-from datetime import datetime
+from datetime import datetime, date
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import ENUM
@@ -104,8 +104,6 @@ class Advertisement(Base, IntIdMixin):
     address_uz: Mapped[str] = mapped_column(nullable=True)
 
     price: Mapped[int]
-    # updated_price: Mapped[int] = mapped_column(default=0, nullable=True)
-    # temporary_price: Mapped[int] = mapped_column(nullable=True)
     new_price: Mapped[int] = mapped_column(nullable=True)
     old_price: Mapped[int] = mapped_column(nullable=True)
 
@@ -121,7 +119,7 @@ class Advertisement(Base, IntIdMixin):
 
     preview: Mapped[str] = mapped_column(nullable=True)
     for_base_channel: Mapped[bool] = mapped_column(nullable=True, default=False)
-    reminder_time: Mapped[datetime] = mapped_column(nullable=True)
+    reminder_time: Mapped[date] = mapped_column(nullable=True)
     is_reminded: Mapped[bool] = mapped_column(nullable=True)
 
     images: Mapped[list["AdvertisementImage"]] = relationship(

@@ -3,7 +3,7 @@ import asyncio
 from backend.app.config import config
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
-from tgbot.utils.image_checker import get_image_hash_as_int, get_image_hash_hex
+from tgbot.utils.image_checker import  get_image_hash_hex
 
 
 async def update_images_hash(session):

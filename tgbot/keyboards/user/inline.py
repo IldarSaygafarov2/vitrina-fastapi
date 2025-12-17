@@ -53,7 +53,6 @@ def categories_kb(categories: list[dict], for_update: bool = False):
 def districts_kb(districts: list["District"], for_update: bool = False):
     kb = InlineKeyboardBuilder()
     for district in districts:
-
         callback = (
             f"update_chosen_district:{district.id}"
             if for_update
@@ -82,11 +81,11 @@ def repair_type_kb(repair_types: dict):
 
 
 def realtor_advertisements_kb(
-    advertisements: list["Advertisement"],
-    for_admin: bool = False,
-    start: int = 0,
-    finish: int = 15,
-    page: int = 1,
+        advertisements: list["Advertisement"],
+        for_admin: bool = False,
+        start: int = 0,
+        finish: int = 15,
+        page: int = 1,
 ):
     kb = InlineKeyboardBuilder()
 
@@ -152,7 +151,7 @@ def return_back_kb(callback: str):
 
 
 def advertisement_choices_kb(
-    choice_type: str, callback_for_return: str | None = None, **kwargs
+        choice_type: str, callback_for_return: str | None = None, **kwargs
 ):
     kb = InlineKeyboardBuilder()
 
@@ -207,4 +206,20 @@ def is_price_actual_kb(advertisement_id: int):
             text="Нет", callback_data=f"price_not_changed:{advertisement_id}"
         )
     )
+    return kb.as_markup()
+
+
+def actual_checking_kb(advertisements: Sequence[Advertisement]):
+    kb = InlineKeyboardBuilder()
+
+    for idx, advertisement in enumerate(advertisements, start=1):
+        kb.add(InlineKeyboardButton(
+            text=f"{idx}. {advertisement.unique_id}",
+            callback_data=f"check_actual:{advertisement.id}")
+        )
+    kb.add(
+        InlineKeyboardButton(text="На главную", callback_data="return_home")
+    )
+    kb.adjust(1)
+
     return kb.as_markup()

@@ -1,5 +1,6 @@
 from celery import Celery
 from backend.app.config import config
+from tgbot.utils.helpers import get_current_date
 
 celery_app_dev = Celery(
     "dev_celery_tasks",
@@ -15,3 +16,11 @@ celery_app_dev.conf.update(
     enable_utc=True,
     include=["celery_tasks.tasks"],
 )
+
+
+celery_app_dev.conf.beat_schedule = {
+    "send_reminder": {
+        "task": "celery_tasks.tasks.remind_agent_to_update_advertisement_by_date",
+        "args": (get_current_date(),),
+        "schedule": 60.0
+    }}

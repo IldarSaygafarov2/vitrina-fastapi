@@ -165,9 +165,6 @@ async def convert_categories_from_db(repo: RequestsRepo) -> list[dict]:
     return result
 
 
-def get_category_by_id(categories: list[dict], category_id) -> dict | None:
-    for category in categories:
-        if category_id == category["id"]:
-            return category
-    return None
-
+def get_current_date() -> str:
+    """получаем сегодняшнюю дату."""
+    return datetime.now().strftime("%Y-%m-%d")
