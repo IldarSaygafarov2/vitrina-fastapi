@@ -114,50 +114,51 @@ def send_message_by_queue(
     asyncio.run(send_test())
 
 
-@celery_app_dev.task
-def remind_agent_to_update_advertisement_by_date(current_date: str):
-    import asyncio
-    from aiogram import Bot
-
-    engine = create_engine(config.db)
-    session_pool = create_session_pool(engine=engine)
-
-    bot = Bot(token=config.tg_bot.token)
-
-    async def send_reminder():
-        async with session_pool() as session:
-            repo = RequestsRepo(session)
-
-        users = await repo.users.get_users_by_role(role="REALTOR")
-
-        # advertisements = await repo.advertisements.get_advertisements_by_reminder_date(date_str=current_date)
-
-        result = {}
-
-        for user in users:
-            advertisements = await repo.advertisements.get_advertisements_by_reminder_date(
-                date_str=current_date,
-                user_id=user.id
-            )
-            result[user.tg_chat_id] = advertisements
-
-        # result = {
-        #     a.user.tg_chat_id: [] for a in advertisements
-        # }
-        #
-        # for advertisement in advertisements:
-        #     agent = await repo.users.get_user_by_id(user_id=advertisement.user_id)
-        #     result[agent.tg_chat_id].append(advertisement)
-
-        print(result)
-
-        for chat_id, advertisements in result.items():
-            if not advertisements:
-                return await bot.send_message(chat_id, "Нету объявлений для проверки актуальности")
-
-            await bot.send_message(chat_id, "Проверка актуальности",
-                                   reply_markup=actual_checking_kb(advertisements))
-
-        await bot.session.close()
-
-    asyncio.run(send_reminder())
+# @celery_app_dev.task
+# def remind_agent_to_update_advertisement_by_date(current_date: str):
+#     import asyncio
+#     from aiogram import Bot
+#
+#     engine = create_engine(config.db)
+#     session_pool = create_session_pool(engine=engine)
+#
+#     bot = Bot(token=config.tg_bot.token)
+#
+#     async def send_reminder():
+#         async with session_pool() as session:
+#             repo = RequestsRepo(session)
+#
+#         users = await repo.users.get_users_by_role(role="REALTOR")
+#
+#         # advertisements = await repo.advertisements.get_advertisements_by_reminder_date(date_str=current_date)
+#
+#         result = {}
+#
+#         for user in users:
+#             advertisements = await repo.advertisements.get_advertisements_by_reminder_date(
+#                 date_str=current_date,
+#                 user_id=user.id
+#             )
+#             result[user.tg_chat_id] = advertisements
+#
+#         # result = {
+#         #     a.user.tg_chat_id: [] for a in advertisements
+#         # }
+#         #
+#         # for advertisement in advertisements:
+#         #     agent = await repo.users.get_user_by_id(user_id=advertisement.user_id)
+#         #     result[agent.tg_chat_id].append(advertisement)
+#
+#         print(result)
+#
+#         for chat_id, advertisements in result.items():
+#             if not advertisements:
+#                 await bot.send_message(chat_id, "Нету объявлений для проверки актуальности")
+#                 return await bot.session.close()
+#
+#             await bot.send_message(chat_id, "Проверка актуальности",
+#                                    reply_markup=actual_checking_kb(advertisements))
+#
+#         await bot.session.close()
+#
+#     asyncio.run(send_reminder())

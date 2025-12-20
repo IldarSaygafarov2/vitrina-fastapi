@@ -57,52 +57,52 @@ async def react_to_advertisement_price_changed(call: CallbackQuery, state: FSMCo
     )
 #
 #
-# @router.message(AdvertisementRelevanceState.new_price)
-# async def set_actual_price_for_advertisement(
-#     message: Message, repo: RequestsRepo, state: FSMContext
-# ):
-#     """Добавляем новую цену объявлению."""
-#     state_data = await state.get_data()
-#     chat_id = message.chat.id
-#
-#     # users data
-#     user = await repo.users.get_user_by_chat_id(chat_id)
-#     director_chat_id = user.added_by
-#
-#     # advertisement data
-#     advertisement_id = state_data.get("advertisement_id")
-#     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
-#     operation_type = advertisement.operation_type.value
-#
-#     reminder_time = helpers.get_reminder_time_by_operation_type(operation_type)
-#
-#     new_price = helpers.filter_digits(message.text)
-#
-#     updated_advertisement = await repo.advertisements.update_advertisement(
-#         advertisement_id=advertisement_id,
-#         price=int(new_price),
-#         new_price=int(new_price),
-#         reminder_time=reminder_time,
-#     )
-#
-#     # подготавливаем медиа группу для отправки
-#     media_group = await helpers.collect_media_group_for_advertisement(
-#         updated_advertisement, repo
-#     )
-#
-#     await message.answer("Объявление отправлено руководителю на проверку")
-#     agent_fullname = f"{user.first_name} {user.lastname}"
-#
-#     await message.bot.send_media_group(director_chat_id, media_group)
-#     await message.bot.send_message(
-#         director_chat_id,
-#         f"""
-# Агент: <i>{agent_fullname}</i> обновил объявление
-# Новая цена объявления: <b>{new_price}</b>
-# Объявление прошло модерацию?
-# """,
-#         reply_markup=advertisement_moderation_kb(advertisement_id=advertisement_id),
-#     )
+@router.message(AdvertisementRelevanceState.new_price)
+async def set_actual_price_for_advertisement(
+    message: Message, repo: RequestsRepo, state: FSMContext
+):
+    """Добавляем новую цену объявлению."""
+    state_data = await state.get_data()
+    chat_id = message.chat.id
+
+    # users data
+    user = await repo.users.get_user_by_chat_id(chat_id)
+    director_chat_id = user.added_by
+
+    # advertisement data
+    advertisement_id = state_data.get("advertisement_id")
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+    operation_type = advertisement.operation_type.value
+
+    reminder_time = helpers.get_reminder_time_by_operation_type(operation_type)
+
+    new_price = helpers.filter_digits(message.text)
+
+    updated_advertisement = await repo.advertisements.update_advertisement(
+        advertisement_id=advertisement_id,
+        price=int(new_price),
+        new_price=int(new_price),
+        reminder_time=reminder_time,
+    )
+
+    # подготавливаем медиа группу для отправки
+    media_group = await helpers.collect_media_group_for_advertisement(
+        updated_advertisement, repo
+    )
+
+    await message.answer("Объявление отправлено руководителю на проверку")
+    agent_fullname = f"{user.first_name} {user.lastname}"
+
+    await message.bot.send_media_group(director_chat_id, media_group)
+    await message.bot.send_message(
+        director_chat_id,
+        f"""
+Агент: <i>{agent_fullname}</i> обновил объявление
+Новая цена объявления: <b>{new_price}</b>
+Объявление прошло модерацию?
+""",
+        reply_markup=advertisement_moderation_kb(advertisement_id=advertisement_id),
+    )
 #
 #
 @router.callback_query(F.data.startswith("price_not_changed"))

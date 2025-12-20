@@ -18,9 +18,9 @@ celery_app_dev.conf.update(
 )
 
 
-celery_app_dev.conf.beat_schedule = {
-    "send_reminder": {
-        "task": "celery_tasks.tasks.remind_agent_to_update_advertisement_by_date",
-        "args": (get_current_date(),),
-        "schedule": 60.0
-    }}
+# celery_app_dev.conf.beat_schedule = {
+#     "send_reminder": {
+#         "task": "celery_tasks.tasks.remind_agent_to_update_advertisement_by_date",
+#         "args": (get_current_date(),),
+#         "schedule": 60.0
+#     }}

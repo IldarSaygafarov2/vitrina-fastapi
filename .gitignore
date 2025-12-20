@@ -73,3 +73,5 @@ token.json
 logs/
 *.json
 *.rdb
+
+celerybeat-schedule.db
