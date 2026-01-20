@@ -53,6 +53,7 @@ class UserRepo(BaseRepo):
             .values(
                 first_name=first_name,
                 lastname=lastname,
+                fullname=f'{first_name} {lastname}',
                 phone_number=phone_number,
                 tg_username=tg_username,
                 profile_image=profile_image,
