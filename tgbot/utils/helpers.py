@@ -6,13 +6,15 @@ from aiogram import Bot
 from aiogram.types import InputMediaPhoto
 
 from backend.app.config import config
+from backend.core.interfaces.category import CategoryShortDTO
+from infrastructure.database.models import Advertisement
+from infrastructure.database.models.user import User
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.messages import (
     buy_channel_advertisement_message,
     rent_channel_advertisement_message,
 )
-from backend.core.interfaces.category import CategoryShortDTO
 
 
 def filter_digits(message: str) -> str:
@@ -50,10 +52,10 @@ def deserialize_media_group(media_data: list[dict]) -> list[InputMediaPhoto]:
 
 
 async def send_message_to_rent_topic(
-        bot: Bot,
-        price: int,
-        operation_type: str,
-        media_group: list[InputMediaPhoto],
+    bot: Bot,
+    price: int,
+    operation_type: str,
+    media_group: list[InputMediaPhoto],
 ) -> None:
     """Отправляем сообщение в супер группу фильтруя по цене."""
 
@@ -113,6 +115,12 @@ def get_reminder_time_by_operation_type(operation_type: str) -> datetime:
     )  # для аренды
 
 
+def get_revminder_time_for_advertisement(operation_type: str):
+    if operation_type == "Покупка":
+        return config.reminder_config.buy_reminder_days
+    return config.reminder_config.rent_reminder_days
+
+
 async def get_advertisement_photos(advertisement_id: int, repo: "RequestsRepo"):
     photos = await repo.advertisement_images.get_advertisement_images(
         advertisement_id=advertisement_id
@@ -121,7 +129,7 @@ async def get_advertisement_photos(advertisement_id: int, repo: "RequestsRepo"):
 
 
 async def collect_media_group_for_advertisement(
-        advertisement, repo: RequestsRepo
+    advertisement, repo: RequestsRepo
 ) -> list[InputMediaPhoto]:
     """собираем медиа группу для отправки."""
     advertisement_photos = await get_advertisement_photos(advertisement.id, repo)
@@ -142,7 +150,7 @@ def get_channel_name_and_message_by_operation_type(advertisement) -> tuple[str, 
 
 
 async def send_error_message_to_dev(
-        bot: Bot | None, message: str, exception: Exception
+    bot: Bot | None, message: str, exception: Exception
 ) -> None:
     await bot.send_message(chat_id=config.tg_bot.main_chat_id, text=f"ошибка {message}")
     await bot.send_message(
@@ -168,3 +176,14 @@ async def convert_categories_from_db(repo: RequestsRepo) -> list[dict]:
 def get_current_date() -> str:
     """получаем сегодняшнюю дату."""
     return datetime.now().strftime("%Y-%m-%d")
+
+
+async def get_user_not_actual_advertisements_by_date(date: str, repo: "RequestsRepo"):
+    result = {}
+    users = await repo.users.get_users_by_role(role="REALTOR")
+    for user in users:
+        advertisements = await repo.advertisements.get_advertisements_by_reminder_date(
+            date_str=date, user_id=user.id
+        )
+        result[user.tg_chat_id] = advertisements
+    return result

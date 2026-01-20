@@ -29,7 +29,9 @@ def compare_hashes(hash1: str, hash2: str, max_distance: int = 5) -> bool:
     return (h1 - h2) <= max_distance
 
 
-async def is_duplicate(new_image_path: str, repo: "RequestsRepo", max_distance: int = 5):
+async def is_duplicate(
+    new_image_path: str, repo: "RequestsRepo", max_distance: int = 5
+):
     new_hash = get_image_hash_hex(new_image_path)
 
     # берём все фото с их хэшами из базы

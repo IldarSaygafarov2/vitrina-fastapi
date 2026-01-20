@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
@@ -6,13 +6,12 @@ from aiogram.types import CallbackQuery, Message
 
 from backend.app.config import config
 
-# from celery_tasks.tasks import remind_agent_to_update_advertisement_extended
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.keyboards.admin.inline import (
     advertisement_moderation_kb,
     delete_advertisement_kb,
 )
-from tgbot.keyboards.user.inline import is_price_actual_kb
+from tgbot.keyboards.user.inline import actual_checking_kb, is_price_actual_kb
 from tgbot.misc.user_states import AdvertisementRelevanceState
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.messages import advertisement_reminder_message
@@ -28,7 +27,6 @@ async def handle_check_actual(callback: CallbackQuery):
         text="Изменилась ли цена данного объявления ?",
         reply_markup=is_price_actual_kb(advertisement_id),
     )
-
 
 
 #
@@ -55,6 +53,8 @@ async def react_to_advertisement_price_changed(call: CallbackQuery, state: FSMCo
     await call.message.edit_text(
         "Напишите новую цену для объявления", reply_markup=None
     )
+
+
 #
 #
 @router.message(AdvertisementRelevanceState.new_price)
@@ -74,7 +74,7 @@ async def set_actual_price_for_advertisement(
     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
     operation_type = advertisement.operation_type.value
 
-    reminder_time = helpers.get_reminder_time_by_operation_type(operation_type)
+    new_reminder_days = helpers.get_revminder_time_for_advertisement(operation_type)
 
     new_price = helpers.filter_digits(message.text)
 
@@ -82,7 +82,7 @@ async def set_actual_price_for_advertisement(
         advertisement_id=advertisement_id,
         price=int(new_price),
         new_price=int(new_price),
-        reminder_time=reminder_time,
+        reminder_time=new_reminder_days,
     )
 
     # подготавливаем медиа группу для отправки
@@ -103,8 +103,8 @@ async def set_actual_price_for_advertisement(
 """,
         reply_markup=advertisement_moderation_kb(advertisement_id=advertisement_id),
     )
-#
-#
+
+
 @router.callback_query(F.data.startswith("price_not_changed"))
 async def react_to_advertisement_price_not_changed(
     call: CallbackQuery,
@@ -124,9 +124,13 @@ async def react_to_advertisement_price_not_changed(
 
     # получаем новое время обновления
     operation_type = advertisement.operation_type.value
-    reminder_time = helpers.get_reminder_time_by_operation_type(operation_type)
+    # Если тип "покупка" - прибавляем 14 дней, если "аренда" - 7 дней
+    if operation_type == "Покупка":
+        reminder_time = datetime.now() + timedelta(days=14)
+    else:  # Аренда
+        reminder_time = datetime.now() + timedelta(days=7)
 
-    formatted_reminder_time = (reminder_time + timedelta(hours=5)).strftime("%Y-%m-%d %H:%M:%S")
+    formatted_reminder_time = reminder_time.strftime("%Y-%m-%d")
 
     channel_name, advertisement_message = (
         helpers.get_channel_name_and_message_by_operation_type(advertisement)
@@ -167,42 +171,25 @@ async def react_to_advertisement_price_not_changed(
         )
 
     await call.message.answer(
-        f"Уведомление для проверки актуальности отправится агенту в \n<b>{formatted_reminder_time}</b>"
+        f"Уведомление для проверки актуальности отправится агенту в \n<b>{formatted_reminder_time} 9:00</b>"
     )
     await call.bot.send_message(
         agent.added_by, text=advertisement_reminder_message(formatted_reminder_time)
     )
-#
-#
-# @router.callback_query(F.data.startswith("not_actual"))
-# async def react_to_advertisement_not_actual(call: CallbackQuery, repo: RequestsRepo):
-#     """Отправляем объявление на удаление если оно не является актуальным."""
-#     await call.message.delete()
-#     await call.answer()
-#
-#     advertisement_id = int(call.data.split(":")[-1])
-#     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
-#     media_group = await helpers.collect_media_group_for_advertisement(
-#         advertisement, repo
-#     )
-#
-#     # данные агента, который добавил объявление
-#     agent = await repo.users.get_user_by_id(advertisement.user_id)
-#     director_chat_id = agent.added_by
-#     agent_fullname = f"{agent.first_name} {agent.lastname}"
-#
-#     msg = f"""
-# Агент: <i>{agent_fullname}</i> указал, что объявление: <b>{advertisement.unique_id}</b>
-# больше не актуально!
-#
-# Удалить данное объявление?
-# """
-#     await call.message.answer(
-#         "Объявление было отправлено на проверку вашему руководителю"
-#     )
-#     await call.bot.send_media_group(chat_id=director_chat_id, media=media_group)
-#     await call.bot.send_message(
-#         chat_id=director_chat_id,
-#         text=msg,
-#         reply_markup=delete_advertisement_kb(advertisement_id),
-#     )
+
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    advertisements_for_check = await helpers.get_user_not_actual_advertisements_by_date(
+        date=current_date,
+        repo=repo,
+    )
+    for chat_id, advertisements in advertisements_for_check.items():
+        if not advertisements:
+            await call.bot.send_message(
+                chat_id, "Нету объявлений для проверки актуальности"
+            )
+
+        await call.bot.send_message(
+            chat_id,
+            f"Проверка актуальности объявлений.\nКоличество объявлений: {len(advertisements)}",
+            reply_markup=actual_checking_kb(advertisements),
+        )
