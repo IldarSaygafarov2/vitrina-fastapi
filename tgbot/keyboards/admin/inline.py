@@ -25,8 +25,10 @@ def realtors_actions_kb():
 def realtors_kb(realtors: list["User"]):
     kb = InlineKeyboardBuilder()
     for idx, realtor in enumerate(realtors, start=1):
-        fullname = f"{realtor.first_name} {realtor.lastname}"
-        kb.button(text=f"{idx}. {fullname}", callback_data=f"get_realtor:{realtor.id}")
+        # fullname = f"{realtor.first_name} {realtor.lastname}"
+        kb.button(
+            text=f"{idx}. {realtor.fullname}", callback_data=f"get_realtor:{realtor.id}"
+        )
 
     kb.button(text="На главную", callback_data="return_home")
 
@@ -72,8 +74,9 @@ def return_kb(callback: str):
 
 def realtor_fields_kb(realtor_id: int, is_superadmin: bool = False):
     kb = InlineKeyboardBuilder()
-    kb.button(text="Имя", callback_data=f"update_name:{realtor_id}")
-    kb.button(text="Фамилия", callback_data=f"update_lastname:{realtor_id}")
+    # kb.button(text="Имя", callback_data=f"update_name:{realtor_id}")
+    # kb.button(text="Фамилия", callback_data=f"update_lastname:{realtor_id}")
+    kb.button(text="Имя и Фамилия", callback_data=f"update_fullname:{realtor_id}")
     kb.button(text="Номер телефона", callback_data=f"update_phone_number:{realtor_id}")
     kb.button(text="Юзернейм", callback_data=f"update_tg_username:{realtor_id}")
     kb.button(text="Фото", callback_data=f"update_realtor_photo:{realtor_id}")
@@ -123,7 +126,9 @@ def advertisement_moderation_kb(advertisement_id: int, for_delete: bool = False)
     kb.button(text="Да ✔", callback_data=call_1)
     kb.button(text="Нет ❌", callback_data=call_2)
     if not for_delete:
-        kb.button(text='Категория С', callback_data=f'for_base_channel:{advertisement_id}')
+        kb.button(
+            text="Категория С", callback_data=f"for_base_channel:{advertisement_id}"
+        )
     return kb.as_markup()
 
 
