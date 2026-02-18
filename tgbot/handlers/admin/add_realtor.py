@@ -25,32 +25,47 @@ async def add_new_realtor(
 ):
     await call.answer()
 
-    await call.message.edit_text(text="Напишите имя", reply_markup=None)
-    await state.set_state(RealtorCreationState.first_name)
+    await call.message.edit_text(text="Напишите полное имя", reply_markup=None)
+    # await state.set_state(RealtorCreationState.first_name)
+    await state.set_state(RealtorCreationState.fullname)
 
 
-@router.message(RealtorCreationState.first_name)
-async def get_first_name_set_lastname(
+# @router.message(RealtorCreationState.first_name)
+# async def get_first_name_set_lastname(
+#     message: Message,
+#     state: FSMContext,
+# ):
+#     chat_id = message.from_user.id
+#
+#     await state.update_data(first_name=message.text, chat_id=chat_id)
+#     await state.set_state(RealtorCreationState.lastname)
+#
+#     await message.answer(text="Напишите фамилию")
+
+
+@router.message(RealtorCreationState.fullname)
+async def get_fullname_set_phone_number(
     message: Message,
     state: FSMContext,
 ):
     chat_id = message.from_user.id
 
-    await state.update_data(first_name=message.text, chat_id=chat_id)
-    await state.set_state(RealtorCreationState.lastname)
-
-    await message.answer(text="Напишите фамилию")
-
-
-@router.message(RealtorCreationState.lastname)
-async def get_lastname_set_phone_number(
-    message: Message,
-    state: FSMContext,
-):
-    await state.update_data(lastname=message.text)
+    await state.update_data(fullname=message.text, chat_id=chat_id)
     await state.set_state(RealtorCreationState.phone_number)
 
     await message.answer(text="Напишите номер телефона")
+
+
+
+# @router.message(RealtorCreationState.lastname)
+# async def get_lastname_set_phone_number(
+#     message: Message,
+#     state: FSMContext,
+# ):
+#     await state.update_data(lastname=message.text)
+#     await state.set_state(RealtorCreationState.phone_number)
+#
+#     await message.answer(text="Напишите номер телефона")
 
 
 @router.message(RealtorCreationState.phone_number)
@@ -107,9 +122,11 @@ async def get_profile_image_create_user(
     with open(file_location, "wb") as f:
         shutil.copyfileobj(file, f)
 
+    first_name, lastname = data['fullname'].split()
+
     user = await repo.users.create_user(
-        first_name=data["first_name"],
-        lastname=data["lastname"],
+        first_name=first_name,
+        lastname=lastname,
         phone_number=data["phone_number"],
         tg_username=data["tg_username"],
         profile_image=str(file_location),
@@ -121,8 +138,7 @@ async def get_profile_image_create_user(
     user_message = f"""
 Риелтор успешно добавлен:
 
-Имя: <b>{user.first_name}</b>
-Фамилия: <b>{user.lastname}</b>
+Полное имя: {first_name} {lastname}
 Номер телефона: <b>{user.phone_number}</b>
 Юзернейм: <b>{user.tg_username}</b>
     """

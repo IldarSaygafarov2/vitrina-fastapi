@@ -7,16 +7,16 @@ from .base import BaseRepo
 
 class UserRepo(BaseRepo):
     async def _create_user(
-        self,
-        first_name: str,
-        lastname: str,
-        phone_number: str,
-        tg_username: str,
-        profile_image: str,
-        profile_image_hash: str,
-        role: str,
-        added_by: int,
-        id: int
+            self,
+            first_name: str,
+            lastname: str,
+            phone_number: str,
+            tg_username: str,
+            profile_image: str,
+            profile_image_hash: str,
+            role: str,
+            added_by: int,
+            id: int
     ):
         stmt = (
             insert(User)
@@ -38,15 +38,15 @@ class UserRepo(BaseRepo):
         return result.scalar_one()
 
     async def create_user(
-        self,
-        first_name: str,
-        lastname: str,
-        phone_number: str,
-        tg_username: str,
-        profile_image: str,
-        profile_image_hash: str,
-        role: str,
-        added_by: int,
+            self,
+            first_name: str,
+            lastname: str,
+            phone_number: str,
+            tg_username: str,
+            profile_image: str,
+            profile_image_hash: str,
+            role: str,
+            added_by: int,
     ):
         stmt = (
             insert(User)
@@ -100,7 +100,6 @@ class UserRepo(BaseRepo):
         )
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
-
 
     async def get_users_by_role(self, role: str):
         stmt = select(User).where(User.role == role)
