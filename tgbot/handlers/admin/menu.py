@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 from pathlib import Path
 
 from aiogram import F, Router
@@ -33,8 +34,8 @@ from tgbot.misc.user_states import (
 # from tgbot.scheduler.main import scheduler
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.messages import (
-    buy_channel_advertisement_message,
     advertisement_reminder_message,
+    buy_channel_advertisement_message,
 )
 from tgbot.templates.realtor_texts import get_realtor_info
 from tgbot.utils.helpers import (
@@ -239,8 +240,20 @@ async def process_moderation_confirm(
 
     advertisement_id = int(call.data.split(":")[-1])
 
+    advertisement = await repo.advertisements.get_advertisement_by_id(
+        advertisement_id
+    )
+    reminder_delta = config.reminder_config.get_reminder_timedelta(
+        advertisement.operation_type.value
+    )
+    reminder_time = (
+        datetime.datetime.now() + reminder_delta
+    ).date()
+
     advertisement = await repo.advertisements.update_advertisement(
-        advertisement_id=advertisement_id, is_moderated=True
+        advertisement_id=advertisement_id,
+        is_moderated=True,
+        reminder_time=reminder_time,
     )
 
     operation_type = advertisement.operation_type.value
@@ -326,7 +339,19 @@ async def process_moderation_confirm(
         f"Объявление добавлено в очередь, будет отправлено в {formatted_time_to_send}",
     )
 
-    # data for reminder
+    # уведомление о проверке актуальности
+    formatted_reminder = reminder_time.strftime("%d.%m.%Y")
+    reminder_text = advertisement_reminder_message(formatted_reminder)
+    await call.bot.send_message(
+        user.tg_chat_id,
+        reminder_text,
+        parse_mode="HTML",
+    )
+    await call.bot.send_message(
+        call.message.chat.id,
+        reminder_text,
+        parse_mode="HTML",
+    )
 
     await call.message.edit_text("Спасибо! Объявление отправлено в канал")
 

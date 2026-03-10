@@ -13,6 +13,7 @@ from tgbot.utils.google_sheet import (
 )
 from tgbot.utils.helpers import (
     deserialize_media_group,
+    get_current_date,
     get_user_not_actual_advertisements_by_date,
     send_message_to_rent_topic,
 )
@@ -122,30 +123,27 @@ def send_message_by_queue(
 
 
 @celery_app_dev.task
-def remind_agent_to_update_advertisement_by_date(current_date: str):
+def remind_agent_to_update_advertisement_by_date():
+    """Периодическая задача: отправляет агентам объявления для проверки актуальности."""
     import asyncio
 
     from aiogram import Bot
 
     engine = create_engine(config.db)
     session_pool = create_session_pool(engine=engine)
-
     bot = Bot(token=config.tg_bot.token)
 
     async def send_reminder():
+        current_date = get_current_date()
         async with session_pool() as session:
             repo = RequestsRepo(session)
-
-        result = await get_user_not_actual_advertisements_by_date(
-            date=current_date, repo=repo
-        )
+            result = await get_user_not_actual_advertisements_by_date(
+                date=current_date, repo=repo
+            )
 
         for chat_id, advertisements in result.items():
             if not advertisements:
-                await bot.send_message(
-                    chat_id, "Нету объявлений для проверки актуальности"
-                )
-                return await bot.session.close()
+                continue
 
             await bot.send_message(
                 chat_id,
