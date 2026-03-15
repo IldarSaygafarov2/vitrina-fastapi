@@ -1,7 +1,8 @@
 import shutil
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from pathlib import Path
 
+import pytz
 from aiogram import Bot
 from aiogram.types import InputMediaPhoto
 
@@ -171,6 +172,28 @@ async def convert_categories_from_db(repo: RequestsRepo) -> list[dict]:
             category["name"] = "Первичка"
         result.append(category)
     return result
+
+
+def adjust_queue_send_time_to_allowed_window(dt: datetime) -> datetime:
+    """
+    Приводит время отправки к допустимому окну 9:00–21:00 (Asia/Tashkent).
+    Если позже 21:00 — перенос на 9:00 следующего дня.
+    Если раньше 9:00 — перенос на 9:00 того же дня.
+    Вход и выход: naive datetime в UTC.
+    """
+    tz = pytz.timezone("Asia/Tashkent")
+    if dt.tzinfo is None:
+        dt_utc = pytz.utc.localize(dt)
+    else:
+        dt_utc = dt.astimezone(pytz.utc)
+    local = dt_utc.astimezone(tz)
+    hour, minute = local.hour, local.minute
+    if local.time() > time(21, 0):
+        next_day = local.date() + timedelta(days=1)
+        local = tz.localize(datetime.combine(next_day, time(9, 0)))
+    elif hour < 9:
+        local = tz.localize(datetime.combine(local.date(), time(9, 0)))
+    return local.astimezone(pytz.utc).replace(tzinfo=None)
 
 
 def get_current_date() -> str:

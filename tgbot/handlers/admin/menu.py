@@ -2,6 +2,7 @@ import datetime
 from datetime import timedelta
 from pathlib import Path
 
+import pytz
 from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
@@ -39,10 +40,11 @@ from tgbot.templates.messages import (
 )
 from tgbot.templates.realtor_texts import get_realtor_info
 from tgbot.utils.helpers import (
+    adjust_queue_send_time_to_allowed_window,
+    get_channel_name_and_message_by_operation_type,
     get_media_group,
     correct_advertisement_dict,
     serialize_media_group,
-    get_channel_name_and_message_by_operation_type,
 )
 
 router = Router()
@@ -294,17 +296,36 @@ async def process_moderation_confirm(
         await repo.advertisement_queue.get_all_not_sent_advertisements()
     )
 
-    if (
-            not_sent_advertisements
-    ):  # если есть элементы в очереди, то берем время последнего отправленного объявления
-        time_to_send = not_sent_advertisements[-1].time_to_send + datetime.timedelta(
+    # Для локального теста: QUEUE_DEV_SIMULATE_TIME=20:58 симулирует последнюю отправку в 20:58 (Тшк)
+    base_for_calc = None
+    if config.reminder_config.queue_dev_simulate_time:
+        try:
+            parts = config.reminder_config.queue_dev_simulate_time.strip().split(":")
+            h, m = int(parts[0]), int(parts[1]) if len(parts) > 1 else 0
+            tz = pytz.timezone("Asia/Tashkent")
+            today = datetime.datetime.now(tz).date()
+            local_dt = tz.localize(datetime.datetime.combine(today, datetime.time(h, m)))
+            base_for_calc = local_dt.astimezone(pytz.utc).replace(tzinfo=None)
+        except (ValueError, IndexError):
+            pass
+
+    if base_for_calc is not None:
+        raw_time = base_for_calc + datetime.timedelta(minutes=5)
+        time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
+        await repo.advertisement_queue.add_advertisement_to_queue(
+            advertisement_id=advertisement.id, time_to_send=time_to_send
+        )
+    elif not_sent_advertisements:
+        raw_time = not_sent_advertisements[-1].time_to_send + datetime.timedelta(
             minutes=5
         )
+        time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
         await repo.advertisement_queue.add_advertisement_to_queue(
             advertisement_id=advertisement.id, time_to_send=time_to_send
         )
     else:
-        time_to_send = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
+        raw_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
+        time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
         await repo.advertisement_queue.add_advertisement_to_queue(
             advertisement_id=advertisement.id, time_to_send=time_to_send
         )
@@ -327,16 +348,21 @@ async def process_moderation_confirm(
     )
 
     # отправляем сообщения руководителю и агенту
-    formatted_time_to_send = (time_to_send + datetime.timedelta(hours=5)).strftime(
-        "%Y-%m-%d %H:%M:%S"
-    )
+    tz_tashkent = pytz.timezone("Asia/Tashkent")
+    time_utc = pytz.utc.localize(time_to_send)
+    time_local = time_utc.astimezone(tz_tashkent)
+    formatted_time_to_send = time_local.strftime("%Y-%m-%d %H:%M:%S")
+
+    dev_note = ""
+    if config.reminder_config.queue_dev_simulate_time:
+        dev_note = f"\n\n[Тест: QUEUE_DEV_SIMULATE_TIME={config.reminder_config.queue_dev_simulate_time}]"
 
     await call.message.answer(
-        f"Объявление добавлено в очередь, будет отправлено в {formatted_time_to_send}"
+        f"Объявление добавлено в очередь, будет отправлено в {formatted_time_to_send}{dev_note}"
     )
     await call.bot.send_message(
         user.tg_chat_id,
-        f"Объявление добавлено в очередь, будет отправлено в {formatted_time_to_send}",
+        f"Объявление добавлено в очередь, будет отправлено в {formatted_time_to_send}{dev_note}",
     )
 
     # уведомление о проверке актуальности
