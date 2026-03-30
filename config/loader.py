@@ -48,5 +48,5 @@ def load_config(path: Optional[str] = None) -> "Config":
         super_group=super_group_config,
         report_sheet=report_sheet,
         reminder_config=reminder_config,
-        redis_config=redis_config
+        redis_config=redis_config,
     )

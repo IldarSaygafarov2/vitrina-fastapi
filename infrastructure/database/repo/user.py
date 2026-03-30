@@ -1,22 +1,22 @@
 from sqlalchemy import insert, select, update, delete
 
-from infrastructure.database.models import User
+from infrastructure.database.models.user import User, UserRole
 
 from .base import BaseRepo
 
 
 class UserRepo(BaseRepo):
     async def _create_user(
-            self,
-            first_name: str,
-            lastname: str,
-            phone_number: str,
-            tg_username: str,
-            profile_image: str,
-            profile_image_hash: str,
-            role: str,
-            added_by: int,
-            id: int
+        self,
+        first_name: str,
+        lastname: str,
+        phone_number: str,
+        tg_username: str,
+        profile_image: str,
+        profile_image_hash: str,
+        role: str,
+        added_by: int,
+        id: int,
     ):
         stmt = (
             insert(User)
@@ -29,7 +29,7 @@ class UserRepo(BaseRepo):
                 profile_image_hash=profile_image_hash,
                 role=role,
                 added_by=added_by,
-                id=id
+                id=id,
             )
             .returning(User)
         )
@@ -38,22 +38,22 @@ class UserRepo(BaseRepo):
         return result.scalar_one()
 
     async def create_user(
-            self,
-            first_name: str,
-            lastname: str,
-            phone_number: str,
-            tg_username: str,
-            profile_image: str,
-            profile_image_hash: str,
-            role: str,
-            added_by: int,
+        self,
+        first_name: str,
+        lastname: str,
+        phone_number: str,
+        tg_username: str,
+        profile_image: str,
+        profile_image_hash: str,
+        role: str,
+        added_by: int,
     ):
         stmt = (
             insert(User)
             .values(
                 first_name=first_name,
                 lastname=lastname,
-                fullname=f'{first_name} {lastname}',
+                fullname=f"{first_name} {lastname}",
                 phone_number=phone_number,
                 tg_username=tg_username,
                 profile_image=profile_image,
@@ -94,10 +94,7 @@ class UserRepo(BaseRepo):
         return result.scalar_one_or_none()
 
     async def get_user_by_phone_number(self, phone_number: str):
-        stmt = (
-            select(User)
-            .where(User.phone_number == phone_number)
-        )
+        stmt = select(User).where(User.phone_number == phone_number)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -105,6 +102,30 @@ class UserRepo(BaseRepo):
         stmt = select(User).where(User.role == role)
         result = await self.session.execute(stmt)
         return result.scalars().all()
+
+    async def get_group_director_by_tg_chat_id(self, tg_chat_id: int):
+        stmt = (
+            select(User)
+            .where(User.tg_chat_id == tg_chat_id)
+            .where(User.role == UserRole.GROUP_DIRECTOR)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def sync_realtors_group_sheet_urls(
+        self,
+        director_tg_chat_id: int,
+        rent_url: str | None,
+        buy_url: str | None,
+    ) -> None:
+        stmt = (
+            update(User)
+            .values(group_rent_sheet_url=rent_url, group_buy_sheet_url=buy_url)
+            .where(User.added_by == director_tg_chat_id)
+            .where(User.role == UserRole.REALTOR)
+        )
+        await self.session.execute(stmt)
+        await self.session.commit()
 
     async def get_user_by_id(self, user_id: int):
         stmt = select(User).where(User.id == user_id)
@@ -126,7 +147,7 @@ class UserRepo(BaseRepo):
         stmt = (
             select(User)
             .where(User.added_by == director_chat_id)
-            .where(User.role == "REALTOR")
+            .where(User.role == UserRole.REALTOR)
         )
         result = await self.session.execute(stmt)
         return result.scalars().all()

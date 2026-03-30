@@ -2,7 +2,11 @@ from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .advertisement import AdvertisementRepo, AdvertisementImageRepo, AdvertisementQueueRepo
+from .advertisement import (
+    AdvertisementRepo,
+    AdvertisementImageRepo,
+    AdvertisementQueueRepo,
+)
 from .category import CategoryRepo
 from .consultation import ConsultationRepo
 from .district import DistrictRepo

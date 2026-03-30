@@ -284,11 +284,12 @@ async def process_moderation_confirm(
             media=media_group,
         )
 
-    # заполняем гугл таблицу с объявлениями под определенный тип операции
+    # заполняем главную гугл-таблицу и при ENABLE_DIRECTOR_SHEET_SYNC — таблицу руководителя
     fill_report.delay(
         month=month,
         operation_type=advertisement.operation_type.value,
         data=advertisement_data,
+        realtor_user_id=user.id,
     )
 
     # получаем все неотправленные объявления из очереди
