@@ -284,7 +284,7 @@ async def process_moderation_confirm(
             media=media_group,
         )
 
-    # заполняем главную гугл-таблицу и при ENABLE_DIRECTOR_SHEET_SYNC — таблицу руководителя
+    # главная таблица отчёта + дублирование в таб(ы) руководителя группы агента (при наличии URL)
     fill_report.delay(
         month=month,
         operation_type=advertisement.operation_type.value,

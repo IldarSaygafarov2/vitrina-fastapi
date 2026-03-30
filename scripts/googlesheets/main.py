@@ -1,14 +1,12 @@
 import asyncio
-from pprint import pprint
 
 import gspread
 
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
-from infrastructure.database.setup import create_session_pool, create_engine
+from infrastructure.database.setup import create_engine, create_session_pool
 from tgbot.misc.constants import MONTHS_DICT, ROW_FIELDS
 from tgbot.utils.google_sheet import add_row_titles, create_worksheets
-from sqlalchemy.ext.asyncio import AsyncSession
 
 config = load_config(".env")
 
@@ -32,15 +30,14 @@ async def create_spreadsheet_for_group_directors(session):
         add_row_titles(spreadsheet_buy, list(ROW_FIELDS.values()))
         add_row_titles(spreadsheet_rent, list(ROW_FIELDS.values()))
 
-        update_kw: dict = {"has_spreadsheet": True}
-        if config.run_api.enable_director_sheet_sync:
-            update_kw["group_rent_sheet_url"] = spreadsheet_rent.url
-            update_kw["group_buy_sheet_url"] = spreadsheet_buy.url
-        await repo.users.update_user(group_director.id, **update_kw)
-        if (
-            config.run_api.enable_director_sheet_sync
-            and group_director.tg_chat_id is not None
-        ):
+        # Ссылки всегда пишем в БД; Celery (fill_report) дублирует строки в эти таблицы при модерации.
+        await repo.users.update_user(
+            group_director.id,
+            has_spreadsheet=True,
+            group_rent_sheet_url=spreadsheet_rent.url,
+            group_buy_sheet_url=spreadsheet_buy.url,
+        )
+        if group_director.tg_chat_id is not None:
             await repo.users.sync_realtors_group_sheet_urls(
                 group_director.tg_chat_id,
                 spreadsheet_rent.url,

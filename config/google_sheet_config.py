@@ -8,14 +8,18 @@ from environs import Env
 class GoogleSheetConfig:
     spreadsheet_id: str
     user_account_credentials_filename: str
+    # JWT пользователя после gspread.oauth (для Celery: писать в таблицы, созданные личным аккаунтом)
+    oauth_token_path: Optional[str] = None
 
     @staticmethod
     def from_env(env: Env) -> "GoogleSheetConfig":
+        token = env.str("GOOGLE_SHEETS_OAUTH_TOKEN_PATH", default="").strip()
         return GoogleSheetConfig(
             spreadsheet_id=env.str("SPREADSHEET_ID"),
             user_account_credentials_filename=env.str(
                 "USER_ACCOUNT_CREDENTIALS_FILENAME"
             ),
+            oauth_token_path=token or None,
         )
 
 

@@ -1,5 +1,6 @@
 import asyncio
 import time
+import traceback
 
 from backend.app.config import config
 from celery_tasks.app import celery_app_dev
@@ -11,6 +12,7 @@ from tgbot.utils.google_sheet import (
     client_init_json,
     fill_row_with_data,
     get_table_by_url,
+    gspread_client_for_director_tables,
 )
 from tgbot.utils.helpers import (
     deserialize_media_group,
@@ -23,7 +25,7 @@ from tgbot.utils.helpers import (
 async def _fill_director_group_sheet(
     month: int, operation_type: str, data: dict, realtor_user_id: int
 ) -> None:
-    """Дублирует строку в таблицу аренды/продажи руководителя (только при ENABLE_DIRECTOR_SHEET_SYNC)."""
+    """Дублирует строку в Google-таблицу аренды или продажи руководителя группы агента."""
     engine = create_engine(config.db)
     session_pool = create_session_pool(engine=engine)
     sheet_url = None
@@ -44,8 +46,12 @@ async def _fill_director_group_sheet(
                 elif operation_type == "Покупка":
                     sheet_url = director.group_buy_sheet_url
     if not sheet_url:
+        print(
+            f"fill_report: нет group_*_sheet_url для агента id={realtor_user_id} "
+            f"и руководителя (added_by={realtor.added_by}); строка в таблицу группы не пишется."
+        )
         return
-    client = client_init_json()
+    client = gspread_client_for_director_tables()
     spread = get_table_by_url(client, sheet_url)
     fill_row_with_data(spread, worksheet_name=MONTHS_DICT[month], data=data)
     time.sleep(2)
@@ -67,17 +73,14 @@ def fill_report(
     fill_row_with_data(spread, worksheet_name=MONTHS_DICT[month], data=data)
     time.sleep(2)
 
-    if (
-        realtor_user_id
-        and config.run_api.enable_director_sheet_sync
-        and operation_type in ("Аренда", "Покупка")
-    ):
+    if realtor_user_id and operation_type in ("Аренда", "Покупка"):
         try:
             asyncio.run(
                 _fill_director_group_sheet(month, operation_type, data, realtor_user_id)
             )
         except Exception as exc:
-            print(f"fill_report: таблица руководителя не обновлена: {exc}")
+            print(f"fill_report: НЕ записано в таблицу руководителя: {exc}")
+            traceback.print_exc()
 
 
 @celery_app_dev.task

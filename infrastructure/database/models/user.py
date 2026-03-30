@@ -31,7 +31,7 @@ class User(Base, IntIdMixin):
     # Заполняется только для GROUP_DIRECTOR; для остальных ролей — None
     has_spreadsheet: Mapped[bool | None] = mapped_column(nullable=True, default=None)
     # Таблицы группы руководителя (аренда / продажа). У директора — его таблицы;
-    # у риелтора — копия ссылок для записи при модерации (только если ENABLE_DIRECTOR_SHEET_SYNC).
+    # у риелтора — копия ссылок руководителя для записи при модерации.
     group_rent_sheet_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     group_buy_sheet_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
 

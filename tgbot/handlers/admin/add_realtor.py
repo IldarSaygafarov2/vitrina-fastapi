@@ -5,7 +5,6 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ContentType, CallbackQuery
 
-from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
 from tgbot.keyboards.admin.inline import manage_realtor_kb
@@ -17,8 +16,6 @@ router.message.filter(RoleFilter(role="group_director"))
 
 upload_dir = Path("media")
 upload_dir.mkdir(parents=True, exist_ok=True)
-
-_config = load_config()
 
 
 @router.callback_query(F.data == "rg_realtors_add")
@@ -138,18 +135,15 @@ async def get_profile_image_create_user(
         added_by=data["chat_id"],
     )
 
-    if _config.run_api.enable_director_sheet_sync:
-        director = await repo.users.get_group_director_by_tg_chat_id(
-            data["chat_id"]
+    director = await repo.users.get_group_director_by_tg_chat_id(data["chat_id"])
+    if director and (
+        director.group_rent_sheet_url or director.group_buy_sheet_url
+    ):
+        user = await repo.users.update_user(
+            user.id,
+            group_rent_sheet_url=director.group_rent_sheet_url,
+            group_buy_sheet_url=director.group_buy_sheet_url,
         )
-        if director and (
-            director.group_rent_sheet_url or director.group_buy_sheet_url
-        ):
-            user = await repo.users.update_user(
-                user.id,
-                group_rent_sheet_url=director.group_rent_sheet_url,
-                group_buy_sheet_url=director.group_buy_sheet_url,
-            )
 
     user_message = f"""
 Риелтор успешно добавлен:
