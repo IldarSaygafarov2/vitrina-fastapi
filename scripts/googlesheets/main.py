@@ -4,7 +4,7 @@ from pathlib import Path
 
 import gspread
 
-from celery_tasks.tasks import generate_rows_and_worksheets_in_spreadsheet
+# from celery_tasks.tasks import generate_rows_and_worksheets_in_spreadsheet
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
@@ -32,10 +32,10 @@ async def create_spreadsheet_for_group_directors(session):
             spreadsheet_rent = user_account.create(f"Аренда-{agent.fullname}")
             spreadsheet_buy = user_account.create(f"Продажа-{agent.fullname}")
 
-            generate_rows_and_worksheets_in_spreadsheet.delay(
-                [spreadsheet_rent.url, spreadsheet_buy.url]
-            )
-            time.sleep(5)
+            # generate_rows_and_worksheets_in_spreadsheet.delay(
+            #     [spreadsheet_rent.url, spreadsheet_buy.url]
+            # )
+            # time.sleep(5)
             await repo.users.update_user(
                 agent.id,
                 spreadsheet_rent_url=spreadsheet_rent.url,
