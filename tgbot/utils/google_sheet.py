@@ -1,37 +1,21 @@
 import time
-from pathlib import Path
 
-from google.oauth2.credentials import Credentials
-from gspread import Client, Spreadsheet, authorize, service_account
+from gspread import Client, Spreadsheet, service_account
+import gspread
 
 from backend.app.config import config
 from tgbot.misc.constants import MONTHS_DICT, ROW_FIELDS
-
-_OAUTH_SCOPES = (
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive",
-)
 
 
 def client_init_json() -> Client:
     return service_account(filename=config.report_sheet.config_filename)
 
 
-def gspread_client_for_director_tables() -> Client:
-    """
-    Таблицы руководителя часто созданы через OAuth (личный Google).
-    Если задан GOOGLE_SHEETS_OAUTH_TOKEN_PATH с token.json — используем его в Celery;
-    иначе — сервисный аккаунт (таблицы должны быть расшарены на client_email из JSON).
-    """
-    raw = config.google_sheet.oauth_token_path
-    if raw:
-        path = Path(raw).expanduser()
-        if path.is_file():
-            creds = Credentials.from_authorized_user_file(
-                str(path), scopes=list(_OAUTH_SCOPES)
-            )
-            return authorize(creds)
-    return client_init_json()
+def get_oauth_user():
+    user_account = gspread.oauth(
+        credentials_filename=config.google_sheet.user_account_credentials_filename
+    )
+    return user_account
 
 
 def get_table_by_url(client: Client, url: str) -> Spreadsheet:
@@ -46,6 +30,7 @@ def create_worksheets(spread: Spreadsheet, worksheet_names: list[str] = None):
             continue
 
         spread.add_worksheet(worksheet_name, rows=1000, cols=26)
+        time.sleep(5)
 
     print(f"Created {len(worksheet_names)} worksheets")
 
@@ -54,6 +39,7 @@ def add_row_titles(spread: Spreadsheet, data):
     worksheets = spread.worksheets()
     for worksheet in worksheets:
         worksheet.append_row(data)
+        time.sleep(5)
 
 
 def update_row_values(spread: Spreadsheet, worksheet_name: str, values: list):

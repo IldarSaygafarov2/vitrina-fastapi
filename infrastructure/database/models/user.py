@@ -27,12 +27,7 @@ class User(Base, IntIdMixin):
     added_by: Mapped[int] = mapped_column(BIGINT, nullable=True)
 
     is_superadmin: Mapped[bool] = mapped_column(nullable=True)
-
-    # Заполняется только для GROUP_DIRECTOR; для остальных ролей — None
-    has_spreadsheet: Mapped[bool | None] = mapped_column(nullable=True, default=None)
-    # Таблицы группы руководителя (аренда / продажа). У директора — его таблицы;
-    # у риелтора — копия ссылок руководителя для записи при модерации.
-    group_rent_sheet_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
-    group_buy_sheet_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    spreadsheet_rent_url: Mapped[str] = mapped_column(nullable=True)
+    spreadsheet_buy_url: Mapped[str] = mapped_column(nullable=True)
 
     advertisement = relationship("Advertisement", back_populates="user")

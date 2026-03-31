@@ -112,21 +112,6 @@ class UserRepo(BaseRepo):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def sync_realtors_group_sheet_urls(
-        self,
-        director_tg_chat_id: int,
-        rent_url: str | None,
-        buy_url: str | None,
-    ) -> None:
-        stmt = (
-            update(User)
-            .values(group_rent_sheet_url=rent_url, group_buy_sheet_url=buy_url)
-            .where(User.added_by == director_tg_chat_id)
-            .where(User.role == UserRole.REALTOR)
-        )
-        await self.session.execute(stmt)
-        await self.session.commit()
-
     async def get_user_by_id(self, user_id: int):
         stmt = select(User).where(User.id == user_id)
         result = await self.session.execute(stmt)

@@ -1,18 +1,19 @@
 import asyncio
 import time
-import traceback
 
 from backend.app.config import config
 from celery_tasks.app import celery_app_dev
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
 from tgbot.keyboards.user.inline import actual_checking_kb, is_advertisement_actual_kb
-from tgbot.misc.constants import MONTHS_DICT
+from tgbot.misc.constants import MONTHS_DICT, ROW_FIELDS
 from tgbot.utils.google_sheet import (
+    add_row_titles,
     client_init_json,
+    create_worksheets,
     fill_row_with_data,
     get_table_by_url,
-    gspread_client_for_director_tables,
+    get_oauth_user,
 )
 from tgbot.utils.helpers import (
     deserialize_media_group,
@@ -22,65 +23,30 @@ from tgbot.utils.helpers import (
 )
 
 
-async def _fill_director_group_sheet(
-    month: int, operation_type: str, data: dict, realtor_user_id: int
-) -> None:
-    """Дублирует строку в Google-таблицу аренды или продажи руководителя группы агента."""
-    engine = create_engine(config.db)
-    session_pool = create_session_pool(engine=engine)
-    sheet_url = None
-    async with session_pool() as session:
-        repo = RequestsRepo(session)
-        realtor = await repo.users.get_user_by_id(realtor_user_id)
-        if operation_type == "Аренда":
-            sheet_url = realtor.group_rent_sheet_url
-        elif operation_type == "Покупка":
-            sheet_url = realtor.group_buy_sheet_url
-        if not sheet_url and realtor.added_by:
-            director = await repo.users.get_group_director_by_tg_chat_id(
-                realtor.added_by
-            )
-            if director:
-                if operation_type == "Аренда":
-                    sheet_url = director.group_rent_sheet_url
-                elif operation_type == "Покупка":
-                    sheet_url = director.group_buy_sheet_url
-    if not sheet_url:
-        print(
-            f"fill_report: нет group_*_sheet_url для агента id={realtor_user_id} "
-            f"и руководителя (added_by={realtor.added_by}); строка в таблицу группы не пишется."
-        )
-        return
-    client = gspread_client_for_director_tables()
-    spread = get_table_by_url(client, sheet_url)
-    fill_row_with_data(spread, worksheet_name=MONTHS_DICT[month], data=data)
-    time.sleep(2)
-
-
 @celery_app_dev.task
-def fill_report(
-    month: int, data: dict, operation_type: str, realtor_user_id: int | None = None
-):
+def fill_report(month: int, data: dict, operation_type: str):
     client = client_init_json()
 
     if operation_type == "Аренда":
         spread = get_table_by_url(client, config.report_sheet.rent_report_sheet_link)
     elif operation_type == "Покупка":
         spread = get_table_by_url(client, config.report_sheet.buy_report_sheet_link)
-    else:
-        return
 
     fill_row_with_data(spread, worksheet_name=MONTHS_DICT[month], data=data)
     time.sleep(2)
 
-    if realtor_user_id and operation_type in ("Аренда", "Покупка"):
-        try:
-            asyncio.run(
-                _fill_director_group_sheet(month, operation_type, data, realtor_user_id)
-            )
-        except Exception as exc:
-            print(f"fill_report: НЕ записано в таблицу руководителя: {exc}")
-            traceback.print_exc()
+
+@celery_app_dev.task
+def generate_rows_and_worksheets_in_spreadsheet(spreadsheets_links: list):
+    client = get_oauth_user()
+
+    for spreadsheet_link in spreadsheets_links:
+        spreadsheet = get_table_by_url(client, spreadsheet_link)
+        create_worksheets(spreadsheet, list(MONTHS_DICT.values()))
+        add_row_titles(spreadsheet, list(ROW_FIELDS.values()))
+        time.sleep(10)
+    # create_worksheets(spreadsheet_rent, list(MONTHS_DICT.values()))
+    # add_row_titles(spreadsheet_rent, list(ROW_FIELDS.values()))
 
 
 @celery_app_dev.task

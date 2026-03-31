@@ -77,7 +77,7 @@ async def start(message: Message, repo: "RequestsRepo"):
 
 @router.callback_query(F.data == "rg_realtors")
 async def get_realtors(
-        call: CallbackQuery,
+    call: CallbackQuery,
 ):
     await call.answer()
 
@@ -89,8 +89,8 @@ async def get_realtors(
 
 @router.callback_query(F.data == "rg_realtors_all")
 async def get_all_realtors(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
+    call: CallbackQuery,
+    repo: "RequestsRepo",
 ):
     await call.answer()
 
@@ -110,9 +110,9 @@ async def get_all_realtors(
 
 @router.callback_query(F.data.startswith("get_realtor"))
 async def get_realtor(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
 ):
     await call.answer()
 
@@ -143,8 +143,8 @@ async def get_realtor(
 
 @router.callback_query(F.data.startswith("delete_realtor"))
 async def delete_realtor(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
+    call: CallbackQuery,
+    repo: "RequestsRepo",
 ):
     await call.answer()
     realtor_id = int(call.data.split(":")[-1])
@@ -158,8 +158,8 @@ async def delete_realtor(
 
 @router.callback_query(F.data.startswith("confirm_delete"))
 async def confirm_realtor_delete(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
+    call: CallbackQuery,
+    repo: "RequestsRepo",
 ):
     await call.answer()
     realtor_id = int(call.data.split(":")[-1])
@@ -174,9 +174,9 @@ async def confirm_realtor_delete(
 
 @router.callback_query(F.data.startswith("realtor_advertisements"))
 async def get_realtor_advertisements(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
 ):
     await call.answer()
 
@@ -198,8 +198,8 @@ async def get_realtor_advertisements(
 
 @router.callback_query(F.data.startswith("rg_realtor_advertisement"))
 async def get_realtor_advertisement(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
+    call: CallbackQuery,
+    repo: "RequestsRepo",
 ):
     await call.answer()
 
@@ -235,22 +235,18 @@ async def get_realtor_advertisement(
 
 @router.callback_query(F.data.startswith("moderation_confirm"))
 async def process_moderation_confirm(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
+    call: CallbackQuery,
+    repo: "RequestsRepo",
 ):
     await call.answer()
 
     advertisement_id = int(call.data.split(":")[-1])
 
-    advertisement = await repo.advertisements.get_advertisement_by_id(
-        advertisement_id
-    )
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
     reminder_delta = config.reminder_config.get_reminder_timedelta(
         advertisement.operation_type.value
     )
-    reminder_time = (
-        datetime.datetime.now() + reminder_delta
-    ).date()
+    reminder_time = (datetime.datetime.now() + reminder_delta).date()
 
     advertisement = await repo.advertisements.update_advertisement(
         advertisement_id=advertisement_id,
@@ -275,7 +271,9 @@ async def process_moderation_confirm(
         from_attributes=True,
     ).model_dump()
 
-    advertisement_data["category"]["name"] = CATEGORIES_DICT.get(advertisement_data["category"]["id"])
+    advertisement_data["category"]["name"] = CATEGORIES_DICT.get(
+        advertisement_data["category"]["id"]
+    )
     advertisement_data = correct_advertisement_dict(advertisement_data)
 
     if operation_type == "Покупка":
@@ -284,12 +282,10 @@ async def process_moderation_confirm(
             media=media_group,
         )
 
-    # главная таблица отчёта + дублирование в таб(ы) руководителя группы агента (при наличии URL)
     fill_report.delay(
         month=month,
-        operation_type=advertisement.operation_type.value,
+        operation_type=operation_type,
         data=advertisement_data,
-        realtor_user_id=user.id,
     )
 
     # получаем все неотправленные объявления из очереди
@@ -305,7 +301,9 @@ async def process_moderation_confirm(
             h, m = int(parts[0]), int(parts[1]) if len(parts) > 1 else 0
             tz = pytz.timezone("Asia/Tashkent")
             today = datetime.datetime.now(tz).date()
-            local_dt = tz.localize(datetime.datetime.combine(today, datetime.time(h, m)))
+            local_dt = tz.localize(
+                datetime.datetime.combine(today, datetime.time(h, m))
+            )
             base_for_calc = local_dt.astimezone(pytz.utc).replace(tzinfo=None)
         except (ValueError, IndexError):
             pass
@@ -387,8 +385,8 @@ async def process_moderation_confirm(
 
 @router.callback_query(F.data.startswith("for_base_channel"))
 async def get_advertisement_for_base_channel(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
+    call: CallbackQuery,
+    repo: "RequestsRepo",
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -431,9 +429,9 @@ async def get_advertisement_for_base_channel(
 
 @router.callback_query(F.data.startswith("moderation_deny"))
 async def process_moderation_deny(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
 ):
     try:
         await call.answer()
@@ -460,8 +458,8 @@ async def process_moderation_deny(
 
 @router.message(AdvertisementModerationState.message)
 async def process_moderation_deny_message(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         data = await state.get_data()
@@ -482,8 +480,8 @@ async def process_moderation_deny_message(
 
 @router.callback_query(F.data.startswith("rg_advertisement_delete"))
 async def delete_realtor_advertisement(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
+    call: CallbackQuery,
+    repo: "RequestsRepo",
 ):
     await call.answer()
 
@@ -502,8 +500,8 @@ async def delete_realtor_advertisement(
 
 @router.callback_query(F.data.startswith("confirm_advertisement_delete"))
 async def confirm_advertisement_delete(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
+    call: CallbackQuery,
+    repo: "RequestsRepo",
 ):
     await call.answer()
     advertisement_id = int(call.data.split(":")[-1])
@@ -522,9 +520,9 @@ async def confirm_advertisement_delete(
 
 @router.callback_query(F.data.startswith("deny_advertisement_delete"))
 async def deny_advertisement_delete(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
 ):
     await call.answer()
 
@@ -538,9 +536,9 @@ async def deny_advertisement_delete(
 
 @router.message(AdvertisementDeletionState.message)
 async def process_advertisement_deletion_message(
-        message: Message,
-        repo: "RequestsRepo",
-        state: FSMContext,
+    message: Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
 ):
     data = await state.get_data()
     advertisement = data.pop("advertisement")

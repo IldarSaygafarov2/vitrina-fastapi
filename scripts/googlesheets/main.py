@@ -1,7 +1,10 @@
 import asyncio
+import time
+from pathlib import Path
 
 import gspread
 
+from celery_tasks.tasks import generate_rows_and_worksheets_in_spreadsheet
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
@@ -17,37 +20,29 @@ user_account = gspread.oauth(
 
 async def create_spreadsheet_for_group_directors(session):
     repo = RequestsRepo(session)
-    group_directors = await repo.users.get_users_by_role("group_director")
+    group_directors = await repo.users.get_users_by_role("GROUP_DIRECTOR")
 
     for group_director in group_directors:
-        if group_director.has_spreadsheet:
-            continue
-        spreadsheet_rent = user_account.create(f"Аренда-{group_director.fullname}")
-        spreadsheet_buy = user_account.create(f"Продажа-{group_director.fullname}")
+        agents = await repo.users.get_director_agents(group_director.tg_chat_id)
 
-        create_worksheets(spreadsheet_buy, list(MONTHS_DICT.values()))
-        create_worksheets(spreadsheet_rent, list(MONTHS_DICT.values()))
-        add_row_titles(spreadsheet_buy, list(ROW_FIELDS.values()))
-        add_row_titles(spreadsheet_rent, list(ROW_FIELDS.values()))
+        for agent in agents:
+            if agent.spreadsheet_rent_url and agent.spreadsheet_buy_url:
+                continue
 
-        # Ссылки всегда пишем в БД; Celery (fill_report) дублирует строки в эти таблицы при модерации.
-        await repo.users.update_user(
-            group_director.id,
-            has_spreadsheet=True,
-            group_rent_sheet_url=spreadsheet_rent.url,
-            group_buy_sheet_url=spreadsheet_buy.url,
-        )
-        if group_director.tg_chat_id is not None:
-            await repo.users.sync_realtors_group_sheet_urls(
-                group_director.tg_chat_id,
-                spreadsheet_rent.url,
-                spreadsheet_buy.url,
+            spreadsheet_rent = user_account.create(f"Аренда-{agent.fullname}")
+            spreadsheet_buy = user_account.create(f"Продажа-{agent.fullname}")
+
+            generate_rows_and_worksheets_in_spreadsheet.delay(
+                [spreadsheet_rent.url, spreadsheet_buy.url]
             )
-        print(
-            f"Spreadsheet created for {group_director.fullname}\n"
-            f"  Аренда:  {spreadsheet_rent.url}\n"
-            f"  Продажа: {spreadsheet_buy.url}"
-        )
+            time.sleep(5)
+            await repo.users.update_user(
+                agent.id,
+                spreadsheet_rent_url=spreadsheet_rent.url,
+                spreadsheet_buy_url=spreadsheet_buy.url,
+            )
+
+            print("Spreadsheets generetating")
 
 
 async def main():
