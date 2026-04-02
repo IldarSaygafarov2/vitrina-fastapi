@@ -10,9 +10,21 @@ from tgbot.utils.google_sheet import add_row_titles, create_worksheets
 
 config = load_config(".env")
 
-user_account = gspread.oauth(
-    credentials_filename=config.google_sheet.user_account_credentials_filename
+# user_account = gspread.oauth(
+#     credentials_filename=config.google_sheet.user_account_credentials_filename
+# )
+
+
+# import gspread
+from google_auth_oauthlib.flow import InstalledAppFlow
+
+flow = InstalledAppFlow.from_client_secrets_file(
+    config.google_sheet.user_account_credentials_filename,
+    scopes=["https://www.googleapis.com/auth/spreadsheets"],
 )
+
+creds = flow.run_local_server()  # avoids webbrowser
+user_account = gspread.authorize(creds)
 
 
 async def create_spreadsheet_for_group_directors(session):
