@@ -85,12 +85,12 @@ async def fill_agent_spreadsheet(session: AsyncSession):
         for rent_item in agent_data["rent_items"]:
             month = get_month_from_datetime_str(rent_item["дата добавления"])
             fill_row_with_data(rent_table, MONTHS_DICT[month], data=rent_item)
-            asyncio.sleep(5)
+            await asyncio.sleep(5)
 
         for buy_item in agent_data["buy_items"]:
             month = get_month_from_datetime_str(buy_item["дата добавления"])
             fill_row_with_data(buy_table, MONTHS_DICT[month], data=buy_item)
-            asyncio.sleep(5)
+            await asyncio.sleep(5)
 
     print("Done")
 
