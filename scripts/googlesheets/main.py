@@ -7,24 +7,32 @@ from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
 from tgbot.misc.constants import MONTHS_DICT, ROW_FIELDS_V2
 from tgbot.utils.google_sheet import add_row_titles, create_worksheets
+from google_auth_oauthlib.flow import InstalledAppFlow
 
 config = load_config(".env")
 
-# user_account = gspread.oauth(
-#     credentials_filename=config.google_sheet.user_account_credentials_filename
-# )
+
+def console_flow(client_config, scopes, port=0):
+    flow = InstalledAppFlow.from_client_config(client_config, scopes=scopes)
+    return flow.run_console()
+
+
+user_account = gspread.oauth(
+    credentials_filename=config.google_sheet.user_account_credentials_filename,
+    flow=console_flow,
+)
 
 
 # import gspread
-from google_auth_oauthlib.flow import InstalledAppFlow
+# from google_auth_oauthlib.flow import InstalledAppFlow
 
-flow = InstalledAppFlow.from_client_secrets_file(
-    config.google_sheet.user_account_credentials_filename,
-    scopes=["https://www.googleapis.com/auth/spreadsheets"],
-)
+# flow = InstalledAppFlow.from_client_secrets_file(
+#     config.google_sheet.user_account_credentials_filename,
+#     scopes=["https://www.googleapis.com/auth/spreadsheets"],
+# )
 
-creds = flow.run_local_server()  # avoids webbrowser
-user_account = gspread.authorize(creds)
+# creds = flow.run_local_server()  # avoids webbrowser
+# user_account = gspread.authorize(creds)
 
 
 async def create_spreadsheet_for_group_directors(session):
