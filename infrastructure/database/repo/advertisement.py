@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import date, datetime
 
 from sqlalchemy import delete, desc, func, select, update
 from sqlalchemy.dialects.postgresql import insert
@@ -10,6 +10,7 @@ from infrastructure.database.models import (
     AdvertisementImage,
     AdvertisementQueue,
 )
+
 from .base import BaseRepo
 
 
@@ -46,35 +47,35 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def create_advertisement(
-            self,
-            category: int,
-            district: int,
-            title: str,
-            title_uz: str,
-            description: str,
-            description_uz: str,
-            address: str,
-            address_uz: str,
-            creation_year: int,
-            price: int,
-            rooms_quantity: int,
-            quadrature: int,
-            floor_from: int,
-            floor_to: int,
-            house_quadrature_from: int,
-            house_quadrature_to: int,
-            user: int,
-            preview: str,
-            operation_type,
-            property_type,
-            repair_type,
-            operation_type_uz,
-            property_type_uz,
-            repair_type_uz,
-            unique_id,
-            owner_phone_number: str,
-            reminder_time: datetime | None,
-            is_reminded: bool = False,
+        self,
+        category: int,
+        district: int,
+        title: str,
+        title_uz: str,
+        description: str,
+        description_uz: str,
+        address: str,
+        address_uz: str,
+        creation_year: int,
+        price: int,
+        rooms_quantity: int,
+        quadrature: int,
+        floor_from: int,
+        floor_to: int,
+        house_quadrature_from: int,
+        house_quadrature_to: int,
+        user: int,
+        preview: str,
+        operation_type,
+        property_type,
+        repair_type,
+        operation_type_uz,
+        property_type_uz,
+        repair_type_uz,
+        unique_id,
+        owner_phone_number: str,
+        reminder_time: datetime | None,
+        is_reminded: bool = False,
     ):
         stmt = (
             insert(Advertisement)
@@ -135,7 +136,7 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def update_advertisement_reminder_time(
-            self, advertisement_id: int, reminder_time: datetime
+        self, advertisement_id: int, reminder_time: datetime
     ):
         stmt = (
             update(Advertisement)
@@ -325,7 +326,7 @@ class AdvertisementRepo(BaseRepo):
         return result.scalar_one()
 
     async def update_advertisement_unique_id(
-            self, advertisement_id: int, unique_id: str
+        self, advertisement_id: int, unique_id: str
     ):
         stmt = (
             update(Advertisement)
@@ -343,7 +344,7 @@ class AdvertisementRepo(BaseRepo):
         return [row[0] for row in result.fetchall()]
 
     async def get_advertisements_by_category_id_and_operation_type(
-            self, category_id: int, operation_type: str
+        self, category_id: int, operation_type: str
     ):
         stmt = (
             select(Advertisement)
@@ -357,7 +358,7 @@ class AdvertisementRepo(BaseRepo):
         return result.scalars().all()
 
     async def get_advertisements_by_operation_type(
-            self, operation_type: str, limit: int = 20, offset: int = 0
+        self, operation_type: str, limit: int = 20, offset: int = 0
     ):
         stmt = (
             select(Advertisement)
@@ -390,7 +391,7 @@ class AdvertisementRepo(BaseRepo):
 
 class AdvertisementImageRepo(BaseRepo):
     async def insert_advertisement_image(
-            self, advertisement_id: int, url: str, tg_image_hash: str, image_hash: str
+        self, advertisement_id: int, url: str, tg_image_hash: str, image_hash: str
     ):
         stmt = insert(AdvertisementImage).values(
             advertisement_id=advertisement_id,
@@ -448,7 +449,7 @@ class AdvertisementImageRepo(BaseRepo):
 
 class AdvertisementQueueRepo(BaseRepo):
     async def add_advertisement_to_queue(
-            self, advertisement_id: int, time_to_send: datetime | None = None
+        self, advertisement_id: int, time_to_send: datetime | None = None
     ):
         stmt = (
             insert(AdvertisementQueue)

@@ -32,6 +32,8 @@ config = load_config(".env")
 
 """
 
+FRONTEND_ADVERTISEMENT_URL = "https://ivitrina-nedvizhimosti.com/apartament/{id}"
+
 
 async def fill_agent_spreadsheet(session: AsyncSession):
     repo = RequestsRepo(session)
@@ -42,7 +44,6 @@ async def fill_agent_spreadsheet(session: AsyncSession):
 
     data = {}
     for agent in agents:
-        advertisement_data = []
         items = await repo.advertisements.get_user_advertisements(user_id=agent.id)
 
         if not items:
@@ -65,6 +66,7 @@ async def fill_agent_spreadsheet(session: AsyncSession):
                 "статус модерации": item.is_moderated,
                 "дата добавления": item.created_at.strftime("%d.%m.%Y %H:%M:%S"),
                 "уникальный ID": item.unique_id,
+                "ссылка на сайт": FRONTEND_ADVERTISEMENT_URL.format(id=item.id),
             }
             operation_type = item.operation_type.value
 
@@ -85,7 +87,7 @@ async def fill_agent_spreadsheet(session: AsyncSession):
             fill_row_with_data(rent_table, MONTHS_DICT[month], data=rent_item)
 
         for buy_item in agent_data["buy_items"]:
-            month = get_month_from_datetime_str(buy_item["дата добавления"].month)
+            month = get_month_from_datetime_str(buy_item["дата добавления"])
             fill_row_with_data(buy_table, MONTHS_DICT[month], data=buy_item)
 
     print("Done")

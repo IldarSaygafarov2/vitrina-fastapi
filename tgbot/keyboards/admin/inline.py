@@ -8,7 +8,7 @@ def admin_start_kb():
     kb = InlineKeyboardBuilder()
 
     kb.button(text="Риелторы", callback_data="rg_realtors")
-
+    kb.button(text="Таблицы агентов", callback_data="rg_realtors_spreadsheets")
     kb.adjust(1)
     return kb.as_markup()
 

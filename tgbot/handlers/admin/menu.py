@@ -25,7 +25,8 @@ from tgbot.keyboards.admin.inline import (
     realtors_actions_kb,
     realtors_kb,
 )
-from tgbot.keyboards.user.inline import realtor_advertisements_kb
+
+from tgbot.keyboards.user.inline import realtor_advertisements_kb, return_home_kb
 from tgbot.misc.constants import CATEGORIES_DICT
 from tgbot.misc.user_states import (
     AdvertisementDeletionState,
@@ -554,3 +555,23 @@ async def process_advertisement_deletion_message(
     )
     await message.bot.send_message(user.tg_chat_id, f"Причина: {message.text}")
     await state.clear()
+
+
+@router.callback_query(F.data.startswith("rg_realtors_spreadsheets"))
+async def show_agents_spreadsheets(call: CallbackQuery, repo: RequestsRepo):
+    await call.answer()
+
+    chat_id = call.message.chat.id
+
+    agents = await repo.users.get_director_agents(director_chat_id=chat_id)
+
+    msg = ""
+
+    for index, agent in enumerate(agents, start=1):
+        msg += f"""{index}. {agent.fullname}
+<a href="{agent.spreadsheet_rent_url}">Аренда</a>
+<a href="{agent.spreadsheet_buy_url}">Продажа</a>
+---------------------------
+"""
+
+    await call.message.edit_text(msg, reply_markup=return_home_kb())
