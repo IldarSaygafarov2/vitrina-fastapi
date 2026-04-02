@@ -12,7 +12,8 @@ def client_init_json() -> Client:
 
 def get_oauth_user():
     user_account = gspread.oauth(
-        credentials_filename=config.google_sheet.user_account_credentials_filename
+        credentials_filename=config.google_sheet.user_account_credentials_filename,
+        authorized_user_filename=config.google_sheet.user_authorized_filename,
     )
     return user_account
 
