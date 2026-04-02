@@ -8,6 +8,7 @@ from environs import Env
 class GoogleSheetConfig:
     spreadsheet_id: str
     user_account_credentials_filename: str
+    user_authorized_filename: str
 
     @staticmethod
     def from_env(env: Env) -> "GoogleSheetConfig":
@@ -16,6 +17,7 @@ class GoogleSheetConfig:
             user_account_credentials_filename=env.str(
                 "USER_ACCOUNT_CREDENTIALS_FILENAME"
             ),
+            user_authorized_filename=env.str("USER_AUTHORIZED_FILENAME"),
         )
 
 

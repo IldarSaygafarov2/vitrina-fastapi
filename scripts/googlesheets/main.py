@@ -12,14 +12,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 config = load_config(".env")
 
 
-def console_flow(client_config, scopes, port=0):
-    flow = InstalledAppFlow.from_client_config(client_config, scopes=scopes)
-    return flow.run_console()
-
-
 user_account = gspread.oauth(
     credentials_filename=config.google_sheet.user_account_credentials_filename,
-    flow=console_flow,
 )
 
 
