@@ -4,7 +4,6 @@ from gspread import Client, Spreadsheet, service_account
 import gspread
 
 from backend.app.config import config
-from tgbot.misc.constants import MONTHS_DICT, ROW_FIELDS
 
 
 def client_init_json() -> Client:
@@ -30,7 +29,7 @@ def create_worksheets(spread: Spreadsheet, worksheet_names: list[str] = None):
             continue
 
         spread.add_worksheet(worksheet_name, rows=1000, cols=26)
-        time.sleep(5)
+        time.sleep(1)
 
     print(f"Created {len(worksheet_names)} worksheets")
 
@@ -39,7 +38,7 @@ def add_row_titles(spread: Spreadsheet, data):
     worksheets = spread.worksheets()
     for worksheet in worksheets:
         worksheet.append_row(data)
-        time.sleep(5)
+        time.sleep(1)
 
 
 def update_row_values(spread: Spreadsheet, worksheet_name: str, values: list):

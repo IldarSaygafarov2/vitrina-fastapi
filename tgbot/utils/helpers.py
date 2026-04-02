@@ -18,6 +18,11 @@ from tgbot.templates.messages import (
 )
 
 
+def get_month_from_datetime_str(datetime_str: str) -> int:
+    dt = datetime.strptime(datetime_str, "%d.%m.%Y %H:%M:%S")
+    return dt.month
+
+
 def filter_digits(message: str) -> str:
     return "".join(list(filter(lambda i: i.isdigit(), message)))
 

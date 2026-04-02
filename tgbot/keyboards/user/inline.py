@@ -1,14 +1,9 @@
-from aiogram.types import InlineKeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from typing import Sequence
 
-from infrastructure.database.models import (
-    Advertisement,
-    Category,
-    District,
-    AdvertisementImage,
-)
+from aiogram.types import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from infrastructure.database.models import Advertisement, AdvertisementImage, District
 from tgbot.misc.constants import (
     ADVERTISEMENT_UPDATE_FIELDS,
     OPERATION_TYPE_MAPPING,
@@ -19,10 +14,21 @@ from tgbot.misc.constants import (
 
 def realtor_start_kb(realtor_chat_id: int):
     kb = InlineKeyboardBuilder()
-    kb.button(text="Создать объявление", callback_data=f"create_advertisement")
-    kb.button(
-        text="Мои объявления",
-        callback_data=f"show_realtors_advertisement:{realtor_chat_id}",
+
+    kb.row(
+        InlineKeyboardButton(
+            text="Создать объявление", callback_data=f"create_advertisement"
+        ),
+        InlineKeyboardButton(
+            text="Мои объявления",
+            callback_data=f"show_realtors_advertisement:{realtor_chat_id}",
+        ),
+    )
+    kb.row(
+        InlineKeyboardButton(
+            text="Таблицы отчетности",
+            callback_data=f"show_spreadsheets:{realtor_chat_id}",
+        )
     )
     return kb.as_markup()
 
@@ -31,7 +37,6 @@ def operation_type_kb():
     kb = InlineKeyboardBuilder()
     kb.button(text="Покупка", callback_data="operation_type:buy")
     kb.button(text="Аренда", callback_data="operation_type:rent")
-
     return kb.as_markup()
 
 
@@ -81,11 +86,11 @@ def repair_type_kb(repair_types: dict):
 
 
 def realtor_advertisements_kb(
-        advertisements: list["Advertisement"],
-        for_admin: bool = False,
-        start: int = 0,
-        finish: int = 15,
-        page: int = 1,
+    advertisements: list["Advertisement"],
+    for_admin: bool = False,
+    start: int = 0,
+    finish: int = 15,
+    page: int = 1,
 ):
     kb = InlineKeyboardBuilder()
 
@@ -151,7 +156,7 @@ def return_back_kb(callback: str):
 
 
 def advertisement_choices_kb(
-        choice_type: str, callback_for_return: str | None = None, **kwargs
+    choice_type: str, callback_for_return: str | None = None, **kwargs
 ):
     kb = InlineKeyboardBuilder()
 
@@ -213,13 +218,13 @@ def actual_checking_kb(advertisements: Sequence[Advertisement]):
     kb = InlineKeyboardBuilder()
 
     for idx, advertisement in enumerate(advertisements, start=1):
-        kb.add(InlineKeyboardButton(
-            text=f"{idx}. {advertisement.unique_id}",
-            callback_data=f"check_actual:{advertisement.id}")
+        kb.add(
+            InlineKeyboardButton(
+                text=f"{idx}. {advertisement.unique_id}",
+                callback_data=f"check_actual:{advertisement.id}",
+            )
         )
-    kb.add(
-        InlineKeyboardButton(text="На главную", callback_data="return_home")
-    )
+    kb.add(InlineKeyboardButton(text="На главную", callback_data="return_home"))
     kb.adjust(1)
 
     return kb.as_markup()

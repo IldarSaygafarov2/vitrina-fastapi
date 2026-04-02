@@ -1,5 +1,5 @@
 import datetime
-from datetime import timedelta
+
 from pathlib import Path
 
 import pytz
@@ -11,8 +11,8 @@ from aiogram.types import CallbackQuery, Message
 from backend.core.interfaces.advertisement import AdvertisementForReportDTO
 from celery_tasks.tasks import (
     fill_report,
-    # remind_agent_to_update_advertisement_extended,
     send_message_by_queue,
+    fill_agent_report,
 )
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
@@ -32,7 +32,6 @@ from tgbot.misc.user_states import (
     AdvertisementModerationState,
 )
 
-# from tgbot.scheduler.main import scheduler
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.messages import (
     advertisement_reminder_message,
@@ -51,7 +50,6 @@ router = Router()
 router.message.filter(RoleFilter(role="group_director"))
 router.callback_query.filter(RoleFilter(role="group_director"))
 
-# path to folder for uploading images
 upload_dir = Path("media")
 upload_dir.mkdir(parents=True, exist_ok=True)
 
@@ -76,9 +74,7 @@ async def start(message: Message, repo: "RequestsRepo"):
 
 
 @router.callback_query(F.data == "rg_realtors")
-async def get_realtors(
-    call: CallbackQuery,
-):
+async def get_realtors(call: CallbackQuery):
     await call.answer()
 
     await call.message.edit_text(
@@ -287,6 +283,14 @@ async def process_moderation_confirm(
         operation_type=operation_type,
         data=advertisement_data,
     )
+
+    sheet_link = (
+        user.spreadsheet_rent_url
+        if operation_type == "Аренда"
+        else user.spreadsheet_buy_url
+    )
+
+    fill_agent_report.delay(month=month, data=advertisement_data, sheet_link=sheet_link)
 
     # получаем все неотправленные объявления из очереди
     not_sent_advertisements = (

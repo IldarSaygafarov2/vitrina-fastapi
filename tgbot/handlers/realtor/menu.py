@@ -13,6 +13,7 @@ from tgbot.keyboards.user.inline import (
     operation_type_kb,
     realtor_advertisements_kb,
     realtor_start_kb,
+    return_home_kb,
 )
 from tgbot.misc.user_states import AdvertisementCreationState
 from tgbot.templates.advertisement_creation import (
@@ -44,6 +45,20 @@ async def start(message: Message, repo: RequestsRepo, state: FSMContext):
         f"Привет, {username.title()}",
         reply_markup=realtor_start_kb(realtor_chat_id=chat_id),
     )
+
+
+@router.callback_query(F.data.startswith("show_spreadsheets"))
+async def show_spreadsheets(call: CallbackQuery, repo: RequestsRepo):
+    agent_chat_id = int(call.data.split(":")[-1])
+
+    agent = await repo.users.get_user_by_chat_id(tg_chat_id=agent_chat_id)
+
+    message = f"""Ссылки на таблицы отчетности:
+1) <a href="{agent.spreadsheet_rent_url}">Аренда</a>
+2) <a href="{agent.spreadsheet_buy_url}">Продажа</a>
+"""
+
+    await call.message.edit_text(text=message, reply_markup=return_home_kb())
 
 
 @router.callback_query(F.data.startswith("create_advertisement"))

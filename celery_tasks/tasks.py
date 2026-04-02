@@ -36,17 +36,16 @@ def fill_report(month: int, data: dict, operation_type: str):
     time.sleep(2)
 
 
-# @celery_app_dev.task
-# def generate_rows_and_worksheets_in_spreadsheet(spreadsheets_links: list):
-#     client = get_oauth_user()
-
-#     for spreadsheet_link in spreadsheets_links:
-#         spreadsheet = get_table_by_url(client, spreadsheet_link)
-#         create_worksheets(spreadsheet, list(MONTHS_DICT.values()))
-#         add_row_titles(spreadsheet, list(ROW_FIELDS.values()))
-#         time.sleep(10)
-# create_worksheets(spreadsheet_rent, list(MONTHS_DICT.values()))
-# add_row_titles(spreadsheet_rent, list(ROW_FIELDS.values()))
+@celery_app_dev.task
+def fill_agent_report(
+    month: int,
+    data: dict,
+    sheet_link: str,
+):
+    client = get_oauth_user()
+    spreadsheet = get_table_by_url(client, url=sheet_link)
+    fill_row_with_data(spreadsheet, worksheet_name=MONTHS_DICT[month], data=data)
+    time.sleep(2)
 
 
 @celery_app_dev.task
