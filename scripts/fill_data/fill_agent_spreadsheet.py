@@ -1,17 +1,21 @@
 import asyncio
+import json
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config.loader import load_config
+from config.loader import FRONTEND_ADVERTISEMENT_URL, load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
+from infrastructure.utils.helpers import (
+    generate_item_for_sheet_table,
+    get_month_from_datetime_str,
+)
+from tgbot.misc.constants import MONTHS_DICT
 from tgbot.utils.google_sheet import (
     fill_row_with_data,
     get_oauth_user,
     get_table_by_url,
 )
-from tgbot.utils.helpers import get_month_from_datetime_str
-
-from tgbot.misc.constants import MONTHS_DICT
 
 config = load_config(".env")
 
@@ -32,7 +36,6 @@ config = load_config(".env")
 
 """
 
-FRONTEND_ADVERTISEMENT_URL = "https://ivitrina-nedvizhimosti.com/apartament/{id}"
 
 client = get_oauth_user()
 
@@ -54,20 +57,7 @@ async def fill_agent_spreadsheet(session: AsyncSession):
         data[agent.tg_username]["buy_items"] = []
 
         for item in items:
-            item_data = {
-                "название": item.name,
-                "район": item.district.name,
-                "тип недвижимости": item.property_type.value,
-                "ремонт": item.repair_type.value,
-                "адрес": item.address,
-                "к/э/э": f"{item.rooms_quantity}/{item.floor_from}/{item.floor_to}",
-                "квадратура": item.quadrature,
-                "пользователь": item.user.fullname,
-                "статус модерации": item.is_moderated,
-                "дата добавления": item.created_at.strftime("%d.%m.%Y %H:%M:%S"),
-                "уникальный ID": item.unique_id,
-                "ссылка на сайт": FRONTEND_ADVERTISEMENT_URL.format(id=item.id),
-            }
+            item_data = generate_item_for_sheet_table(item)
             operation_type = item.operation_type.value
 
             if operation_type == "Аренда":
@@ -82,16 +72,20 @@ async def fill_agent_spreadsheet(session: AsyncSession):
         rent_table = get_table_by_url(client, url=agent_data["rent_url"])
         buy_table = get_table_by_url(client, url=agent_data["buy_url"])
 
-        for rent_item in agent_data["rent_items"]:
+        for rent_idx, rent_item in enumerate(agent_data["rent_items"], start=1):
             month = get_month_from_datetime_str(rent_item["дата добавления"])
+            print(f"Adding rent item #{rent_idx}")
             fill_row_with_data(rent_table, MONTHS_DICT[month], data=rent_item)
-            await asyncio.sleep(5)
+            await asyncio.sleep(1.5)
 
-        for buy_item in agent_data["buy_items"]:
+        for buy_idx, buy_item in enumerate(agent_data["buy_items"], start=1):
             month = get_month_from_datetime_str(buy_item["дата добавления"])
+            print(f"Adding rent item #{buy_idx}")
             fill_row_with_data(buy_table, MONTHS_DICT[month], data=buy_item)
-            await asyncio.sleep(5)
+            await asyncio.sleep(1.5)
 
+    with open("agents_data.json", mode="w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
     print("Done")
 
 

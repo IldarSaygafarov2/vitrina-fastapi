@@ -10,6 +10,8 @@ from .tg_config import TgBot, TgSuperGroupConfig
 from .reminder_config import ReminderConfig
 from .redis_config import RedisConfig
 
+FRONTEND_ADVERTISEMENT_URL = "https://ivitrina-nedvizhimosti.com/apartament/{id}"
+
 
 @dataclass
 class Config:
