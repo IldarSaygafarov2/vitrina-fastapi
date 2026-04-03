@@ -68,19 +68,19 @@ async def fill_agent_spreadsheet(session: AsyncSession):
         data[agent.tg_username]["rent_url"] = agent.spreadsheet_rent_url
         data[agent.tg_username]["buy_url"] = agent.spreadsheet_buy_url
 
-    for _, agent_data in data.items():
+    for agent_username, agent_data in data.items():
         rent_table = get_table_by_url(client, url=agent_data["rent_url"])
         buy_table = get_table_by_url(client, url=agent_data["buy_url"])
 
         for rent_idx, rent_item in enumerate(agent_data["rent_items"], start=1):
             month = get_month_from_datetime_str(rent_item["дата добавления"])
-            print(f"Adding rent item #{rent_idx}")
+            print(f"Adding rent item #{rent_idx}\nAgent: {agent_username}")
             fill_row_with_data(rent_table, MONTHS_DICT[month], data=rent_item)
             await asyncio.sleep(1.5)
 
         for buy_idx, buy_item in enumerate(agent_data["buy_items"], start=1):
             month = get_month_from_datetime_str(buy_item["дата добавления"])
-            print(f"Adding rent item #{buy_idx}")
+            print(f"Adding rent item #{buy_idx}\nAgent: {agent_username}")
             fill_row_with_data(buy_table, MONTHS_DICT[month], data=buy_item)
             await asyncio.sleep(1.5)
 
