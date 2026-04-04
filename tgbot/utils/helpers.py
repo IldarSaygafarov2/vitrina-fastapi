@@ -1,5 +1,5 @@
 import shutil
-from datetime import datetime, timedelta, time
+from datetime import datetime, time, timedelta
 from pathlib import Path
 
 import pytz
@@ -7,10 +7,12 @@ from aiogram import Bot
 from aiogram.types import InputMediaPhoto
 
 from backend.app.config import config
+from backend.core.interfaces.advertisement import AdvertisementForReportDTO
 from backend.core.interfaces.category import CategoryShortDTO
 from infrastructure.database.models import Advertisement
 from infrastructure.database.models.user import User
 from infrastructure.database.repo.requests import RequestsRepo
+from tgbot.misc.constants import CATEGORIES_DICT
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.messages import (
     buy_channel_advertisement_message,
@@ -210,3 +212,16 @@ async def get_user_not_actual_advertisements_by_date(date: str, repo: "RequestsR
         )
         result[user.tg_chat_id] = advertisements
     return result
+
+
+def prepart_data_for_report(advertisement: Advertisement):
+    advertisement_data = AdvertisementForReportDTO.model_validate(
+        advertisement,
+        from_attributes=True,
+    ).model_dump()
+
+    advertisement_data["category"]["name"] = CATEGORIES_DICT.get(
+        advertisement_data["category"]["id"]
+    )
+    advertisement_data = correct_advertisement_dict(advertisement_data)
+    return advertisement_data

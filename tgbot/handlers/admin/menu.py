@@ -45,6 +45,7 @@ from tgbot.utils.helpers import (
     get_media_group,
     correct_advertisement_dict,
     serialize_media_group,
+    prepart_data_for_report,
 )
 
 router = Router()
@@ -240,9 +241,10 @@ async def process_moderation_confirm(
     advertisement_id = int(call.data.split(":")[-1])
 
     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
-    reminder_delta = config.reminder_config.get_reminder_timedelta(
-        advertisement.operation_type.value
-    )
+    operation_type = advertisement.operation_type.value
+
+    reminder_delta = config.reminder_config.get_reminder_timedelta(operation_type)
+
     reminder_time = (datetime.datetime.now() + reminder_delta).date()
 
     advertisement = await repo.advertisements.update_advertisement(
@@ -251,7 +253,6 @@ async def process_moderation_confirm(
         reminder_time=reminder_time,
     )
 
-    operation_type = advertisement.operation_type.value
     photos = [obj.tg_image_hash for obj in advertisement.images]
 
     user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
@@ -263,15 +264,7 @@ async def process_moderation_confirm(
 
     month = datetime.datetime.now().month
 
-    advertisement_data = AdvertisementForReportDTO.model_validate(
-        advertisement,
-        from_attributes=True,
-    ).model_dump()
-
-    advertisement_data["category"]["name"] = CATEGORIES_DICT.get(
-        advertisement_data["category"]["id"]
-    )
-    advertisement_data = correct_advertisement_dict(advertisement_data)
+    advertisement_data = prepart_data_for_report(advertisement)
 
     if operation_type == "Покупка":
         await call.bot.send_media_group(
@@ -446,7 +439,29 @@ async def process_moderation_deny(
         advertisement = await repo.advertisements.update_advertisement(
             advertisement_id=advertisement_id, is_moderated=False
         )
+        operation_type = advertisement.operation_type.value
+
         user = await repo.users.get_user_by_id(user_id=advertisement.user_id)
+
+        advertisement_data = prepart_data_for_report(advertisement)
+
+        month = datetime.datetime.now().month
+
+        fill_report.delay(
+            month=month,
+            operation_type=operation_type,
+            data=advertisement_data,
+        )
+
+        sheet_link = (
+            user.spreadsheet_rent_url
+            if operation_type == "Аренда"
+            else user.spreadsheet_buy_url
+        )
+
+        fill_agent_report.delay(
+            month=month, data=advertisement_data, sheet_link=sheet_link
+        )
 
         await state.update_data(user=user, advertisement=advertisement)
         await state.set_state(AdvertisementModerationState.message)
