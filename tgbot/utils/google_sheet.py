@@ -1,7 +1,9 @@
 import time
 
-from gspread import Client, Spreadsheet, service_account
 import gspread
+from gspread import Client, Spreadsheet, service_account
+
+from tgbot.misc.constants import ROW_FIELDS_V2
 
 from backend.app.config import config
 
@@ -62,7 +64,9 @@ def fill_row_with_data(spread: Spreadsheet, worksheet_name: str, data: dict):
 
 def get_sheet_values(spread: Spreadsheet, worksheet_name: str):
     worksheet = spread.worksheet(worksheet_name)
-    return worksheet.get_all_records()
+    return worksheet.get_all_records(
+        expected_headers=list(map(str.title, ROW_FIELDS_V2))
+    )
 
 
 # def main() -> None:

@@ -15,6 +15,25 @@ from .base import BaseRepo
 
 
 class AdvertisementRepo(BaseRepo):
+    async def get_user_advertisements_by_month(
+        self, user_id: int, month: int, operation_type: str
+    ):
+        # TODO: поменять данный метод, убрать дубликаты
+        query = (
+            select(Advertisement)
+            .filter(func.extract("month", Advertisement.created_at) == month)
+            .where(Advertisement.user_id == user_id)
+            .where(Advertisement.operation_type == operation_type)
+            .options(
+                selectinload(Advertisement.user),
+                selectinload(Advertisement.category),
+                selectinload(Advertisement.district),
+            )
+            .where(Advertisement.is_moderated == True)
+        )
+        result = await self.session.execute(query)
+        return result.scalars().all()
+
     async def get_advertisements_by_reminder_date(self, date_str: str, user_id: int):
         try:
             date_value: date = datetime.strptime(date_str, "%Y-%m-%d").date()
