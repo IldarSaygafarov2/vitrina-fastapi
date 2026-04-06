@@ -39,6 +39,7 @@ async def create_spreadsheet_for_group_directors(session):
 
         for agent in agents:
             if agent.spreadsheet_rent_url and agent.spreadsheet_buy_url:
+                print(f"Agent: {agent.fullname} already has spreadsheet")
                 continue
 
             spreadsheet_rent = user_account.create(f"Аренда-{agent.fullname}")
