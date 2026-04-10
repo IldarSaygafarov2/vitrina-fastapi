@@ -38,9 +38,9 @@ async def fill_unfilled_data(session: AsyncSession):
 
     print(f'working with agent: {chosen_agent.get("fullname")}')
     if operation_type == "rent":
-        _fill_sheets_by_operation_type(rent_table_service, operation_type="rent")
+        await _fill_sheets_by_operation_type(rent_table_service, operation_type="rent")
     else:
-        _fill_sheets_by_operation_type(buy_table_service, operation_type="buy")
+        await _fill_sheets_by_operation_type(buy_table_service, operation_type="buy")
 
 
 async def main():
