@@ -28,8 +28,9 @@ async def fill_unfilled_data(session: AsyncSession):
     print(f'working with agent: {chosen_agent.get("fullname")}')
     for month in MONTHS_DICT.values():
         rent_table_service.add_missing_value_in_row(month, value="номер собственника")
+        await asyncio.sleep(2)
         buy_table_service.add_missing_value_in_row(month, value="номер собственника")
-        await asyncio.sleep(1.5)
+        await asyncio.sleep(2)
 
 
 async def main():
