@@ -1,7 +1,12 @@
-from datetime import datetime
 import random
+from datetime import datetime
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.loader import FRONTEND_ADVERTISEMENT_URL
+from infrastructure.database.models import User
+from infrastructure.database.repo.requests import RequestsRepo
+from tgbot.utils.google_sheet import get_sheet_values, get_table_by_url
 
 
 def generate_code():
@@ -37,3 +42,66 @@ def generate_item_for_sheet_table(item):
 def get_month_from_datetime_str(datetime_str: str) -> int:
     dt = datetime.strptime(datetime_str, "%d.%m.%Y %H:%M:%S")
     return dt.month
+
+
+def get_data_from_dict(key, data_dict: dict):
+    """Get data by key from dict."""
+    chosen_item = data_dict.get(key)
+    if chosen_item is None:
+        raise KeyError("key not found")
+    return chosen_item
+
+
+def generate_agents_fullnames_str(agents_data: dict) -> str:
+    result = ""
+
+    for agent_id, data in agents_data.items():
+        result += f"{agent_id}: {data['fullname']}\n"
+    return result
+
+
+def generate_agents_dict(agents_list: list[User]):
+    result = {}
+    for agent in agents_list:
+        result[agent.id] = {
+            "fullname": agent.fullname,
+            "rent_url": agent.spreadsheet_rent_url,
+            "buy_url": agent.spreadsheet_buy_url,
+        }
+    return result
+
+
+def get_current_sheet_data(client, table_url, sheet_name: str):
+    table = get_table_by_url(client, table_url)
+    data = get_sheet_values(table, sheet_name)
+    return data
+
+
+def get_missing_advertisements(sheet_advertisements, agent_advertisements):
+    missing_ids = []
+    sheet_advertisements_unique_ids = [
+        item.get("Уникальный Id") for item in sheet_advertisements
+    ]
+    agent_advertisements_unique_ids = [
+        int(item.get("уникальный ID")) for item in agent_advertisements
+    ]
+
+    for unique_id in agent_advertisements_unique_ids:
+        if unique_id not in sheet_advertisements_unique_ids:
+            missing_ids.append(unique_id)
+
+    return [
+        item
+        for item in agent_advertisements
+        if int(item.get("уникальный ID")) in missing_ids
+    ]
+
+
+async def get_chosen_agent(repo: RequestsRepo):
+    agents: list[User] = await repo.users.get_users_by_role(role="REALTOR")
+    agents_dict = generate_agents_dict(agents)
+    agents_fullname_str = generate_agents_fullnames_str(agents_dict)
+    print(agents_fullname_str)
+    agent_id = int(input("write agent id: "))
+    chosen_agent = get_data_from_dict(agent_id, agents_dict)
+    return chosen_agent
