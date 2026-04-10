@@ -94,6 +94,7 @@ ROW_FIELDS_V2 = [
     "дата добавления",
     "уникальный ID",
     "ссылка на сайт",
+    "номер собственника",
 ]
 
 MONTHS_DICT = {
@@ -113,3 +114,5 @@ MONTHS_DICT = {
 
 
 CATEGORIES_DICT = {1: "Квартиры", 2: "Коммерческая", 3: "Первичка", 4: "Дома"}
+
+FRONTEND_ADVERTISEMENT_URL = "https://ivitrina-nedvizhimosti.com/apartament/{id}"

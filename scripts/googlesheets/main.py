@@ -2,10 +2,10 @@ import asyncio
 
 import gspread
 
+from config.constants import MONTHS_DICT, ROW_FIELDS_V2
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
-from tgbot.misc.constants import MONTHS_DICT, ROW_FIELDS_V2
 from tgbot.utils.google_sheet import add_row_titles, create_worksheets
 
 config = load_config(".env")

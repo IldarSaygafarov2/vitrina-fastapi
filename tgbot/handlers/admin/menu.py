@@ -1,5 +1,4 @@
 import datetime
-
 from pathlib import Path
 
 import pytz
@@ -9,11 +8,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from backend.core.interfaces.advertisement import AdvertisementForReportDTO
-from celery_tasks.tasks import (
-    fill_report,
-    send_message_by_queue,
-    fill_agent_report,
-)
+from celery_tasks.tasks import fill_agent_report, fill_report, send_message_by_queue
+from config.constants import CATEGORIES_DICT
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
@@ -25,14 +21,11 @@ from tgbot.keyboards.admin.inline import (
     realtors_actions_kb,
     realtors_kb,
 )
-
 from tgbot.keyboards.user.inline import realtor_advertisements_kb, return_home_kb
-from tgbot.misc.constants import CATEGORIES_DICT
 from tgbot.misc.user_states import (
     AdvertisementDeletionState,
     AdvertisementModerationState,
 )
-
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.messages import (
     advertisement_reminder_message,
@@ -41,11 +34,11 @@ from tgbot.templates.messages import (
 from tgbot.templates.realtor_texts import get_realtor_info
 from tgbot.utils.helpers import (
     adjust_queue_send_time_to_allowed_window,
+    correct_advertisement_dict,
     get_channel_name_and_message_by_operation_type,
     get_media_group,
-    correct_advertisement_dict,
-    serialize_media_group,
     prepart_data_for_report,
+    serialize_media_group,
 )
 
 router = Router()

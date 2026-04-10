@@ -4,7 +4,7 @@ from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from infrastructure.database.models import Advertisement, AdvertisementImage, District
-from tgbot.misc.constants import (
+from config.constants import (
     ADVERTISEMENT_UPDATE_FIELDS,
     OPERATION_TYPE_MAPPING,
     PROPERTY_TYPE_MAPPING,

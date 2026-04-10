@@ -6,7 +6,7 @@ from celery_tasks.app import celery_app_dev
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
 from tgbot.keyboards.user.inline import actual_checking_kb, is_advertisement_actual_kb
-from tgbot.misc.constants import MONTHS_DICT, ROW_FIELDS
+from config.constants import MONTHS_DICT
 from tgbot.utils.google_sheet import (
     add_row_titles,
     client_init_json,

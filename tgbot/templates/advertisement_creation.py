@@ -1,5 +1,5 @@
 from infrastructure.database.models import Advertisement
-from tgbot.misc.constants import CATEGORIES_DICT
+from config.constants import CATEGORIES_DICT
 
 
 def choose_operation_type_text() -> str:

@@ -9,10 +9,10 @@ from aiogram.types import InputMediaPhoto
 from backend.app.config import config
 from backend.core.interfaces.advertisement import AdvertisementForReportDTO
 from backend.core.interfaces.category import CategoryShortDTO
+from config.constants import CATEGORIES_DICT
 from infrastructure.database.models import Advertisement
 from infrastructure.database.models.user import User
 from infrastructure.database.repo.requests import RequestsRepo
-from tgbot.misc.constants import CATEGORIES_DICT
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.messages import (
     buy_channel_advertisement_message,

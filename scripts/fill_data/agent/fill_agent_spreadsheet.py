@@ -3,14 +3,14 @@ import json
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config.loader import FRONTEND_ADVERTISEMENT_URL, load_config
+from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
 from infrastructure.utils.helpers import (
     generate_item_for_sheet_table,
     get_month_from_datetime_str,
 )
-from tgbot.misc.constants import MONTHS_DICT
+from config.constants import MONTHS_DICT
 from tgbot.utils.google_sheet import (
     fill_row_with_data,
     get_oauth_user,
@@ -18,23 +18,6 @@ from tgbot.utils.google_sheet import (
 )
 
 config = load_config(".env")
-
-"""
-
-название
-район
-тип недвижимости
-ремонт
-адрес
-цена
-(кол-во комнат/этаж/этажность)
-квадратура
-пользователь
-статус модерации
-дата добавления
-уникальный ID
-
-"""
 
 
 client = get_oauth_user()

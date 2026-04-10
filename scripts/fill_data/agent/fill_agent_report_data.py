@@ -7,7 +7,7 @@ from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
 from infrastructure.database.models import User
-from tgbot.misc.constants import MONTHS_DICT
+from config.constants import MONTHS_DICT
 from tgbot.utils.google_sheet import (
     fill_row_with_data,
     get_oauth_user,

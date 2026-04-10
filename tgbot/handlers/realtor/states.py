@@ -5,6 +5,14 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from config.constants import (
+    OPERATION_TYPE_MAPPING,
+    OPERATION_TYPE_MAPPING_UZ,
+    PROPERTY_TYPE_MAPPING,
+    PROPERTY_TYPE_MAPPING_UZ,
+    REPAIR_TYPE_MAPPING,
+    REPAIR_TYPE_MAPPING_UZ,
+)
 from config.loader import load_config
 from infrastructure.database.models.advertisement import (
     OperationType,
@@ -24,14 +32,6 @@ from tgbot.keyboards.user.inline import (
     property_type_kb,
     repair_type_kb,
 )
-from tgbot.misc.constants import (
-    OPERATION_TYPE_MAPPING,
-    OPERATION_TYPE_MAPPING_UZ,
-    PROPERTY_TYPE_MAPPING,
-    PROPERTY_TYPE_MAPPING_UZ,
-    REPAIR_TYPE_MAPPING,
-    REPAIR_TYPE_MAPPING_UZ,
-)
 from tgbot.misc.user_states import AdvertisementCreationState
 from tgbot.templates.advertisement_creation import (
     choose_category_text,
@@ -47,11 +47,11 @@ from tgbot.templates.advertisement_creation import (
     realtor_advertisement_completed_text,
 )
 from tgbot.utils.helpers import (
+    convert_categories_from_db,
     download_advertisement_photo,
     filter_digits,
     get_media_group,
     send_error_message_to_dev,
-    convert_categories_from_db,
 )
 from tgbot.utils.image_checker import get_image_hash_hex
 
@@ -65,9 +65,9 @@ config = load_config()
 
 @router.callback_query(F.data.startswith("operation_type"))
 async def get_operation_type_set_category(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
 ):
     unique_code = await get_unique_code(repo)
 
@@ -89,9 +89,9 @@ async def get_operation_type_set_category(
 
 @router.callback_query(F.data.startswith("chosen_category"))
 async def get_category_set_photos_quantity(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
 ):
     await call.answer()
 
@@ -109,8 +109,8 @@ async def get_category_set_photos_quantity(
 
 @router.message(AdvertisementCreationState.preview)
 async def get_preview(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     photo_id = message.photo[-1].file_id
     await message.answer("Напишите сколько фотографий будет у объявления")
@@ -120,8 +120,8 @@ async def get_preview(
 
 @router.message(AdvertisementCreationState.photos_quantity)
 async def get_photos_quantity_set_get_photos(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     state_data = await state.get_data()
 
@@ -142,8 +142,8 @@ async def get_photos_quantity_set_get_photos(
 
 @router.message(AdvertisementCreationState.photos)
 async def get_photos_set_title(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     current_state = await state.get_data()
 
@@ -172,8 +172,8 @@ async def get_photos_set_title(
 
 @router.message(AdvertisementCreationState.title)
 async def get_title_set_description(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     state_data = await state.get_data()
 
@@ -185,8 +185,8 @@ async def get_title_set_description(
 
 @router.message(AdvertisementCreationState.title_uz)
 async def get_title_uz(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         data = await state.get_data()
@@ -205,8 +205,8 @@ async def get_title_uz(
 
 @router.message(AdvertisementCreationState.description)
 async def get_description_set_description_uz(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         current_data = await state.get_data()
@@ -236,8 +236,8 @@ async def get_description_set_description_uz(
 
 @router.message(AdvertisementCreationState.description_uz)
 async def get_description_uz(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         data = await state.get_data()
@@ -270,9 +270,9 @@ async def get_description_uz(
 
 @router.message(AdvertisementCreationState.owner_phone_number)
 async def get_owner_phone_number(
-        message: Message,
-        repo: "RequestsRepo",
-        state: FSMContext,
+    message: Message,
+    repo: "RequestsRepo",
+    state: FSMContext,
 ):
     try:
         districts = await repo.districts.get_districts()
@@ -297,9 +297,9 @@ async def get_owner_phone_number(
     AdvertisementCreationState.district,
 )
 async def get_district_set_address(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
 ):
     await call.answer()
 
@@ -327,8 +327,8 @@ async def get_district_set_address(
 
 @router.message(AdvertisementCreationState.address)
 async def get_address(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -350,8 +350,8 @@ async def get_address(
 
 @router.message(AdvertisementCreationState.address_uz)
 async def get_address_uz(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -376,8 +376,8 @@ async def get_address_uz(
     AdvertisementCreationState.property_type,
 )
 async def get_property_type(
-        call: CallbackQuery,
-        state: FSMContext,
+    call: CallbackQuery,
+    state: FSMContext,
 ):
     await call.answer()
 
@@ -415,8 +415,8 @@ async def get_property_type(
 
 @router.message(AdvertisementCreationState.creation_year)
 async def get_creation_year(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -440,8 +440,8 @@ async def get_creation_year(
 
 @router.message(AdvertisementCreationState.price)
 async def get_price(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -465,8 +465,8 @@ async def get_price(
 
 @router.message(AdvertisementCreationState.rooms_quantity)
 async def get_rooms_to(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -501,8 +501,8 @@ async def get_rooms_to(
 
 @router.message(AdvertisementCreationState.house_quadrature_from)
 async def get_house_quadrature_from(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -527,8 +527,8 @@ async def get_house_quadrature_from(
 
 @router.message(AdvertisementCreationState.house_quadrature_to)
 async def get_house_quadrature_to(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -553,8 +553,8 @@ async def get_house_quadrature_to(
 
 @router.message(AdvertisementCreationState.quadrature)
 async def get_quadrature(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -578,8 +578,8 @@ async def get_quadrature(
 
 @router.message(AdvertisementCreationState.floor_from)
 async def get_floor_from(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -603,8 +603,8 @@ async def get_floor_from(
 
 @router.message(AdvertisementCreationState.floor_to)
 async def get_floor_to(
-        message: Message,
-        state: FSMContext,
+    message: Message,
+    state: FSMContext,
 ):
     try:
         state_data = await state.get_data()
@@ -632,9 +632,9 @@ async def get_floor_to(
     AdvertisementCreationState.repair_type,
 )
 async def get_repair_type(
-        call: CallbackQuery,
-        repo: "RequestsRepo",
-        state: FSMContext,
+    call: CallbackQuery,
+    repo: "RequestsRepo",
+    state: FSMContext,
 ):
     await call.answer()
 
@@ -771,8 +771,8 @@ async def get_repair_type(
         for director in group_directors:
             try:
                 if (
-                        director.tg_chat_id
-                        and director.tg_chat_id == new_advertisement.user.added_by
+                    director.tg_chat_id
+                    and director.tg_chat_id == new_advertisement.user.added_by
                 ):
                     realtor_fullname = f"{new_advertisement.user.first_name} {new_advertisement.user.lastname}"
                     await call.bot.send_message(

@@ -1,9 +1,7 @@
 import random
 from datetime import datetime
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from config.loader import FRONTEND_ADVERTISEMENT_URL
+from config.constants import FRONTEND_ADVERTISEMENT_URL
 from infrastructure.database.models import User
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.utils.google_sheet import get_sheet_values, get_table_by_url

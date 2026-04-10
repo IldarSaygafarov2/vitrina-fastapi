@@ -3,7 +3,7 @@ import time
 import gspread
 from gspread import Client, Spreadsheet, service_account
 
-from tgbot.misc.constants import ROW_FIELDS_V2
+from config.constants import ROW_FIELDS_V2
 
 from backend.app.config import config
 
