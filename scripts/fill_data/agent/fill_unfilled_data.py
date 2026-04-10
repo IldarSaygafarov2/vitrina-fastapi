@@ -15,6 +15,14 @@ config = load_config(".env")
 user_account = get_oauth_user()
 
 
+async def _fill_sheets_by_operation_type(table_service, operation_type):
+    for month in MONTHS_DICT.values():
+        table_service.add_missing_value_in_row(
+            month, value="номер собственника", operation_type=operation_type
+        )
+        await asyncio.sleep(2)
+
+
 async def fill_unfilled_data(session: AsyncSession):
     repo = RequestsRepo(session)
 
@@ -25,12 +33,14 @@ async def fill_unfilled_data(session: AsyncSession):
     rent_table_service = GoogleSheetService(table=rent_table)
     buy_table_service = GoogleSheetService(table=buy_table)
 
+    print("Write operation type: rent, buy")
+    operation_type = input("operation type: ").lower()
+
     print(f'working with agent: {chosen_agent.get("fullname")}')
-    for month in MONTHS_DICT.values():
-        rent_table_service.add_missing_value_in_row(month, value="номер собственника")
-        await asyncio.sleep(2)
-        buy_table_service.add_missing_value_in_row(month, value="номер собственника")
-        await asyncio.sleep(2)
+    if operation_type == "rent":
+        _fill_sheets_by_operation_type(rent_table_service, operation_type="rent")
+    else:
+        _fill_sheets_by_operation_type(buy_table_service, operation_type="buy")
 
 
 async def main():
