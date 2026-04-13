@@ -112,6 +112,8 @@ MONTHS_DICT = {
     12: "Декабрь",
 }
 
+MONTHS_DICT_REVERSED = {v: k for k, v in MONTHS_DICT.items()}
+
 
 CATEGORIES_DICT = {1: "Квартиры", 2: "Коммерческая", 3: "Первичка", 4: "Дома"}
 

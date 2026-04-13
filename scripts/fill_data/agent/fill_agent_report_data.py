@@ -3,24 +3,23 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config.constants import MONTHS_DICT
 from config.loader import load_config
+from infrastructure.database.models import User
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
-from infrastructure.database.models import User
-from config.constants import MONTHS_DICT
+from infrastructure.utils.helpers import (
+    generate_agents_dict,
+    generate_agents_fullnames_str,
+    generate_item_for_sheet_table,
+    get_current_sheet_data,
+    get_data_from_dict,
+    get_missing_advertisements,
+)
 from tgbot.utils.google_sheet import (
     fill_row_with_data,
     get_oauth_user,
     get_table_by_url,
-    get_sheet_values,
-)
-from infrastructure.utils.helpers import generate_item_for_sheet_table
-from infrastructure.utils.helpers import (
-    get_data_from_dict,
-    generate_agents_dict,
-    generate_agents_fullnames_str,
-    get_current_sheet_data,
-    get_missing_advertisements,
 )
 
 config = load_config(".env")

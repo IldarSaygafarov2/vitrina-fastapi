@@ -16,9 +16,11 @@ from .base import BaseRepo
 
 class AdvertisementRepo(BaseRepo):
     async def get_user_advertisements_by_month(
-        self, user_id: int, month: int, operation_type: str
+        self,
+        user_id: int,
+        month: int,
+        operation_type: str,
     ):
-        # TODO: поменять данный метод, убрать дубликаты
         query = (
             select(Advertisement)
             .filter(func.extract("month", Advertisement.created_at) == month)

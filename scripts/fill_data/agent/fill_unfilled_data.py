@@ -18,7 +18,8 @@ user_account = get_oauth_user()
 async def _fill_sheets_by_operation_type(table_service, operation_type):
     for month in MONTHS_DICT.values():
         table_service.add_missing_value_in_row(
-            month, value="номер собственника", operation_type=operation_type
+            month,
+            value="номер собственника",
         )
         await asyncio.sleep(2)
 

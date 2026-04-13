@@ -1,8 +1,8 @@
 import random
 from datetime import datetime
 
-from config.constants import FRONTEND_ADVERTISEMENT_URL
-from infrastructure.database.models import User
+from config.constants import FRONTEND_ADVERTISEMENT_URL, MONTHS_DICT
+from infrastructure.database.models import User, Advertisement
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.utils.google_sheet import get_sheet_values, get_table_by_url
 
@@ -20,7 +20,7 @@ async def get_unique_code(repo):
             return code
 
 
-def generate_item_for_sheet_table(item):
+def generate_item_for_sheet_table(item: Advertisement):
     return {
         "название": item.name,
         "район": item.district.name,
@@ -34,6 +34,7 @@ def generate_item_for_sheet_table(item):
         "дата добавления": item.created_at.strftime("%d.%m.%Y %H:%M:%S"),
         "уникальный ID": item.unique_id,
         "ссылка на сайт": FRONTEND_ADVERTISEMENT_URL.format(id=item.id),
+        "номер собственника": item.owner_phone_number,
     }
 
 
@@ -65,6 +66,7 @@ def generate_agents_dict(agents_list: list[User]):
             "fullname": agent.fullname,
             "rent_url": agent.spreadsheet_rent_url,
             "buy_url": agent.spreadsheet_buy_url,
+            "agent_id": agent.id,
         }
     return result
 
@@ -103,3 +105,11 @@ async def get_chosen_agent(repo: RequestsRepo):
     agent_id = int(input("write agent id: "))
     chosen_agent = get_data_from_dict(agent_id, agents_dict)
     return chosen_agent
+
+
+def get_chosen_month():
+    enum_months = "\n".join([f"{idx}. {month}" for idx, month in MONTHS_DICT.items()])
+    print(enum_months)
+    month_number = int(input("write month number: "))
+    chosen_month = get_data_from_dict(month_number, MONTHS_DICT)
+    return chosen_month
