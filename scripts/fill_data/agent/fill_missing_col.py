@@ -1,5 +1,5 @@
 import asyncio
-import pprint
+from pprint import pprint
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,10 +37,9 @@ async def fill_missing_col(session: AsyncSession):
 
     # google spreadsheet service
     spreadsheet = get_table_by_url(user_account, table_url)
-    sheet_service = GoogleSheetService(table=spreadsheet)
 
     for month, month_number in MONTHS_DICT_REVERSED.items():
-        print(f"Filling data for month: '{month}'")
+        print(f"working with: '{month}'")
         agent_advertisements = (
             await repo.advertisements.get_user_advertisements_by_month(
                 user_id=chosen_agent.get("agent_id"),
@@ -50,44 +49,12 @@ async def fill_missing_col(session: AsyncSession):
         )
         # сконвертированные в словарь объявления
         agent_advertisements = [
-            generate_item_for_sheet_table(item) for item in agent_advertisements
-        ]
-        agent_sheet_advertisements, _ = sheet_service.get_sheet_values(month)
-        sheet_advs_ids = [
-            item.get("Уникальный Id") for item in agent_sheet_advertisements
-        ]
-        print(sheet_advs_ids)
-
-        advertisements = [
-            item
+            list(generate_item_for_sheet_table(item).values())
             for item in agent_advertisements
-            if int(item.get("уникальный ID")) in sheet_advs_ids
         ]
-        print(advertisements, len(advertisements))
-        # уникальный ID
-        # Уникальный Id
-
-        return
-        if not agent_advertisements:
-            continue
-
-        owners_phones = [adv.get("номер собственника") for adv in agent_advertisements]
-        sheet_service.bulk_update_cells(
-            month,
-            owners_phones,
-            col_number=len(ROW_FIELDS_V2),
-        )
+        spreadsheet.worksheet(month).delete_rows(2, 1000)
+        spreadsheet.worksheet(month).insert_rows(agent_advertisements, row=2)
         await asyncio.sleep(2)
-
-        # _, month_total_sheet_values = sheet_service.get_sheet_values(month)
-
-        # for i in range(1, month_total_sheet_values + 1):
-
-        #     owner_number = agent_advertisements[i - 1].get("номер собственника")
-        #     sheet_service.add_missing_value_in_row(
-        #         month, owner_number, row_number=i + 1
-        #     )
-        #     await asyncio.sleep(3)
 
 
 async def main():

@@ -20,6 +20,7 @@ class AdvertisementRepo(BaseRepo):
         user_id: int,
         month: int,
         operation_type: str,
+        is_moderated: bool = True,
     ):
         query = (
             select(Advertisement)
@@ -31,7 +32,6 @@ class AdvertisementRepo(BaseRepo):
                 selectinload(Advertisement.category),
                 selectinload(Advertisement.district),
             )
-            .where(Advertisement.is_moderated == True)
         )
         result = await self.session.execute(query)
         return result.scalars().all()
