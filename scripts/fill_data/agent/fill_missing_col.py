@@ -52,6 +52,22 @@ async def fill_missing_col(session: AsyncSession):
         agent_advertisements = [
             generate_item_for_sheet_table(item) for item in agent_advertisements
         ]
+        agent_sheet_advertisements, _ = sheet_service.get_sheet_values(month)
+        sheet_advs_ids = [
+            item.get("Уникальный Id") for item in agent_sheet_advertisements
+        ]
+        print(sheet_advs_ids)
+
+        advertisements = [
+            item
+            for item in agent_advertisements
+            if int(item.get("уникальный ID")) in sheet_advs_ids
+        ]
+        print(advertisements, len(advertisements))
+        # уникальный ID
+        # Уникальный Id
+
+        return
         if not agent_advertisements:
             continue
 

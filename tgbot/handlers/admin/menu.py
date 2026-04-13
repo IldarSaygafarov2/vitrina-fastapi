@@ -12,6 +12,7 @@ from celery_tasks.tasks import fill_agent_report, fill_report, send_message_by_q
 from config.constants import CATEGORIES_DICT
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
+from infrastructure.utils.helpers import generate_item_for_sheet_table
 from tgbot.filters.role import RoleFilter
 from tgbot.keyboards.admin.inline import (
     admin_start_kb,
@@ -40,6 +41,7 @@ from tgbot.utils.helpers import (
     prepart_data_for_report,
     serialize_media_group,
 )
+
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -265,6 +267,7 @@ async def process_moderation_confirm(
             media=media_group,
         )
 
+    agent_advertisement_data = generate_item_for_sheet_table(advertisement)
     fill_report.delay(
         month=month,
         operation_type=operation_type,
@@ -277,7 +280,11 @@ async def process_moderation_confirm(
         else user.spreadsheet_buy_url
     )
 
-    fill_agent_report.delay(month=month, data=advertisement_data, sheet_link=sheet_link)
+    fill_agent_report.delay(
+        month=month,
+        data=agent_advertisement_data,
+        sheet_link=sheet_link,
+    )
 
     # получаем все неотправленные объявления из очереди
     not_sent_advertisements = (
