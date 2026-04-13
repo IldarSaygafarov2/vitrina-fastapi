@@ -3,7 +3,7 @@ from gspread.cell import Cell
 from gspread.spreadsheet import Spreadsheet
 
 from config.constants import ROW_FIELDS_V2
-from tgbot.utils.google_sheet import get_oauth_user, get_table_by_url
+from tgbot.utils.google_sheet import get_oauth_user
 
 user_account = get_oauth_user()
 

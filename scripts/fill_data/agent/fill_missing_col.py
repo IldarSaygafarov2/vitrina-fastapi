@@ -54,8 +54,14 @@ async def fill_missing_col(session: AsyncSession):
         ]
         if not agent_advertisements:
             continue
-        spreadsheet.worksheet(month).delete_rows(2, 1000)
-        spreadsheet.worksheet(month).insert_rows(agent_advertisements, row=2)
+
+        sheet = spreadsheet.worksheet(month)
+        headers = list(map(str.title, ROW_FIELDS_V2))
+        headers[-1] = headers[-1].capitalize()
+        records = sheet.get_all_records(expected_headers=headers)
+
+        sheet.delete_rows(2, len(records))
+        sheet.insert_rows(agent_advertisements, row=2)
         await asyncio.sleep(2)
 
 
