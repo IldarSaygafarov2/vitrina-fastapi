@@ -3,7 +3,7 @@ import pprint
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config.constants import MONTHS_DICT_REVERSED
+from config.constants import MONTHS_DICT_REVERSED, ROW_FIELDS_V2
 from config.loader import load_config
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
@@ -55,14 +55,23 @@ async def fill_missing_col(session: AsyncSession):
         if not agent_advertisements:
             continue
 
-        _, month_total_sheet_values = sheet_service.get_sheet_values(month)
-        for i in range(1, month_total_sheet_values + 1):
+        owners_phones = [adv.get("номер собственника") for adv in agent_advertisements]
+        sheet_service.bulk_update_cells(
+            month,
+            owners_phones,
+            col_number=len(ROW_FIELDS_V2),
+        )
+        await asyncio.sleep(2)
 
-            owner_number = agent_advertisements[i - 1].get("номер собственника")
-            sheet_service.add_missing_value_in_row(
-                month, owner_number, row_number=i + 1
-            )
-            await asyncio.sleep(3)
+        # _, month_total_sheet_values = sheet_service.get_sheet_values(month)
+
+        # for i in range(1, month_total_sheet_values + 1):
+
+        #     owner_number = agent_advertisements[i - 1].get("номер собственника")
+        #     sheet_service.add_missing_value_in_row(
+        #         month, owner_number, row_number=i + 1
+        #     )
+        #     await asyncio.sleep(3)
 
 
 async def main():

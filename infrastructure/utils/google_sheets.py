@@ -48,3 +48,12 @@ class GoogleSheetService:
         )
         self.table.worksheet(sheet_name).update_cells([cell_new_value])
         print(f"added missing value '{value}' to worksheet '{sheet_name}' ")
+
+    def bulk_update_cells(self, sheet_name: str, values, col_number):
+        """Множественное обновление пустых ячеек"""
+        cells_for_update = [
+            Cell(row=i + 1, col=col_number, value=value)
+            for i, value in enumerate(values, start=1)
+        ]
+        self.table.worksheet(sheet_name).update_cells(cells_for_update)
+        print(f"added values:", *values, f"to '{sheet_name}' ")
