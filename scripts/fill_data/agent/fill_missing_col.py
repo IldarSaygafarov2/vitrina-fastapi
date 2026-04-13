@@ -62,7 +62,7 @@ async def fill_missing_col(session: AsyncSession):
             sheet_service.add_missing_value_in_row(
                 month, owner_number, row_number=i + 1
             )
-            await asyncio.sleep(2)
+            await asyncio.sleep(3)
 
 
 async def main():

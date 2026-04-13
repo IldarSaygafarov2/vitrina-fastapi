@@ -47,4 +47,4 @@ class GoogleSheetService:
             value=value,
         )
         self.table.worksheet(sheet_name).update_cells([cell_new_value])
-        print(f"added missing value to worksheet '{sheet_name}' ")
+        print(f"added missing value '{value}' to worksheet '{sheet_name}' ")
