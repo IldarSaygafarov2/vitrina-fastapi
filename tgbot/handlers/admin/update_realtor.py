@@ -194,9 +194,18 @@ async def get_new_fullname(message: Message, repo: RequestsRepo, state: FSMConte
     realtor_id = data.pop("realtor_id")
     cur_message = data.pop("realtor_message")
 
+    fullname = message.text
+    if len(fullname.split()) == 2:
+        first_name, lastname = fullname.split()
+    else:
+        first_name = fullname.split()[0]
+        lastname = ""
+
     updated = await repo.users.update_user(
         user_id=realtor_id,
-        fullname=message.text,
+        first_name=first_name,
+        lastname=lastname,
+        fullname=fullname,
     )
     await cur_message.edit_caption(
         caption=get_realtor_info(updated),
