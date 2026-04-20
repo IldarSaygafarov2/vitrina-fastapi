@@ -1,19 +1,18 @@
-import asyncio
 import time
 
 from backend.app.config import config
+from backend.core.interfaces.channel_message import ChannelMessageSchema
 from celery_tasks.app import celery_app_dev
+from config.constants import MONTHS_DICT
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
+from infrastructure.utils.helpers import get_message_ids_for_unique_id
 from tgbot.keyboards.user.inline import actual_checking_kb, is_advertisement_actual_kb
-from config.constants import MONTHS_DICT
 from tgbot.utils.google_sheet import (
-    add_row_titles,
     client_init_json,
-    create_worksheets,
     fill_row_with_data,
-    get_table_by_url,
     get_oauth_user,
+    get_table_by_url,
 )
 from tgbot.utils.helpers import (
     deserialize_media_group,
@@ -169,3 +168,42 @@ def remind_agent_to_update_advertisement_by_date():
         await bot.session.close()
 
     asyncio.run(send_reminder())
+
+
+@celery_app_dev.task
+def delete_duplicated_channel_messages():
+    import asyncio
+
+    from aiogram import Bot
+
+    engine = create_engine(config.db)
+    session_pool = create_session_pool(engine=engine)
+    bot = Bot(token=config.tg_bot.token)
+
+    async def run_delete():
+        async with session_pool() as session:
+            repo = RequestsRepo(session)
+            channel_messages = await repo.channel_messages.get_all_channel_messages()
+
+        items = [
+            ChannelMessageSchema.model_validate(item, from_attributes=True).model_dump()
+            for item in channel_messages
+        ]
+        message_ids = get_message_ids_for_unique_id(items)
+
+        for key, value in message_ids.items():
+            if not value["items"] or len(value["items"]) < 2:
+                continue
+            for i in range(1, len(value["items"])):
+                item = value["items"][i]
+                channel_name = f'@{value["channel_name"]}'
+                await bot.delete_message(
+                    chat_id=channel_name,
+                    message_id=item,
+                )
+                await repo.channel_messages.delete_channel_message(message_id=item)
+
+        await bot.session.close()
+        await session.close()
+
+    asyncio.run(run_delete())

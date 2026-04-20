@@ -29,5 +29,9 @@ celery_app_dev.conf.beat_schedule = {
     "send_reminder": {
         "task": "celery_tasks.tasks.remind_agent_to_update_advertisement_by_date",
         "schedule": _beat_schedule,
-    }
+    },
+    "delete_duplicates": {
+        "task": "celery_tasks.tasks.delete_duplicated_channel_messages",
+        "schedule": crontab(minute="*/10"),
+    },
 }

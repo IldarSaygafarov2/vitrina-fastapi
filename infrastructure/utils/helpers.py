@@ -113,3 +113,17 @@ def get_chosen_month():
     month_number = int(input("write month number: "))
     chosen_month = get_data_from_dict(month_number, MONTHS_DICT)
     return chosen_month
+
+
+def get_message_ids_for_unique_id(channel_messages):
+    result = {}
+    for channel_message in channel_messages:
+        _id = channel_message["unique_id"]
+        result[_id] = {"items": [], "channel_name": ""}
+
+        for item in channel_messages:
+            if item["unique_id"] == _id:
+                result[_id]["items"].append(item["message_id"])
+                result[_id]["channel_name"] = item["channel_name"]
+
+    return result

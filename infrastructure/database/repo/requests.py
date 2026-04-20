@@ -3,11 +3,12 @@ from dataclasses import dataclass
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .advertisement import (
-    AdvertisementRepo,
     AdvertisementImageRepo,
     AdvertisementQueueRepo,
+    AdvertisementRepo,
 )
 from .category import CategoryRepo
+from .channel_message import ChannelMessageRepo
 from .consultation import ConsultationRepo
 from .district import DistrictRepo
 from .user import UserRepo
@@ -49,3 +50,7 @@ class RequestsRepo:
     @property
     def consultation(self) -> ConsultationRepo:
         return ConsultationRepo(self.session)
+
+    @property
+    def channel_messages(self) -> ChannelMessageRepo:
+        return ChannelMessageRepo(self.session)

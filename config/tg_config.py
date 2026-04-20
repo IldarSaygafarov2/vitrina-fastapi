@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from environs import Env
-import json
 
 
 @dataclass
@@ -23,7 +22,7 @@ class TgBot:
             base_channel_name=env.str("BASE_CHANNEL"),
             main_chat_id=env.int("MAIN_CHAT_ID"),
             test_main_chat_id=env.int("TEST_MAIN_CHAT_ID"),
-            supergroup_id=env.int("SUPERGROUP_ID")
+            supergroup_id=env.int("SUPERGROUP_ID"),
         )
 
 
@@ -41,36 +40,34 @@ class TgSuperGroupConfig:
     @staticmethod
     def from_env(env: Env) -> "TgSuperGroupConfig":
         return TgSuperGroupConfig(
-            rent_supergroup_id=env.str('RENT_SUPERGROUP_ID'),
-            buy_supergroup_id=env.str('BUY_SUPERGROUP_ID'),
-
-            rent_topic_thread_ids=env.str('RENT_TOPIC_THREAD_IDS'),
-            rent_topic_prices=env.str('RENT_TOPIC_PRICES'),
-
-            buy_topic_thread_ids=env.str('BUY_TOPIC_THREAD_IDS'),
-            buy_topic_prices=env.str('BUY_TOPIC_PRICES'),
+            rent_supergroup_id=env.str("RENT_SUPERGROUP_ID"),
+            buy_supergroup_id=env.str("BUY_SUPERGROUP_ID"),
+            rent_topic_thread_ids=env.str("RENT_TOPIC_THREAD_IDS"),
+            rent_topic_prices=env.str("RENT_TOPIC_PRICES"),
+            buy_topic_thread_ids=env.str("BUY_TOPIC_THREAD_IDS"),
+            buy_topic_prices=env.str("BUY_TOPIC_PRICES"),
         )
 
     def get_topic_thread_ids(self, topic_type: str):
-        if topic_type == 'Аренда':
-            return list(map(int, self.rent_topic_thread_ids.split('/')))
-        elif topic_type == 'Покупка':
-            return list(map(int, self.buy_topic_thread_ids.split('/')))
+        if topic_type == "Аренда":
+            return list(map(int, self.rent_topic_thread_ids.split("/")))
+        elif topic_type == "Покупка":
+            return list(map(int, self.buy_topic_thread_ids.split("/")))
         else:
-            raise ValueError(f'Invalid topic type: {topic_type}')
+            raise ValueError(f"Invalid topic type: {topic_type}")
 
     def get_topic_prices(self, topic_type: str):
         prices = []
-        if topic_type == 'Аренда':
-            prices = self.rent_topic_prices.split('/')
-        elif topic_type == 'Покупка':
-            prices = self.buy_topic_prices.split('/')
-        return [list(map(int, s.strip('[]').replace('_', '').split(', '))) for s in prices]
+        if topic_type == "Аренда":
+            prices = self.rent_topic_prices.split("/")
+        elif topic_type == "Покупка":
+            prices = self.buy_topic_prices.split("/")
+        return [
+            list(map(int, s.strip("[]").replace("_", "").split(", "))) for s in prices
+        ]
 
     def make_forum_topics_data(self, topic_type: str):
         thread_ids = self.get_topic_thread_ids(topic_type)
 
         prices = self.get_topic_prices(topic_type)
         return dict(zip(thread_ids, prices))
-
-
