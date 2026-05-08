@@ -39,9 +39,9 @@ from tgbot.utils.helpers import (
     get_channel_name_and_message_by_operation_type,
     get_media_group,
     prepart_data_for_report,
+    send_message_to_rent_topic,
     serialize_media_group,
 )
-
 
 router = Router()
 router.message.filter(RoleFilter(role="group_director"))
@@ -289,6 +289,13 @@ async def process_moderation_confirm(
     # получаем все неотправленные объявления из очереди
     not_sent_advertisements = (
         await repo.advertisement_queue.get_all_not_sent_advertisements()
+    )
+
+    await send_message_to_rent_topic(
+        bot=call.bot,
+        price=advertisement.price,
+        operation_type=operation_type,
+        media_group=media_group,
     )
 
     # Для локального теста: QUEUE_DEV_SIMULATE_TIME=20:58 симулирует последнюю отправку в 20:58 (Тшк)

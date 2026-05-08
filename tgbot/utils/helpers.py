@@ -82,6 +82,7 @@ async def send_message_to_rent_topic(
         await bot.send_media_group(
             chat_id=supergroup_id, message_thread_id=thread_id, media=media_group
         )
+    print("SENT TO SUPERGROUP")
 
 
 def correct_advertisement_dict(data: dict):
