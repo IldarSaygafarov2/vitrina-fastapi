@@ -23,8 +23,7 @@ routers_list = [
     realtor_actual_router,
     common_menu_router,
     update_router,
-    # channel router
-    channel_router,
+    # channel_router,
 ]
 
 
