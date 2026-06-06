@@ -287,9 +287,9 @@ async def process_moderation_confirm(
     )
 
     # получаем все неотправленные объявления из очереди
-    not_sent_advertisements = (
-        await repo.advertisement_queue.get_all_not_sent_advertisements()
-    )
+    # not_sent_advertisements = (
+    #     await repo.advertisement_queue.get_all_not_sent_advertisements()
+    # )
 
     await send_message_to_rent_topic(
         bot=call.bot,
@@ -298,76 +298,76 @@ async def process_moderation_confirm(
         media_group=media_group,
     )
 
-    # Для локального теста: QUEUE_DEV_SIMULATE_TIME=20:58 симулирует последнюю отправку в 20:58 (Тшк)
-    base_for_calc = None
-    if config.reminder_config.queue_dev_simulate_time:
-        try:
-            parts = config.reminder_config.queue_dev_simulate_time.strip().split(":")
-            h, m = int(parts[0]), int(parts[1]) if len(parts) > 1 else 0
-            tz = pytz.timezone("Asia/Tashkent")
-            today = datetime.datetime.now(tz).date()
-            local_dt = tz.localize(
-                datetime.datetime.combine(today, datetime.time(h, m))
-            )
-            base_for_calc = local_dt.astimezone(pytz.utc).replace(tzinfo=None)
-        except (ValueError, IndexError):
-            pass
+    # base_for_calc = None
 
-    if base_for_calc is not None:
-        raw_time = base_for_calc + datetime.timedelta(minutes=5)
-        time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
-        await repo.advertisement_queue.add_advertisement_to_queue(
-            advertisement_id=advertisement.id, time_to_send=time_to_send
-        )
-    elif not_sent_advertisements:
-        raw_time = not_sent_advertisements[-1].time_to_send + datetime.timedelta(
-            minutes=5
-        )
-        time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
-        await repo.advertisement_queue.add_advertisement_to_queue(
-            advertisement_id=advertisement.id, time_to_send=time_to_send
-        )
-    else:
-        raw_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-        time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
-        await repo.advertisement_queue.add_advertisement_to_queue(
-            advertisement_id=advertisement.id, time_to_send=time_to_send
-        )
+    # if base_for_calc is not None:
+    #     raw_time = base_for_calc + datetime.timedelta(minutes=5)
+    #     time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
+    #     await repo.advertisement_queue.add_advertisement_to_queue(
+    #         advertisement_id=advertisement.id, time_to_send=time_to_send
+    #     )
+    # elif not_sent_advertisements:
+    #     raw_time = not_sent_advertisements[-1].time_to_send + datetime.timedelta(
+    #         minutes=5
+    #     )
+    #     time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
+    #     await repo.advertisement_queue.add_advertisement_to_queue(
+    #         advertisement_id=advertisement.id, time_to_send=time_to_send
+    #     )
+    # else:
+    #     raw_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
+    #     time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
+    #     await repo.advertisement_queue.add_advertisement_to_queue(
+    #         advertisement_id=advertisement.id, time_to_send=time_to_send
+    #     )
 
-    send_message_by_queue.apply_async(
-        args=[
-            advertisement.id,
-            advertisement.price,
-            serialize_media_group(media_group),
-            operation_type,
-            channel_name,
-            user.tg_chat_id,
-            call.message.chat.id,
-        ],
-        eta=time_to_send,
+    # send_message_by_queue.apply_async(
+    #     args=[
+    #         advertisement.id,
+    #         advertisement.price,
+    #         serialize_media_group(media_group),
+    #         operation_type,
+    #         channel_name,
+    #         user.tg_chat_id,
+    #         call.message.chat.id,
+    #     ],
+    #     eta=time_to_send,
+    # )
+    await send_message_to_rent_topic(
+        bot=call.bot,
+        price=advertisement.price,
+        media_group=media_group,
+        operation_type=operation_type,
     )
+
+    try:
+        await call.bot.send_media_group(
+            chat_id=channel_name,
+            media=media_group,
+        )
+    except Exception as e:
+        await call.bot.send_message(
+            chat_id=config.tg_bot.test_main_chat_id,
+            text=f"ошибка при отправке медиа группы\n{str(e)}",
+        )
 
     await call.bot.send_message(
         chat_id=user.tg_chat_id, text="Объявление прошло модерацию"
     )
 
     # отправляем сообщения руководителю и агенту
-    tz_tashkent = pytz.timezone("Asia/Tashkent")
-    time_utc = pytz.utc.localize(time_to_send)
-    time_local = time_utc.astimezone(tz_tashkent)
-    formatted_time_to_send = time_local.strftime("%Y-%m-%d %H:%M:%S")
+    # tz_tashkent = pytz.timezone("Asia/Tashkent")
+    # time_utc = pytz.utc.localize(time_to_send)
+    # time_local = time_utc.astimezone(tz_tashkent)
+    # formatted_time_to_send = time_local.strftime("%Y-%m-%d %H:%M:%S")
 
-    dev_note = ""
-    if config.reminder_config.queue_dev_simulate_time:
-        dev_note = f"\n\n[Тест: QUEUE_DEV_SIMULATE_TIME={config.reminder_config.queue_dev_simulate_time}]"
-
-    await call.message.answer(
-        f"Объявление добавлено в очередь, будет отправлено в {formatted_time_to_send}{dev_note}"
-    )
-    await call.bot.send_message(
-        user.tg_chat_id,
-        f"Объявление добавлено в очередь, будет отправлено в {formatted_time_to_send}{dev_note}",
-    )
+    # await call.message.answer(
+    #     f"Объявление добавлено в очередь, будет отправлено в {formatted_time_to_send}{dev_note}"
+    # )
+    # await call.bot.send_message(
+    #     user.tg_chat_id,
+    #     f"Объявление добавлено в очередь, будет отправлено в {formatted_time_to_send}{dev_note}",
+    # )
 
     # уведомление о проверке актуальности
     formatted_reminder = reminder_time.strftime("%d.%m.%Y")

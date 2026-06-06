@@ -769,11 +769,13 @@ async def get_repair_type(
         await call.message.answer_media_group(media=media_group)
 
         for director in group_directors:
+
             try:
                 if (
                     director.tg_chat_id
                     and director.tg_chat_id == new_advertisement.user.added_by
                 ):
+                    print(director.tg_chat_id)
                     realtor_fullname = f"{new_advertisement.user.first_name} {new_advertisement.user.lastname}"
                     await call.bot.send_message(
                         director.tg_chat_id,
