@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytz
 from aiogram import Bot
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import InputMediaPhoto
 
 from backend.app.config import config
@@ -13,6 +14,7 @@ from config.constants import CATEGORIES_DICT
 from infrastructure.database.models import Advertisement
 from infrastructure.database.models.user import User
 from infrastructure.database.repo.requests import RequestsRepo
+from tgbot.keyboards.user.inline import actual_checking_kb
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.templates.messages import (
     buy_channel_advertisement_message,
@@ -214,6 +216,27 @@ async def get_user_not_actual_advertisements_by_date(date: str, repo: "RequestsR
         result[user.tg_chat_id] = advertisements
     return result
 
+
+async def send_not_actual_advertisements_to_agent(bot, repo, current_chat_id):
+    current_date = get_current_date()
+    actual_not_checked_advertisements = await get_user_not_actual_advertisements_by_date(current_date, repo)
+
+
+    for chat_id, advertisements in actual_not_checked_advertisements.items():
+        if not advertisements and current_chat_id == chat_id:
+            await bot.send_message(current_chat_id, "Нет объявлений для проверки актуальности")
+            continue
+
+        try:
+            await bot.send_message(
+                chat_id,
+                f"Проверка актуальности объявлений.\nКоличество объявлений: {len(advertisements)}",
+                reply_markup=actual_checking_kb(advertisements),
+
+            )
+        except TelegramBadRequest:
+            continue
+    return
 
 def prepart_data_for_report(advertisement: Advertisement):
     advertisement_data = AdvertisementForReportDTO.model_validate(

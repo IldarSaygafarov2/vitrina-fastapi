@@ -76,9 +76,7 @@ def remind_agent_to_update_advertisement(
 Объявление: №{unique_id} актуально?
 """
         await bot.send_message(
-            agent_chat_id,
-            msg,
-            parse_mode="HTML",
+            agent_chat_id, msg, parse_mode="HTML",
             reply_markup=is_advertisement_actual_kb(advertisement_id),
         )
         await bot.session.close()
@@ -151,9 +149,7 @@ def remind_agent_to_update_advertisement_by_date():
         current_date = get_current_date()
         async with session_pool() as session:
             repo = RequestsRepo(session)
-            result = await get_user_not_actual_advertisements_by_date(
-                date=current_date, repo=repo
-            )
+            result = await get_user_not_actual_advertisements_by_date(date=current_date, repo=repo)
 
         for chat_id, advertisements in result.items():
             if not advertisements:

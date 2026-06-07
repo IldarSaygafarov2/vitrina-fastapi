@@ -9,10 +9,12 @@ from backend.app.config import config
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.filters.role import RoleFilter
 from tgbot.keyboards.admin.inline import advertisement_moderation_kb
-from tgbot.keyboards.user.inline import is_advertisement_actual_kb, is_price_actual_kb
+from tgbot.keyboards.user.inline import is_advertisement_actual_kb, is_price_actual_kb, actual_checking_kb
 from tgbot.misc.user_states import AdvertisementRelevanceState
 from tgbot.templates.messages import advertisement_reminder_message
 from tgbot.utils import helpers
+from tgbot.utils.helpers import get_user_not_actual_advertisements_by_date, get_current_date, \
+    send_not_actual_advertisements_to_agent
 
 router = Router()
 router.message.filter(RoleFilter(role="realtor"))
@@ -43,8 +45,8 @@ async def react_to_advertisement_actual(call: CallbackQuery):
 
 @router.callback_query(F.data.startswith("not_actual"))
 async def react_to_advertisement_not_actual(
-    call: CallbackQuery,
-    repo: RequestsRepo,
+        call: CallbackQuery,
+        repo: RequestsRepo,
 ):
     """Если объявление неактуально — удаляем объявление и его фото из БД и файловой системы."""
     await call.answer()
@@ -99,7 +101,7 @@ async def react_to_advertisement_not_actual(
 
 @router.callback_query(F.data.startswith("price_changed"))
 async def react_to_advertisement_price_changed(
-    call: CallbackQuery, state: FSMContext
+        call: CallbackQuery, state: FSMContext
 ):
     """Если цена объявления поменялась — запрашиваем новую цену."""
     await call.answer()
@@ -114,7 +116,7 @@ async def react_to_advertisement_price_changed(
 
 @router.message(AdvertisementRelevanceState.new_price, F.text)
 async def set_actual_price_for_advertisement(
-    message: Message, repo: RequestsRepo, state: FSMContext
+        message: Message, repo: RequestsRepo, state: FSMContext
 ):
     """Записываем новую цену и отправляем объявление руководителю на модерацию."""
     state_data = await state.get_data()
@@ -137,12 +139,8 @@ async def set_actual_price_for_advertisement(
         return
 
     operation_type = advertisement.operation_type.value
-    reminder_delta = config.reminder_config.get_reminder_timedelta(
-        operation_type
-    )
-    next_reminder_date = (
-        datetime.now() + reminder_delta
-    ).date()
+    reminder_delta = config.reminder_config.get_reminder_timedelta(operation_type)
+    next_reminder_date = (datetime.now() + reminder_delta).date()
 
     new_price_str = helpers.filter_digits(message.text)
     if not new_price_str:
@@ -169,8 +167,10 @@ async def set_actual_price_for_advertisement(
 
     await message.answer("Объявление отправлено руководителю на проверку")
     agent_fullname = user.fullname or f"{user.first_name} {user.lastname}"
-
     await message.bot.send_media_group(director_chat_id, media=media_group)
+
+
+
     await message.bot.send_message(
         director_chat_id,
         f"""
@@ -181,13 +181,16 @@ async def set_actual_price_for_advertisement(
         parse_mode="HTML",
         reply_markup=advertisement_moderation_kb(advertisement_id=advertisement_id),
     )
+
+    await send_not_actual_advertisements_to_agent(message.bot, repo, chat_id)
+
     await state.clear()
 
 
 @router.callback_query(F.data.startswith("price_not_changed"))
 async def react_to_advertisement_price_not_changed(
-    call: CallbackQuery,
-    repo: RequestsRepo,
+        call: CallbackQuery,
+        repo: RequestsRepo,
 ):
     """Если цена не изменилась — отправляем объявление в группу Аренда или Продажа."""
     await call.answer()
@@ -204,9 +207,7 @@ async def react_to_advertisement_price_not_changed(
     reminder_delta = config.reminder_config.get_reminder_timedelta(
         operation_type
     )
-    next_reminder_date = (
-        datetime.now() + reminder_delta
-    ).date()
+    next_reminder_date = (datetime.now() + reminder_delta).date()
 
     advertisement_photos = await helpers.get_advertisement_photos(
         advertisement_id, repo
@@ -253,6 +254,8 @@ async def react_to_advertisement_price_not_changed(
             text=f"Ошибка при отправке медиа группы: {e}",
         )
 
+    chat_id = call.message.chat.id
+
     formatted_reminder_time = next_reminder_date.strftime("%Y-%m-%d")
     agent = await repo.users.get_user_by_id(advertisement.user_id)
 
@@ -261,9 +264,12 @@ async def react_to_advertisement_price_not_changed(
         f"Следующая проверка актуальности: <b>{formatted_reminder_time}</b>",
         parse_mode="HTML",
     )
+
     if agent.tg_chat_id:
         await call.bot.send_message(
             agent.tg_chat_id,
             text=advertisement_reminder_message(formatted_reminder_time),
             parse_mode="HTML",
         )
+
+    await send_not_actual_advertisements_to_agent(call.bot, repo, chat_id)
