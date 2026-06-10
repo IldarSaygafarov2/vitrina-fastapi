@@ -12,6 +12,7 @@ class TgBot:
     main_chat_id: int
     test_main_chat_id: int
     supergroup_id: int
+    webhook_url: str
 
     @staticmethod
     def from_env(env: Env) -> "TgBot":
@@ -23,6 +24,7 @@ class TgBot:
             main_chat_id=env.int("MAIN_CHAT_ID"),
             test_main_chat_id=env.int("TEST_MAIN_CHAT_ID"),
             supergroup_id=env.int("SUPERGROUP_ID"),
+            webhook_url=env.str("WEBHOOK_URL"),
         )
 
 
