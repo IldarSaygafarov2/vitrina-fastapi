@@ -42,7 +42,7 @@ def register_global_middlewares(dp: Dispatcher, config: Config, session_pool=Non
 async def main():
     from aiogram.client.session.aiohttp import AiohttpSession
 
-    session = AiohttpSession(timeout=60)
+    session = AiohttpSession()
 
     setup_logging()
 
@@ -56,7 +56,7 @@ async def main():
         default=DefaultBotProperties(
             parse_mode=ParseMode.HTML, link_preview_is_disabled=True
         ),
-        session=session,
+        # session=session,
     )
 
     dp = Dispatcher(storage=storage)
