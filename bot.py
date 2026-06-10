@@ -41,9 +41,8 @@ def register_global_middlewares(dp: Dispatcher, config: Config, session_pool=Non
 
 async def main():
     from aiogram.client.session.aiohttp import AiohttpSession
-    from aiohttp import ClientTimeout
 
-    session = AiohttpSession(timeout=ClientTimeout(total=60))
+    session = AiohttpSession(timeout=60)
 
     setup_logging()
 
@@ -70,7 +69,7 @@ async def main():
 
     register_global_middlewares(dp, config, session_pool)
 
-    await dp.start_polling(bot, polling_timeout=30)
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
