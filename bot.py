@@ -70,7 +70,7 @@ async def main():
 
     register_global_middlewares(dp, config, session_pool)
 
-    await dp.start_polling(bot)
+    await dp.start_polling(bot, polling_timeout=30)
 
 
 if __name__ == "__main__":
