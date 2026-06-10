@@ -41,8 +41,9 @@ def register_global_middlewares(dp: Dispatcher, config: Config, session_pool=Non
 
 async def main():
     from aiogram.client.session.aiohttp import AiohttpSession
+    from aiohttp import ClientTimeout
 
-    session = AiohttpSession(timeout=60)
+    session = AiohttpSession(timeout=ClientTimeout(total=60))
 
     setup_logging()
 
