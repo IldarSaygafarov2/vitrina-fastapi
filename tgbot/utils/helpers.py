@@ -219,12 +219,15 @@ async def get_user_not_actual_advertisements_by_date(date: str, repo: "RequestsR
 
 async def send_not_actual_advertisements_to_agent(bot, repo, current_chat_id):
     current_date = get_current_date()
-    actual_not_checked_advertisements = await get_user_not_actual_advertisements_by_date(current_date, repo)
-
+    actual_not_checked_advertisements = (
+        await get_user_not_actual_advertisements_by_date(current_date, repo)
+    )
 
     for chat_id, advertisements in actual_not_checked_advertisements.items():
         if not advertisements and current_chat_id == chat_id:
-            await bot.send_message(current_chat_id, "Нет объявлений для проверки актуальности")
+            await bot.send_message(
+                current_chat_id, "Нет объявлений для проверки актуальности"
+            )
             continue
 
         try:
@@ -232,11 +235,11 @@ async def send_not_actual_advertisements_to_agent(bot, repo, current_chat_id):
                 chat_id,
                 f"Проверка актуальности объявлений.\nКоличество объявлений: {len(advertisements)}",
                 reply_markup=actual_checking_kb(advertisements),
-
             )
         except TelegramBadRequest:
             continue
     return
+
 
 def prepart_data_for_report(advertisement: Advertisement):
     advertisement_data = AdvertisementForReportDTO.model_validate(

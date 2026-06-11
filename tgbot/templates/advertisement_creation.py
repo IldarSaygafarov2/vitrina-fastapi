@@ -55,7 +55,7 @@ def get_address_text_uz():
 
 
 def get_propety_type_text():
-    return "Выберите текст недвижимости:"
+    return "Выберите тип недвижимости:"
 
 
 def creation_year_text(property_type: str):

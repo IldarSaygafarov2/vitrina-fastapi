@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from backend.app.config import config
 from backend.app.dependencies import get_repo
 from backend.core.interfaces.advertisement import AdvertisementDTO
+from backend.core.interfaces.user import UserDTO, UserLoginDTO
 from infrastructure.database.repo.requests import RequestsRepo
 
 router = APIRouter(
@@ -13,11 +14,45 @@ router = APIRouter(
 )
 
 
-@router.get('/{user_id}/advertisements/')
+def get_current_user(request: Request):
+    user = request.session.get("user")
+    if not user:
+        return
+    return user
+
+
+@router.get("/{user_id}/advertisements/")
 async def get_user_advertisements(
-        user_id: int,
-        repo: Annotated[RequestsRepo, Depends(get_repo)],
+    user_id: int,
+    repo: Annotated[RequestsRepo, Depends(get_repo)],
 ) -> list[AdvertisementDTO]:
     advertisements = await repo.advertisements.get_user_advertisements(user_id=user_id)
     return advertisements
 
+
+@router.post("/login/")
+async def get_user_by_telegram_username(
+    request: Request,
+    login_data: UserLoginDTO,
+    repo: Annotated[RequestsRepo, Depends(get_repo)],
+) -> UserDTO | None:
+    user = await repo.users.get_user_by_username(login_data.tg_username)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Пользователь не найден")
+    request.session["user"] = UserDTO.model_validate(
+        user, from_attributes=True
+    ).model_dump()
+    return user
+
+
+@router.get("/me/")
+async def get_me(user=Depends(get_current_user)) -> UserDTO | None:
+    return user
+
+
+@router.post("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    print(request.session)
+    return {"message": "Вышел из системы"}

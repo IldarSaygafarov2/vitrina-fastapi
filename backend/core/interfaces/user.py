@@ -32,3 +32,7 @@ class UserCreateDTO(BaseModel):
     phone_number: str
     tg_username: str
     role: str
+
+
+class UserLoginDTO(BaseModel):
+    tg_username: str

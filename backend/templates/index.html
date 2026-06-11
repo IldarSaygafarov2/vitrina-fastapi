@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css')}}">
+</head>
+
+<body>
+    <div class="container">
+
+        <button id="logout-btn">Logout</button>
+
+        <form action="" class="my-5">
+            <h1>Добавление объявления</h1>
+
+            <div class="mb-3">
+                <label class="form-label" for="operation_type">Выберите тип операции</label>
+                <select name="operation_type" id="operation_type" class="form-select">
+                    <option value="buy">Покупка</option>
+                    <option value="rent">Покупка</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="category">Выберите категорию</label>
+                <select name="category" id="category" class="form-select">
+                    {% for category in categories %}
+                    <option value="category-{{category.id}}">{{category.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="photos_quantity">
+                    Отправьте фотографии (не больше 10)
+                </label>
+                <input type="file" multiple class="form-control" name="photos" placeholder="Кол-во фотографий"
+                    id="photos_quantity">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="title_ru">
+                    Название объявления
+                </label>
+                <input type="text" name="title_ru" id="title_ru" class="form-control"
+                    placeholder="Название на русском...">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="title_ru">
+                    Название объявления на узбекском
+                </label>
+                <input type="text" name="title_uz" id="title_uz" class="form-control"
+                    placeholder="Название на узбекском...">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="title_ru">
+                    Описание на русском
+                </label>
+                <textarea type="text" name="description_ru" id="description_ru" class="form-control"
+                    placeholder="Описание на русском..."></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="title_ru">
+                    Описание на узбекском
+                </label>
+                <textarea type="text" name="description_uz" id="description_uz" class="form-control"
+                    placeholder="Описание на узбекском..."></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="title_ru">
+                    Напишите номер телефона собственника и имя
+                    пример: +998901231212 Александр
+                </label>
+                <input type="text" name="owner_phone_number" id="owner_phone_number" class="form-control"
+                    placeholder="Номер собственника">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="district">Выберите район</label>
+                <select name="district" id="district" class="form-select">
+                    {% for district in districts %}
+                    <option value="district-{{district.id}}">{{district.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="address_ru">
+                    Адрес объявления на русском
+                </label>
+                <input type="text" name="address_ru" id="address_ru" class="form-control"
+                    placeholder="Адрес на русском">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="address_uz">
+                    Адрес объявления на узбекском
+                </label>
+                <input type="text" name="address_uz" id="address_uz" class="form-control"
+                    placeholder="Адрес на узбекском">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="property_type">Выберите тип недвижимости</label>
+                <select name="property_type" id="property_type" class="form-select">
+                    <option value="old">Вторичный фонд</option>
+                    <option value="new">Новостройка</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="creation_year">
+                    Год постройки (если новостройка)
+                </label>
+                <input type="text" name="creation_year" id="creation_year" class="form-control"
+                    placeholder="Год постройки">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="price">
+                    Цена объявления
+                </label>
+                <input type="text" name="price" id="price" class="form-control" placeholder="Цена">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="rooms_quantity">
+                    Кол-во комнат
+                </label>
+                <input type="text" name="rooms_quantity" id="rooms_quantity" class="form-control"
+                    placeholder="Кол-во комнат">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="house_quadrature">
+                    Квадратура ("Дом")
+                </label>
+                <input type="text" name="house_quadrature" id="house_quadrature" class="form-control"
+                    placeholder="Квадратура дома">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="quadrature">
+                    Квадратура ("Квартира")
+                </label>
+                <input type="text" name="quadrature" id="quadrature" class="form-control"
+                    placeholder="Квадратура квартиры">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="floors">
+                    Этажность
+                </label>
+                <input type="text" name="floors" id="floors" class="form-control" placeholder="Этажность">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="floor_number">
+                    Этаж
+                </label>
+                <input type="text" name="floor_number" id="floor_number" class="form-control" placeholder="Этаж">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="repair_type">Выберите тип ремонта</label>
+                <select name="repair_type" id="repair_type" class="form-select">
+                    {% for (repair_type_key, repair_type_value) in repair_types.items() %}
+                    <option value="repair_type_key">{{repair_type_value}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">Отправить</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+
+    <script src="{{ url_for('static', path='js/script.js')}}"></script>
+</body>
+
+</html>

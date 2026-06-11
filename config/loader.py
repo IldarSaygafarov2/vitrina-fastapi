@@ -25,6 +25,8 @@ class Config:
     reminder_config: ReminderConfig
     redis_config: RedisConfig
 
+    secret_key: str
+
 
 def load_config(path: Optional[str] = None) -> "Config":
     env = Env()
@@ -41,6 +43,8 @@ def load_config(path: Optional[str] = None) -> "Config":
 
     api_prefix = ApiPrefix()
 
+    secret_key = env.str("SECRET_KEY")
+
     return Config(
         db=db_config,
         api_prefix=api_prefix,
@@ -51,4 +55,5 @@ def load_config(path: Optional[str] = None) -> "Config":
         report_sheet=report_sheet,
         reminder_config=reminder_config,
         redis_config=redis_config,
+        secret_key=secret_key,
     )
