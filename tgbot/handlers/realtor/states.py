@@ -1,6 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
+
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
@@ -758,10 +759,6 @@ async def get_repair_type(
             )
 
         media_group = get_media_group(photos, advertisement_message)
-
-        # dev_user = await repo.users.get_user_by_chat_id(
-        #     tg_chat_id=config.tg_bot.test_main_chat_id
-        # )
 
         group_directors = await repo.users.get_users_by_role(role="GROUP_DIRECTOR")
         # group_directors.append(dev_user)

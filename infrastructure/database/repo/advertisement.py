@@ -412,7 +412,11 @@ class AdvertisementRepo(BaseRepo):
 
 class AdvertisementImageRepo(BaseRepo):
     async def insert_advertisement_image(
-        self, advertisement_id: int, url: str, tg_image_hash: str, image_hash: str
+        self,
+        advertisement_id: int,
+        url: str,
+        tg_image_hash: str | None = None,
+        image_hash: str | None = None,
     ):
         stmt = insert(AdvertisementImage).values(
             advertisement_id=advertisement_id,

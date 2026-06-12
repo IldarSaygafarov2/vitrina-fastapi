@@ -29,13 +29,20 @@ def filter_digits(message: str) -> str:
 def get_media_group(photos, message: str | None = None) -> list[InputMediaPhoto]:
     media_group: list[InputMediaPhoto] = [
         (
-            InputMediaPhoto(media=img, caption=message)
+            InputMediaPhoto(media=str(img), caption=message)
             if i == 0
-            else InputMediaPhoto(media=img)
+            else InputMediaPhoto(media=str(img))
         )
         for i, img in enumerate(photos)
     ]
     return media_group
+
+
+def prepare_media_group_for_request(photos: list, caption):
+    files = []
+    for photo in photos:
+        files.append(open(photo, "rb"))
+    pass
 
 
 def serialize_media_group(media_group: list[InputMediaPhoto]) -> list[dict]:

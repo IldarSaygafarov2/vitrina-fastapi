@@ -3,12 +3,16 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class UserDTO(BaseModel):
+class UserBaseDTO(BaseModel):
     id: int
     first_name: Optional[str]
     lastname: Optional[str]
     tg_username: Optional[str]
     phone_number: Optional[str]
+
+
+class UserDTO(UserBaseDTO):
+    pass
 
 
 class UserAdvertisementObjectDTO(BaseModel):
@@ -36,3 +40,9 @@ class UserCreateDTO(BaseModel):
 
 class UserLoginDTO(BaseModel):
     tg_username: str
+
+
+class UserSessionDTO(UserBaseDTO):
+    tg_chat_id: int
+    added_by: int | None
+    role: str
