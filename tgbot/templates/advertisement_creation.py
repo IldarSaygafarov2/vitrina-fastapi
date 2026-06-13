@@ -76,6 +76,7 @@ def realtor_advertisement_completed_text(
     advertisement: "Advertisement",
     lang: str = "ru",
     hide_owner_phone: bool = False,
+    for_html: bool = False,
 ):
     rooms_from_to = f"<b>Кол-во комнат</b>  <i>{advertisement.rooms_quantity}</i>"
     creation_year = (
@@ -117,18 +118,19 @@ def realtor_advertisement_completed_text(
 
     category_name = CATEGORIES_DICT.get(advertisement.category_id)
 
+    sep = "=" if for_html else ""
     return f"""
-<b>№</b> <i>{advertisement.unique_id}</i>
-<b>Заголовок:</b><i>{advertisement.name}</i>{name_uz}
-<b>Тип объявления: </b><i>{advertisement.operation_type.value}</i>
-<b>Описание: </b><i>{advertisement.description}</i>{description_uz}
-<b>Район: </b><i>{advertisement.district.name}</i>
-<b>Адрес: </b><i>{advertisement.address}</i>{address_uz}{owner_phone_number}
-<b>Категория недвижимости: </b><i>{category_name}</i>
-<b>Тип недвижимости: </b><i>{advertisement.property_type.value}</i>{creation_year}
-<b>Цена: </b><i>{advertisement.price}</i>{house_quadrature}
-{rooms_from_to}
-<b>Квадратура: </b><i>{advertisement.quadrature}</i>
-<b>Этаж: </b><i>{advertisement.floor_from}</i> из <i>{advertisement.floor_to}</i>
-<b>Ремонт: </b><i>{advertisement.repair_type.value}</i>
+<b>№</b> <i>{advertisement.unique_id}</i>{sep}
+<b>Заголовок:</b><i>{advertisement.name}</i>{sep}{name_uz}{sep}
+<b>Тип объявления: </b><i>{advertisement.operation_type.value}</i>{sep}
+<b>Описание: </b><i>{advertisement.description}</i>{sep}{description_uz}{sep}
+<b>Район: </b><i>{advertisement.district.name}</i>{sep}
+<b>Адрес: </b><i>{advertisement.address}</i>{sep}{address_uz}{sep}{owner_phone_number}{sep}
+<b>Категория недвижимости: </b><i>{category_name}</i>{sep}
+<b>Тип недвижимости: </b><i>{advertisement.property_type.value}</i>{creation_year}{sep}
+<b>Цена: </b><i>{advertisement.price}</i>{sep}{house_quadrature}{sep}
+{rooms_from_to}{sep}
+<b>Квадратура: </b><i>{advertisement.quadrature}</i>{sep}
+<b>Этаж: </b><i>{advertisement.floor_from}</i> из <i>{advertisement.floor_to}</i>{sep}
+<b>Ремонт: </b><i>{advertisement.repair_type.value}</i>{sep}
 """

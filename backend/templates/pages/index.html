@@ -7,7 +7,7 @@
 {% block content %}
 <div class="container">
 
-    <button id="logout-btn">Logout</button>
+
 
     {% if request.session and request.session.user.role == 'realtor' %}
 
@@ -18,7 +18,7 @@
             <label class="form-label" for="operation_type">Выберите тип операции</label>
             <select name="operation_type" id="operation_type" class="form-select" required>
                 <option value="buy">Покупка</option>
-                <option value="rent">Покупка</option>
+                <option value="rent">Аренда</option>
             </select>
         </div>
         <div class="mb-3">

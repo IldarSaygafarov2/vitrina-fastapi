@@ -5,5 +5,42 @@
 {% endblock %}
 
 {% block content %}
-<div class="container"></div>
+{{request.session.user.role}}
+<div class="container">
+    <div id="carouselExample" class="carousel slide">
+        <div class="carousel-inner">
+
+            {% for image in advertisement.images %}
+            <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                <img src="{{request.base_url}}{{ image.url }}" class="d-block w-100" alt="...">
+            </div>
+            {% endfor %}
+
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    {{text|safe}}
+
+    {% if request.session.user.role == 'realtor' %}
+    <div class="d-flex gap-3">
+        <a href="" class="btn btn-warning">Изменить</a>
+        <a href="" class="btn btn-danger">Удалить</a>
+    </div>
+    {% elif request.session.user.role == 'group_director' %}
+    <p>Объявление прошло модерацию?</p>
+    <div class="d-flex gap-3">
+        <a href="" class="btn btn-success">Да</a>
+        <a href="" class="btn btn-danger">Нет</a>
+    </div>
+    {% endif %}
+
+</div>
 {% endblock %}

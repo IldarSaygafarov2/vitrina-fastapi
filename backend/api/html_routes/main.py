@@ -127,9 +127,10 @@ async def submit_form(
     preview_file = advertisements_folder / photos[0].filename
 
     # saving photos
-    with open(preview_file, "wb") as buffer:
-        shutil.copyfileobj(photos[0].file, buffer)
+    # with open(preview_file, "wb") as buffer:
+    #     shutil.copyfileobj(photos[0].file, buffer)
 
+    # buffer.seek(0)
     photos_paths_list = []
     for photo in photos:
         photo_path = advertisements_folder / photo.filename
@@ -147,7 +148,7 @@ async def submit_form(
         title_uz=title_uz,
         description=description_ru,
         description_uz=description_uz,
-        preview=str(preview_file),
+        preview=str(photos_paths_list[0]),
         address=address_ru,
         address_uz=address_uz,
         property_type=property_type_status,
@@ -211,11 +212,17 @@ async def new_advertisement_page(
     repo: Annotated[RequestsRepo, Depends(get_repo)],
 ):
     advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+    if not advertisement:
+        return templates.TemplateResponse("pages/404.html", {"request": request})
     advertisement_data = AdvertisementHtmlDTO.model_validate(
         advertisement, from_attributes=True
     ).model_dump()
 
+    text = realtor_advertisement_completed_text(advertisement, lang="uz", for_html=True)
+
+    text = "<br/>".join(text.split("="))
+
     return templates.TemplateResponse(
         "pages/new_advertisement.html",
-        {"request": request, "advertisement": advertisement_data},
+        {"request": request, "advertisement": advertisement_data, "text": text},
     )
