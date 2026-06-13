@@ -6,11 +6,14 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from backend.api import router as api_router
 from backend.api.html_routes.main import router as html_router
+from backend.api.websockets.main import router as websocket_router
 from backend.app.config import config
 
 main_app = FastAPI(debug=True)
+main_app.include_router(websocket_router)
 main_app.include_router(api_router)
 main_app.include_router(html_router)
+
 
 main_app.mount("/static", StaticFiles(directory="backend/static"), name="static")
 main_app.mount("/media", StaticFiles(directory="media"), name="media")

@@ -1,12 +1,14 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
 
 from backend.app.config import config
 from backend.app.dependencies import get_repo
 from backend.core.interfaces.advertisement import AdvertisementDTO
 from backend.core.interfaces.user import UserDTO, UserLoginDTO, UserSessionDTO
 from infrastructure.database.repo.requests import RequestsRepo
+from backend.api.websockets.manager import manager
 
 router = APIRouter(
     prefix=config.api_prefix.v1.users,
@@ -37,7 +39,6 @@ async def get_user_by_telegram_username(
     repo: Annotated[RequestsRepo, Depends(get_repo)],
 ) -> UserSessionDTO | None:
     user = await repo.users.get_user_by_username(login_data.tg_username)
-
     if not user:
         raise HTTPException(status_code=401, detail="Пользователь не найден")
     request.session["user"] = UserSessionDTO.model_validate(

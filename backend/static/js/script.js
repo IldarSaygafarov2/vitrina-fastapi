@@ -58,7 +58,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('authenticated')
         logoutBtn.addEventListener('click', logout)
         logoutBtn.classList.remove('hidden')
-
-
     }
 })

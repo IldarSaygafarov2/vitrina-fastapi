@@ -5,11 +5,12 @@ from pathlib import Path
 from typing import Annotated
 
 import requests
-from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, status
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from backend.app.dependencies import get_repo
+from backend.core.interfaces.advertisement import AdvertisementHtmlDTO
 from config.constants import (
     OPERATION_TYPE_MAPPING,
     OPERATION_TYPE_MAPPING_UZ,
@@ -30,7 +31,12 @@ from infrastructure.database.models.advertisement import (
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.utils.helpers import get_unique_code
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
-from tgbot.utils.helpers import get_media_group, prepare_media_group_for_request
+from tgbot.utils.helpers import (
+    get_media_group,
+    prepare_media_group_for_request,
+    prepare_moderation_kb,
+)
+from backend.api.websockets.manager import manager
 
 config = load_config()
 
@@ -49,11 +55,14 @@ SEND_MESSAGE_URL = f"https://api.telegram.org/bot{config.tg_bot.token}/sendMessa
 async def show_home_page(
     request: Request, repo: Annotated[RequestsRepo, Depends(get_repo)]
 ):
+    # await manager.send_personal_message("test", 1)
     categories = await repo.categories.get_categories()
     districts = await repo.districts.get_districts()
 
+    # await manager.connect()
+
     return templates.TemplateResponse(
-        "index.html",
+        "pages/index.html",
         {
             "request": request,
             "title": "home page",
@@ -162,15 +171,6 @@ async def submit_form(
         advertisement_id=new_advertisement.id, old_price=int(price)
     )
 
-    advertisement_message = realtor_advertisement_completed_text(
-        new_advertisement, lang="uz"
-    )
-
-    media_payload, files_payload = await prepare_media_group_for_request(
-        photos, advertisement_message
-    )
-    print(media_payload, files_payload)
-
     # saving photos to db
     for file_location in photos_paths_list:
         await repo.advertisement_images.insert_advertisement_image(
@@ -182,17 +182,40 @@ async def submit_form(
 
     message_for_director = f"Риелтор: {agent_fullname} добавил новое объявление"
 
-    message_response = requests.post(
+    requests.post(
         SEND_MESSAGE_URL,
         data={"chat_id": agent_director.tg_chat_id, "text": message_for_director},
     )
 
-    media_group_response = requests.post(
-        MEDIA_GROUP_URL,
+    new_advertisement_url = (
+        f"http://127.0.0.1:8888/new-advertisement/{new_advertisement.id}"
+    )
+    requests.post(
+        SEND_MESSAGE_URL,
         data={
             "chat_id": agent_director.tg_chat_id,
-            "media": json.dumps(media_payload),
+            "text": f"""Агент: {current_user.fullname} добавил новое объявление.
+Чтобы посмотреть объявление перейдите по ссылке
+<a href='{new_advertisement_url}'>перейти</a>""",
+            "parse_mode": "HTML",
         },
-        files=files_payload,
     )
-    print(media_group_response.json())
+
+    return RedirectResponse(url="/", status_code=status.HTTP_301_MOVED_PERMANENTLY)
+
+
+@router.get("/new-advertisement/{advertisement_id}", response_class=HTMLResponse)
+async def new_advertisement_page(
+    request: Request,
+    advertisement_id: int,
+    repo: Annotated[RequestsRepo, Depends(get_repo)],
+):
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+    advertisement_data = AdvertisementHtmlDTO.model_validate(
+        advertisement, from_attributes=True
+    ).model_dump()
+
+    return templates.TemplateResponse(
+        "pages/new_advertisement.html",
+        {"request": request, "advertisement": advertisement_data},
+    )

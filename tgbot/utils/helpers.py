@@ -1,18 +1,17 @@
 import shutil
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytz
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.types import InputMediaPhoto
+from aiogram.types import FSInputFile, InputMediaPhoto, BufferedInputFile
 
 from backend.app.config import config
 from backend.core.interfaces.advertisement import AdvertisementForReportDTO
 from backend.core.interfaces.category import CategoryShortDTO
 from config.constants import CATEGORIES_DICT
 from infrastructure.database.models import Advertisement
-from infrastructure.database.models.user import User
 from infrastructure.database.repo.requests import RequestsRepo
 from tgbot.keyboards.user.inline import actual_checking_kb
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
@@ -29,9 +28,9 @@ def filter_digits(message: str) -> str:
 def get_media_group(photos, message: str | None = None) -> list[InputMediaPhoto]:
     media_group: list[InputMediaPhoto] = [
         (
-            InputMediaPhoto(media=str(img), caption=message)
+            InputMediaPhoto(media=BufferedInputFile(open(img, "rb")), caption=message)
             if i == 0
-            else InputMediaPhoto(media=str(img))
+            else InputMediaPhoto(media=BufferedInputFile(open(img, "rb")))
         )
         for i, img in enumerate(photos)
     ]
@@ -203,28 +202,6 @@ async def convert_categories_from_db(repo: RequestsRepo) -> list[dict]:
     return result
 
 
-def adjust_queue_send_time_to_allowed_window(dt: datetime) -> datetime:
-    """
-    Приводит время отправки к допустимому окну 9:00–21:00 (Asia/Tashkent).
-    Если позже 21:00 — перенос на 9:00 следующего дня.
-    Если раньше 9:00 — перенос на 9:00 того же дня.
-    Вход и выход: naive datetime в UTC.
-    """
-    tz = pytz.timezone("Asia/Tashkent")
-    if dt.tzinfo is None:
-        dt_utc = pytz.utc.localize(dt)
-    else:
-        dt_utc = dt.astimezone(pytz.utc)
-    local = dt_utc.astimezone(tz)
-    hour, minute = local.hour, local.minute
-    if local.time() > time(21, 0):
-        next_day = local.date() + timedelta(days=1)
-        local = tz.localize(datetime.combine(next_day, time(9, 0)))
-    elif hour < 9:
-        local = tz.localize(datetime.combine(local.date(), time(9, 0)))
-    return local.astimezone(pytz.utc).replace(tzinfo=None)
-
-
 def get_current_date() -> str:
     """получаем сегодняшнюю дату."""
     return datetime.now().strftime("%Y-%m-%d")
@@ -276,3 +253,21 @@ def prepart_data_for_report(advertisement: Advertisement):
     )
     advertisement_data = correct_advertisement_dict(advertisement_data)
     return advertisement_data
+
+
+def prepare_moderation_kb(advertisement_id: int):
+    markup = {
+        "inline_keyboard": [
+            [
+                {
+                    "text": "Да",
+                    "callback_data": f"moderation_confirm:{advertisement_id}",
+                },
+                {
+                    "text": "Нет",
+                    "callback_data": f"moderation_deny:{advertisement_id}",
+                },
+            ],
+        ],
+    }
+    return markup

@@ -114,3 +114,36 @@ class PaginatedAdvertisementDTO(BaseModel):
     limit: int
     offset: int
     results: list[AdvertisementDTO]
+
+
+class AdvertisementHtmlDTO(BaseModel):
+    id: int
+    unique_id: str
+    name: str
+    name_uz: str
+    price: int
+    old_price: Optional[int]
+    address: str
+    address_uz: str
+    rooms_quantity: Optional[int] = 0
+    quadrature_from: Optional[int] = 0
+    quadrature_to: Optional[int] = 0
+    quadrature: Optional[int]
+    house_quadrature_from: Optional[int] = 0
+    house_quadrature_to: Optional[int] = 0
+    operation_type: str
+    floor_from: int
+    floor_to: int
+    repair_type: str
+    repair_type_uz: str
+    property_type: str
+    property_type_uz: str
+    description: str
+    description_uz: str
+    creation_year: Optional[int]
+    created_at: Optional[datetime]
+
+    category: Optional[CategoryDTO]
+    district: Optional[DistrictDTO]
+    user: Optional[UserAdvertisementObjectDTO]
+    images: Optional[list["AdvertisementImageDTO"]]
