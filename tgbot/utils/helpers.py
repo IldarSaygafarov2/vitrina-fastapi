@@ -38,11 +38,28 @@ def get_media_group(photos, message: str | None = None) -> list[InputMediaPhoto]
     return media_group
 
 
-def prepare_media_group_for_request(photos: list, caption):
-    files = []
-    for photo in photos:
-        files.append(open(photo, "rb"))
-    pass
+async def prepare_media_group_for_request(photos: list, caption):
+    if len(photos) > 10:
+        return {"error": "нельзя отправлять больше 10"}
+
+    media = []
+    files = {}
+
+    for i, photo in enumerate(photos):
+        await photo.seek(0)  # сброс позиции
+        file_bytes = await photo.read()
+        attach_name = f"photo_{i}"
+        files[attach_name] = (photo.filename, file_bytes, photo.content_type)
+        media_item = {
+            "type": "photo",
+            "media": f"attach://{attach_name}",
+            "parse_mode": "HTML",
+        }
+        if i == 0:
+            media_item["caption"] = caption
+        media.append(media_item)
+
+    return media, files
 
 
 def serialize_media_group(media_group: list[InputMediaPhoto]) -> list[dict]:

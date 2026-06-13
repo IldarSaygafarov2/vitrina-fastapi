@@ -166,7 +166,10 @@ async def submit_form(
         new_advertisement, lang="uz"
     )
 
-    prepare_media_group_for_request(photos_paths_list, advertisement_message)
+    media_payload, files_payload = await prepare_media_group_for_request(
+        photos, advertisement_message
+    )
+    print(media_payload, files_payload)
 
     # saving photos to db
     for file_location in photos_paths_list:
@@ -175,10 +178,7 @@ async def submit_form(
             url=str(file_location),
         )
 
-    prepare_media_group_for_request(photos_paths_list, advertisement_message)
-
     # sending media group and messages to director in telegram bot
-    media_group = get_media_group(photos_paths_list, advertisement_message)
 
     message_for_director = f"Риелтор: {agent_fullname} добавил новое объявление"
 
@@ -189,5 +189,10 @@ async def submit_form(
 
     media_group_response = requests.post(
         MEDIA_GROUP_URL,
-        data={"chat_id": agent_director.tg_chat_id, "media": json.dumps(media_group)},
+        data={
+            "chat_id": agent_director.tg_chat_id,
+            "media": json.dumps(media_payload),
+        },
+        files=files_payload,
     )
+    print(media_group_response.json())
