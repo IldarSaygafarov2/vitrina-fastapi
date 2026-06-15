@@ -333,12 +333,12 @@ async def process_moderation_confirm(
     #     ],
     #     eta=time_to_send,
     # )
-    await send_message_to_rent_topic(
-        bot=call.bot,
-        price=advertisement.price,
-        media_group=media_group,
-        operation_type=operation_type,
-    )
+    # await send_message_to_rent_topic(
+    #     bot=call.bot,
+    #     price=advertisement.price,
+    #     media_group=media_group,
+    #     operation_type=operation_type,
+    # )
 
     try:
         await call.bot.send_media_group(

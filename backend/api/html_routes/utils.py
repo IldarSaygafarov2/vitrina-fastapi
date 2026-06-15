@@ -1,11 +1,22 @@
+import json
 import os
+import requests
 from config.loader import load_config
+from config.constants import MEDIA_GROUP_URL
 
 config = load_config()
 
 
-def send_media_from_html():
-    pass
+def send_media_from_html(data, files):
+    for f in files.values():
+        f.seek(0)
+
+    response = requests.post(
+        MEDIA_GROUP_URL.format(BOT_TOKEN=config.tg_bot.token),
+        data=data,
+        files=files,
+    )
+    print(response.status_code, response.text)
 
 
 def prepare_media_group_for_request(photos, message):
@@ -28,10 +39,8 @@ def prepare_media_group_for_request(photos, message):
     return media, files
 
 
-async def send_message_to_rent_topic(
-    price: int,
-    operation_type: str,
-    media_group,
+def send_message_to_rent_topic(
+    price: int, operation_type: str, media_group, files
 ) -> None:
     """Отправляем сообщение в супер группу фильтруя по цене."""
 
@@ -46,14 +55,16 @@ async def send_message_to_rent_topic(
         rent_supergroup_id if operation_type == "Аренда" else buy_supergroup_id
     )
 
+    data = {"chat_id": supergroup_id}
+
     for thread_id, _price in prices:
         a, b = _price
 
         price_range = list(range(a, b))
+
         if price not in price_range:
             continue
 
-        # await bot.send_media_group(
-        #     chat_id=supergroup_id, message_thread_id=thread_id, media=media_group
-        # )
+        data.update({"message_thread_id": thread_id, "media": json.dumps(media_group)})
+        send_media_from_html(data=data, files=files)
     print("SENT TO SUPERGROUP")

@@ -118,3 +118,7 @@ MONTHS_DICT_REVERSED = {v: k for k, v in MONTHS_DICT.items()}
 CATEGORIES_DICT = {1: "Квартиры", 2: "Коммерческая", 3: "Первичка", 4: "Дома"}
 
 FRONTEND_ADVERTISEMENT_URL = "https://ivitrina-nedvizhimosti.com/apartament/{id}"
+
+
+MEDIA_GROUP_URL = "https://api.telegram.org/bot{BOT_TOKEN}/sendMediaGroup"
+SEND_MESSAGE_URL = "https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"

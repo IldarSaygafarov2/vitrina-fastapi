@@ -19,6 +19,8 @@ from config.constants import (
     PROPERTY_TYPE_MAPPING_UZ,
     REPAIR_TYPE_MAPPING,
     REPAIR_TYPE_MAPPING_UZ,
+    SEND_MESSAGE_URL,
+    MEDIA_GROUP_URL,
 )
 from config.loader import load_config
 from infrastructure.database.models.advertisement import (
@@ -45,9 +47,6 @@ upload_dir = Path("media")
 upload_dir.mkdir(parents=True, exist_ok=True)
 
 templates = Jinja2Templates(directory="backend/templates")
-
-MEDIA_GROUP_URL = f"https://api.telegram.org/bot{config.tg_bot.token}/sendMediaGroup"
-SEND_MESSAGE_URL = f"https://api.telegram.org/bot{config.tg_bot.token}/sendMessage"
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -175,7 +174,7 @@ async def submit_form(
         f"{request.base_url}/new-advertisement/{new_advertisement.id}"
     )
     requests.post(
-        SEND_MESSAGE_URL,
+        SEND_MESSAGE_URL.format(BOT_TOKEN=config.tg_bot.token),
         data={
             "chat_id": agent_director.tg_chat_id,
             "text": f"""Агент: {current_user.fullname} добавил новое объявление.
@@ -228,6 +227,7 @@ async def moderate_new_advertisement(
     context = {
         "request": request,
         "advertisement": advertisement,
+        "is_moderated": is_moderated,
     }
 
     if is_moderated:
@@ -239,24 +239,32 @@ async def moderate_new_advertisement(
         media, files = html_utils.prepare_media_group_for_request(
             images, advertisement_message
         )
+        operation_type = advertisement.operation_type.value
+
+        html_utils.send_message_to_rent_topic(
+            advertisement.price,
+            operation_type,
+            media_group=media,
+            files=files,
+        )
+
+        html_utils.send_media_from_html(
+            data={"chat_id": channel_name, "media": json.dumps(media)},
+            files=files,
+        )
 
         if advertisement.operation_type.value == "Покупка":
-            data = {
-                "chat_id": config.tg_bot.base_channel_name,
-                "media": json.dumps(media),
-            }
-            try:
-                requests.post(MEDIA_GROUP_URL, data=data, files=files)
-            except Exception as e:
-                print(e)
-
-        # await send_message_to_rent_topic(
-        #     bot=call.bot,
-        #     price=advertisement.price,
-        #     operation_type=operation_type,
-        #     media_group=media_group,
+            html_utils.send_media_from_html(
+                data={
+                    "chat_id": config.tg_bot.base_channel_name,
+                    "media": json.dumps(media),
+                },
+                files=files,
+            )
+        # await call.bot.send_media_group(
+        #     chat_id=channel_name,
+        #     media=media_group,
         # )
         return templates.TemplateResponse("pages/moderation_confirm.html", context)
 
-    context.update({"is_moderated": is_moderated})
     return templates.TemplateResponse("pages/advertisement_moderation.html", context)
