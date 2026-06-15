@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-{{request.session.user.role}}
+
 <div class="container">
     <div id="carouselExample" class="carousel slide">
         <div class="carousel-inner">
@@ -29,6 +29,7 @@
 
     {{text|safe}}
 
+    {% if request.session %}
     {% if request.session.user.role == 'realtor' %}
     <div class="d-flex gap-3">
         <a href="" class="btn btn-warning">Изменить</a>
@@ -37,9 +38,10 @@
     {% elif request.session.user.role == 'group_director' %}
     <p>Объявление прошло модерацию?</p>
     <div class="d-flex gap-3">
-        <a href="" class="btn btn-success">Да</a>
-        <a href="" class="btn btn-danger">Нет</a>
+        <a href="/new-advertisement/{{advertisement.id}}/moderation/?is_moderated=true" class="btn btn-success">Да</a>
+        <a href="/new-advertisement/{{advertisement.id}}/moderation/?is_moderated=false" class="btn btn-danger">Нет</a>
     </div>
+    {% endif %}
     {% endif %}
 
 </div>

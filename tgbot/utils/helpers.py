@@ -1,3 +1,4 @@
+import os
 import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -28,9 +29,16 @@ def filter_digits(message: str) -> str:
 def get_media_group(photos, message: str | None = None) -> list[InputMediaPhoto]:
     media_group: list[InputMediaPhoto] = [
         (
-            InputMediaPhoto(media=BufferedInputFile(open(img, "rb")), caption=message)
+            InputMediaPhoto(
+                media=BufferedInputFile(
+                    open(img, "rb"), filename=os.path.basename(img)
+                ),
+                caption=message,
+            )
             if i == 0
-            else InputMediaPhoto(media=BufferedInputFile(open(img, "rb")))
+            else InputMediaPhoto(
+                media=BufferedInputFile(open(img, "rb"), filename=os.path.basename(img))
+            )
         )
         for i, img in enumerate(photos)
     ]

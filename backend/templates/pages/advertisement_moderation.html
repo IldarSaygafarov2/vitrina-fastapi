@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Модерация: {{advertisement.name}}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container">
+    {% if not is_moderated %}
+    <h2 class="text-center">Напишите причину отказа</h2>
+    <form action="" method="post">
+        <div class="form-group">
+            <label for="moderation-text">Причина отказа:</label>
+            <textarea name="moderation-text" id="moderation-text" class="form-control"></textarea>
+        </div>
+        <button class="btn btn-success mt-4">Отправить</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

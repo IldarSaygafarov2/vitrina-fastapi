@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
+from backend.api.html_routes import utils as html_utils
 from backend.app.dependencies import get_repo
 from backend.core.interfaces.advertisement import AdvertisementHtmlDTO
 from config.constants import (
@@ -32,11 +33,9 @@ from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.utils.helpers import get_unique_code
 from tgbot.templates.advertisement_creation import realtor_advertisement_completed_text
 from tgbot.utils.helpers import (
+    get_channel_name_and_message_by_operation_type,
     get_media_group,
-    prepare_media_group_for_request,
-    prepare_moderation_kb,
 )
-from backend.api.websockets.manager import manager
 
 config = load_config()
 
@@ -104,7 +103,6 @@ async def submit_form(
     agent_director = await repo.users.get_user_by_chat_id(
         tg_chat_id=current_user.added_by
     )
-    agent_fullname = f"{current_user.first_name} {current_user.lastname}"
 
     # form data
     category_id = int(category.split("-")[-1])
@@ -124,13 +122,7 @@ async def submit_form(
     date_str = datetime.now().strftime("%Y-%m-%d")
     advertisements_folder = upload_dir / "advertisements" / date_str
     advertisements_folder.mkdir(parents=True, exist_ok=True)
-    preview_file = advertisements_folder / photos[0].filename
 
-    # saving photos
-    # with open(preview_file, "wb") as buffer:
-    #     shutil.copyfileobj(photos[0].file, buffer)
-
-    # buffer.seek(0)
     photos_paths_list = []
     for photo in photos:
         photo_path = advertisements_folder / photo.filename
@@ -179,17 +171,8 @@ async def submit_form(
             url=str(file_location),
         )
 
-    # sending media group and messages to director in telegram bot
-
-    message_for_director = f"Риелтор: {agent_fullname} добавил новое объявление"
-
-    requests.post(
-        SEND_MESSAGE_URL,
-        data={"chat_id": agent_director.tg_chat_id, "text": message_for_director},
-    )
-
     new_advertisement_url = (
-        f"http://127.0.0.1:8888/new-advertisement/{new_advertisement.id}"
+        f"{request.base_url}/new-advertisement/{new_advertisement.id}"
     )
     requests.post(
         SEND_MESSAGE_URL,
@@ -226,3 +209,54 @@ async def new_advertisement_page(
         "pages/new_advertisement.html",
         {"request": request, "advertisement": advertisement_data, "text": text},
     )
+
+
+@router.get(
+    "/new-advertisement/{advertisement_id}/moderation/",
+    response_class=HTMLResponse,
+)
+async def moderate_new_advertisement(
+    request: Request,
+    repo: Annotated[RequestsRepo, Depends(get_repo)],
+    advertisement_id: int,
+    is_moderated: bool = False,
+):
+    advertisement = await repo.advertisements.get_advertisement_by_id(advertisement_id)
+    if not advertisement:
+        return templates.TemplateResponse("pages/404.html", {"request": request})
+
+    context = {
+        "request": request,
+        "advertisement": advertisement,
+    }
+
+    if is_moderated:
+        channel_name, advertisement_message = (
+            get_channel_name_and_message_by_operation_type(advertisement)
+        )
+
+        images = [i.url for i in advertisement.images]
+        media, files = html_utils.prepare_media_group_for_request(
+            images, advertisement_message
+        )
+
+        if advertisement.operation_type.value == "Покупка":
+            data = {
+                "chat_id": config.tg_bot.base_channel_name,
+                "media": json.dumps(media),
+            }
+            try:
+                requests.post(MEDIA_GROUP_URL, data=data, files=files)
+            except Exception as e:
+                print(e)
+
+        # await send_message_to_rent_topic(
+        #     bot=call.bot,
+        #     price=advertisement.price,
+        #     operation_type=operation_type,
+        #     media_group=media_group,
+        # )
+        return templates.TemplateResponse("pages/moderation_confirm.html", context)
+
+    context.update({"is_moderated": is_moderated})
+    return templates.TemplateResponse("pages/advertisement_moderation.html", context)
