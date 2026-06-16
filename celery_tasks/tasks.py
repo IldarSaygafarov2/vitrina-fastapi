@@ -1,9 +1,11 @@
 import time
 
+import requests
+
 from backend.app.config import config
 from backend.core.interfaces.channel_message import ChannelMessageSchema
 from celery_tasks.app import celery_app_dev
-from config.constants import MONTHS_DICT
+from config.constants import MEDIA_GROUP_URL, MONTHS_DICT
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.database.setup import create_engine, create_session_pool
 from infrastructure.utils.helpers import get_message_ids_for_unique_id
@@ -76,7 +78,9 @@ def remind_agent_to_update_advertisement(
 Объявление: №{unique_id} актуально?
 """
         await bot.send_message(
-            agent_chat_id, msg, parse_mode="HTML",
+            agent_chat_id,
+            msg,
+            parse_mode="HTML",
             reply_markup=is_advertisement_actual_kb(advertisement_id),
         )
         await bot.session.close()
@@ -135,6 +139,26 @@ def send_message_by_queue(
 
 
 @celery_app_dev.task
+def send_media_to_telegram(data, file_paths):
+    """Pass file paths instead of file objects"""
+    files = {}
+    print(file_paths.items())
+    for key, path in file_paths.items():
+        files[key] = open(path, "rb")
+
+    try:
+        response = requests.post(
+            MEDIA_GROUP_URL.format(BOT_TOKEN=config.tg_bot.token),
+            data=data,
+            files=files,
+        )
+        print(response.status_code, response.text)
+    finally:
+        for f in files.values():
+            f.close()
+
+
+@celery_app_dev.task
 def remind_agent_to_update_advertisement_by_date():
     """Периодическая задача: отправляет агентам объявления для проверки актуальности."""
     import asyncio
@@ -149,7 +173,9 @@ def remind_agent_to_update_advertisement_by_date():
         current_date = get_current_date()
         async with session_pool() as session:
             repo = RequestsRepo(session)
-            result = await get_user_not_actual_advertisements_by_date(date=current_date, repo=repo)
+            result = await get_user_not_actual_advertisements_by_date(
+                date=current_date, repo=repo
+            )
 
         for chat_id, advertisements in result.items():
             if not advertisements:

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Изменить: {{advertisement.name}}
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    {% with submit_url='/edit-advertisement/'+advertisement.id|string, page_title='Изменение объявления',
+    for_update=true
+    %}
+    {% include 'components/_advertisement-form.html' %}
+    {% endwith %}
+</div>
+{% endblock %}

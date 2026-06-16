@@ -1,8 +1,11 @@
 import json
 import os
+
+import aiohttp
 import requests
-from config.loader import load_config
+
 from config.constants import MEDIA_GROUP_URL
+from config.loader import load_config
 
 config = load_config()
 
@@ -10,6 +13,14 @@ config = load_config()
 def send_media_from_html(data, files):
     for f in files.values():
         f.seek(0)
+
+    # async with aiohttp.ClientSession() as session:
+    #     async with session.post(
+    #         MEDIA_GROUP_URL.format(BOT_TOKEN=config.tg_bot.token),
+    #         data=data,
+    #         files=files,
+    #     ) as response:
+    #         print(f"Status: {response.status_code}")
 
     response = requests.post(
         MEDIA_GROUP_URL.format(BOT_TOKEN=config.tg_bot.token),
@@ -22,10 +33,12 @@ def send_media_from_html(data, files):
 def prepare_media_group_for_request(photos, message):
     media = []
     files = {}
-
+    file_paths = {}
     for i, photo in enumerate(photos):
+
         filename = os.path.basename(photo)
         files[filename] = open(photo, "rb")
+        file_paths[filename] = photo
 
         media_item = {
             "type": "photo",
@@ -36,7 +49,7 @@ def prepare_media_group_for_request(photos, message):
             media_item["caption"] = message
         media.append(media_item)
 
-    return media, files
+    return media, files, file_paths
 
 
 def send_message_to_rent_topic(

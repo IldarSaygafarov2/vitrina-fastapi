@@ -1,13 +1,33 @@
+# OPERATION_TYPE
 OPERATION_TYPE_MAPPING = {
     "rent": "Аренда",
     "buy": "Покупка",
 }
+
+OPERATION_TYPE_RU_UZ = {
+    "Аренда": "Ijara",
+    "Покупка": "Sotib olish",
+}
+OPERATION_TYPE_MAPPING_UZ = {
+    "rent": "Ijara",
+    "buy": "Sotib olish",
+}
+
+# PROPERTY_TYPE
 PROPERTY_TYPE_MAPPING = {
     "new": "Новостройка",
     "old": "Вторичный фонд",
 }
+PROPERTY_TYPE_MAPPING_UZ = {
+    "new": "Yangi bino",
+    "old": "Ikkilamchi fond",
+}
+PROPERTY_TYPE_RU_UZ = {
+    "Новостройка": "Yangi bino",
+    "Вторичный фонд": "Ikkilamchi fond",
+}
 
-
+# REPAIR_TYPE
 REPAIR_TYPE_MAPPING = {
     "with": "С ремонтом",
     "without": "Без ремонта",
@@ -16,15 +36,14 @@ REPAIR_TYPE_MAPPING = {
     "pre_finished": "Предчистовая",
 }
 
+REPAIR_TYPE_RU_UZ = {
+    "С ремонтом": "Ta’mirlangan",
+    "Без ремонта": "Ta'mirsiz",
+    "Дизайнерский ремонт": "Dizaynerlik ta’mir",
+    "Черновая": "Qora Suvoq",
+    "Предчистовая": "Tugallanmagan ta’mir",
+}
 
-OPERATION_TYPE_MAPPING_UZ = {
-    "rent": "Ijara",
-    "buy": "Sotib olish",
-}
-PROPERTY_TYPE_MAPPING_UZ = {
-    "new": "Yangi bino",
-    "old": "Ikkilamchi fond",
-}
 REPAIR_TYPE_MAPPING_UZ = {
     "with": "Ta’mirlangan",
     "without": "Ta'mirsiz",

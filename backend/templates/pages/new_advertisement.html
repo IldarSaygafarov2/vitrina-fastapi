@@ -32,7 +32,7 @@
     {% if request.session %}
     {% if request.session.user.role == 'realtor' %}
     <div class="d-flex gap-3">
-        <a href="" class="btn btn-warning">Изменить</a>
+        <a href="/new-advertisement/{{advertisement.id}}/edit/" class="btn btn-warning">Изменить</a>
         <a href="" class="btn btn-danger">Удалить</a>
     </div>
     {% elif request.session.user.role == 'group_director' %}

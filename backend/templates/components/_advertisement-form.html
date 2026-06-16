@@ -1,0 +1,236 @@
+{% set is_required = "required" if not for_update else '' %}
+
+{% if request.path != '' %}
+{% set creation_year="value=" + advertisement.creation_year|string if not is_required else '' %}
+{% set price="value=" + advertisement.price|string if not is_required else '' %}
+{% set rooms_quantity="value=" + advertisement.rooms_quantity|string if not is_required else '' %}
+{% set house_quadrature="value=" + advertisement.house_quadrature_from|string if not is_required else '' %}
+{% set quadrature="value=" + advertisement.quadrature|string if not is_required else '' %}
+{% set floors="value=" + advertisement.floor_from|string if not is_required else '' %}
+{% set floor_number="value=" + advertisement.floor_to|string if not is_required else '' %}
+{% endif %}
+
+
+<form action="{{submit_url}}" class="my-5" method="post" enctype="multipart/form-data">
+    <h1>{{ page_title }}</h1>
+    <input type="hidden" name="user_id" value="{{request.session.user.id}}">
+    <div class="mb-3">
+        <label class="form-label" for="operation_type">Выберите тип операции</label>
+        {% if request.path != '/' %}
+        <select name="operation_type" id="operation_type" class="form-select" {{is_required}}>
+            <option value="buy" {% if advertisement.operation_type.value=='Покупка' and request.path !='/' %}selected{%
+                endif %}>Покупка
+            </option>
+            <option value="rent" {% if advertisement.operation_type.value=='Аренда' and request.path !='/' %}selected{%
+                endif %}>Аренда
+            </option>
+        </select>
+        {% else %}
+        <select name="operation_type" id="operation_type" class="form-select" {{is_required}}>
+            <option value="buy">Покупка</option>
+            <option value="rent">Аренда</option>
+        </select>
+        {% endif %}
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="category">Выберите категорию</label>
+        {% if request.path != '/' %}
+        <select name="category_id" id="category" class="form-select" {{is_required}}>
+            {% for category in categories %}
+            <option value="{{category.id}}" {% if advertisement.category.name==category.name and request.path !=''
+                %}selected{% endif %}>
+                {{category.name}}</option>
+            {% endfor %}
+        </select>
+        {% else %}
+        <select name="category_id" id="category" class="form-select" {{is_required}}>
+            {% for category in categories %}
+            <option value="{{category.id}}">{{category.name}}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="photos_quantity">
+            Отправьте фотографии (не больше 10)
+        </label>
+        <input type="file" multiple class="form-control" name="photos" placeholder="Кол-во фотографий"
+            id="photos_quantity" {{is_required}} accept="image/*">
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="title_ru">
+            Название объявления
+        </label>
+        {% if request.path != '/' %}
+        <input type="text" name="name" id="title_ru" class="form-control" placeholder="Название на русском..."
+            {{is_required}} {% if not is_required and request.path !='/' %}value="{{advertisement.name}}" {%endif%}>
+        {% else %}
+        <input type="text" name="name" id="title_ru" class="form-control" placeholder="Название на русском..."
+            {{is_required}}>
+        {% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="title_uz">
+            Название объявления на узбекском
+        </label>
+        {% if request.path != '/' %}
+        <input type="text" name="name_uz" id="title_uz" class="form-control" placeholder="Название на узбекском..."
+            {{is_required}} {% if not is_required and request.path !='/' %}value="{{advertisement.name_uz}}" {%endif%}>
+        {% else %}
+        <input type="text" name="name_uz" id="title_uz" class="form-control" placeholder="Название на узбекском..."
+            {{is_required}}>
+        {% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="description_ru">
+            Описание на русском
+        </label>
+        {% if request.path != '/' %}
+        <textarea type="text" name="description" id="description_ru" class="form-control"
+            placeholder="Описание на русском..."
+            {{is_required}}>{% if not is_required and request.path != '/' %}{{advertisement.description}}{%endif%}</textarea>
+        {% else %}
+        <textarea type="text" name="description" id="description_ru" class="form-control"
+            placeholder="Описание на русском..." {{is_required}}></textarea>
+        {% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="description_uz">
+            Описание на узбекском
+        </label>
+        {% if request.path != '/' %}
+        <textarea type="text" name="description_uz" id="description_uz" class="form-control"
+            placeholder="Описание на узбекском..."
+            {{is_required}}>{% if not is_required and request.path != '/' %}{{advertisement.description_uz}}{%endif%}</textarea>
+        {% else %}
+        <textarea type="text" name="description_uz" id="description_uz" class="form-control"
+            placeholder="Описание на узбекском..." {{is_required}}></textarea>
+        {% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="owner_phone_number">
+            Напишите номер телефона собственника и имя
+            пример: +998901231212 Александр
+        </label>
+        {% if request.path != '/' %}
+        <input type="text" name="owner_phone_number" id="owner_phone_number" class="form-control"
+            placeholder="Номер собственника" {{is_required}} {% if not is_required and request.path !='/'
+            %}value="{{advertisement.owner_phone_number}}" {%endif%}>
+        {% else %}
+        <input type="text" name="owner_phone_number" id="owner_phone_number" class="form-control"
+            placeholder="Номер собственника" {{is_required}}>
+        {% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="district">Выберите район</label>
+        {% if request.path != '/' %}
+        <select name="district_id" id="district" class="form-select" {{is_required}}>
+            {% for district in districts %}
+            <option value="{{district.id}}" {% if advertisement.district.id==district.id and request.path !='/'
+                %}selected{% endif %}>
+                {{district.name}}</option>
+            {% endfor %}
+        </select>
+        {% else %}
+        <select name="district_id" id="district" class="form-select" {{is_required}}>
+            {% for district in districts %}
+            <option value="{{district.id}}">{{district.name}}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="address_ru">
+            Адрес объявления на русском
+        </label>
+        {% if request.path != '/' %}
+        <input type="text" name="address" id="address_ru" class="form-control" placeholder="Адрес на русском"
+            {{is_required}} {% if not is_required and request.path !='/' %}value="{{advertisement.address}}" {%endif%}>
+        {% else %}
+        <input type="text" name="address" id="address_ru" class="form-control" placeholder="Адрес на русском"
+            {{is_required}}>
+        {% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="address_uz">
+            Адрес объявления на узбекском
+        </label>
+        <input type="text" name="address_uz" id="address_uz" class="form-control" placeholder="Адрес на узбекском"
+            {{is_required}} {% if not is_required and request.path !='/' %}value="{{advertisement.address_uz}}"
+            {%endif%}>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="property_type">Выберите тип недвижимости</label>
+        <select name="property_type" id="property_type" class="form-select" {{is_required}}>
+            <option value="old">Вторичный фонд</option>
+            <option value="new">Новостройка</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="creation_year">
+            Год постройки (если новостройка)
+        </label>
+        <input type="text" name="creation_year" id="creation_year" class="form-control" placeholder="Год постройки"
+            {{creation_year}}>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="price">
+            Цена объявления
+        </label>
+        <input type="text" name="price" id="price" class="form-control" placeholder="Цена" {{is_required}} {{price}}>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="rooms_quantity">
+            Кол-во комнат
+        </label>
+        <input type="text" name="rooms_quantity" id="rooms_quantity" class="form-control" placeholder="Кол-во комнат"
+            {{is_required}} {{rooms_quantity}}>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="house_quadrature">
+            Квадратура ("Дом")
+        </label>
+        <input type="text" name="house_quadrature_from" id="house_quadrature" class="form-control"
+            placeholder="Квадратура дома" {{house_quadrature}}>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="quadrature">
+            Квадратура ("Квартира")
+        </label>
+        <input type="text" name="quadrature" id="quadrature" class="form-control" placeholder="Квадратура квартиры"
+            {{is_required}} {{quadrature}}>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="floors">
+            Этажность
+        </label>
+        <input type="text" name="floor_to" id="floors" class="form-control" placeholder="Этажность" {{is_required}}
+            {{floors}}>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="floor_number">
+            Этаж
+        </label>
+        <input type="text" name="floor_from" id="floor_number" class="form-control" placeholder="Этаж" {{is_required}}
+            {{floor_number}}>
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="repair_type">Выберите тип ремонта</label>
+        {% if request.path != '/' %}
+        <select name="repair_type" id="repair_type" class="form-select" {{is_required}}>
+            {% for (repair_type_key, repair_type_value) in repair_types.items() %}
+            <option value="{{repair_type_key}}" {% if advertisement.repair_type.value==repair_type_value and
+                request.path !='/' %}selected{% endif %}>{{repair_type_value}}</option>
+            {% endfor %}
+        </select>
+        {% else %}
+        <select name="repair_type" id="repair_type" class="form-select" {{is_required}}>
+            {% for (repair_type_key, repair_type_value) in repair_types.items() %}
+            <option value="{{repair_type_key}}">{{repair_type_value}}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+    </div>
+    <button type="submit" class="btn btn-success">Отправить</button>
+</form>
