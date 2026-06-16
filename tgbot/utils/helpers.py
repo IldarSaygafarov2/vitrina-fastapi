@@ -29,10 +29,7 @@ def filter_digits(message: str) -> str:
 def get_media_group(photos, message: str | None = None) -> list[InputMediaPhoto]:
     media_group: list[InputMediaPhoto] = [
         (
-            InputMediaPhoto(
-                media=BufferedInputFile(img),
-                caption=message,
-            )
+            InputMediaPhoto(media=img, caption=message)
             if i == 0
             else InputMediaPhoto(media=img)
         )
