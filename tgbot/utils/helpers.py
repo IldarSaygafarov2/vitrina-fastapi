@@ -30,15 +30,11 @@ def get_media_group(photos, message: str | None = None) -> list[InputMediaPhoto]
     media_group: list[InputMediaPhoto] = [
         (
             InputMediaPhoto(
-                media=BufferedInputFile(
-                    open(img, "rb"), filename=os.path.basename(img)
-                ),
+                media=BufferedInputFile(img),
                 caption=message,
             )
             if i == 0
-            else InputMediaPhoto(
-                media=BufferedInputFile(open(img, "rb"), filename=os.path.basename(img))
-            )
+            else InputMediaPhoto(media=img)
         )
         for i, img in enumerate(photos)
     ]
