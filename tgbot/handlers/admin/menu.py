@@ -34,7 +34,7 @@ from tgbot.templates.messages import (
 )
 from tgbot.templates.realtor_texts import get_realtor_info
 from tgbot.utils.helpers import (
-    adjust_queue_send_time_to_allowed_window,
+    # adjust_queue_send_time_to_allowed_window,
     correct_advertisement_dict,
     get_channel_name_and_message_by_operation_type,
     get_media_group,
