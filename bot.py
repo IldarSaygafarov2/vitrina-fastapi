@@ -64,7 +64,7 @@ async def main():
 
     dp.include_routers(*routers_list)
 
-    await bot.delete_webhook()
+    # await bot.delete_webhook()
 
     engine = create_engine(db=config.db)
     session_pool = create_session_pool(engine=engine)

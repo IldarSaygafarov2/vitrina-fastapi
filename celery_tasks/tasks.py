@@ -55,11 +55,14 @@ def send_delayed_message(chat_id, media_group):
 
     from aiogram import Bot
 
+    bot = Bot(token=config.tg_bot.token)
+
     async def send_media_group():
-        bot = Bot(token=config.tg_bot.token)
-        _media = deserialize_media_group(media_group)
-        await bot.send_media_group(chat_id=chat_id, media=_media)
-        await bot.session.close()
+        try:
+            _media = deserialize_media_group(media_group)
+            await bot.send_media_group(chat_id=chat_id, media=_media)
+        finally:
+            await bot.session.close()
 
     asyncio.run(send_media_group())
 
@@ -69,21 +72,24 @@ def remind_agent_to_update_advertisement(
     unique_id, agent_chat_id: int, advertisement_id: int
 ):
     import asyncio
-
     from aiogram import Bot
 
+    bot = Bot(token=config.tg_bot.token)
+
     async def send_reminder():
-        bot = Bot(token=config.tg_bot.token)
-        msg = f"""
-Объявление: №{unique_id} актуально?
-"""
-        await bot.send_message(
-            agent_chat_id,
-            msg,
-            parse_mode="HTML",
-            reply_markup=is_advertisement_actual_kb(advertisement_id),
-        )
-        await bot.session.close()
+
+        try:
+            msg = f"""
+    Объявление: №{unique_id} актуально?
+    """
+            await bot.send_message(
+                agent_chat_id,
+                msg,
+                parse_mode="HTML",
+                reply_markup=is_advertisement_actual_kb(advertisement_id),
+            )
+        finally:
+            await bot.session.close()
 
     asyncio.run(send_reminder())
 
@@ -110,30 +116,34 @@ def send_message_by_queue(
     session_pool = create_session_pool(engine=engine)
 
     async def send_test():
-        async with session_pool() as session:
-            repo = RequestsRepo(session)
-
-        # обновляем объявление в очереди
-        await repo.advertisement_queue.update_advertisement_queue(
-            advertisement_id=advertisement_id
-        )
-
-        await send_message_to_rent_topic(
-            bot=bot, price=price, media_group=media_group, operation_type=operation_type
-        )
-
         try:
-            await bot.send_media_group(
-                chat_id=channel_name,
-                media=media_group,
-            )
-        except Exception as e:
-            await bot.send_message(
-                chat_id=config.tg_bot.test_main_chat_id,
-                text=f"ошибка при отправке медиа группы\n{str(e)}",
+            async with session_pool() as session:
+                repo = RequestsRepo(session)
+
+            # обновляем объявление в очереди
+            await repo.advertisement_queue.update_advertisement_queue(
+                advertisement_id=advertisement_id
             )
 
-        await bot.session.close()  # closing bot session
+            await send_message_to_rent_topic(
+                bot=bot,
+                price=price,
+                media_group=media_group,
+                operation_type=operation_type,
+            )
+
+            try:
+                await bot.send_media_group(
+                    chat_id=channel_name,
+                    media=media_group,
+                )
+            except Exception as e:
+                await bot.send_message(
+                    chat_id=config.tg_bot.test_main_chat_id,
+                    text=f"ошибка при отправке медиа группы\n{str(e)}",
+                )
+        finally:
+            await bot.session.close()  # closing bot session
 
     asyncio.run(send_test())
 
@@ -142,7 +152,6 @@ def send_message_by_queue(
 def send_media_to_telegram(data, file_paths):
     """Pass file paths instead of file objects"""
     files = {}
-    print(file_paths.items())
     for key, path in file_paths.items():
         files[key] = open(path, "rb")
 
@@ -170,24 +179,25 @@ def remind_agent_to_update_advertisement_by_date():
     bot = Bot(token=config.tg_bot.token)
 
     async def send_reminder():
-        current_date = get_current_date()
-        async with session_pool() as session:
-            repo = RequestsRepo(session)
-            result = await get_user_not_actual_advertisements_by_date(
-                date=current_date, repo=repo
-            )
+        try:
+            current_date = get_current_date()
+            async with session_pool() as session:
+                repo = RequestsRepo(session)
+                result = await get_user_not_actual_advertisements_by_date(
+                    date=current_date, repo=repo
+                )
 
-        for chat_id, advertisements in result.items():
-            if not advertisements:
-                continue
+            for chat_id, advertisements in result.items():
+                if not advertisements:
+                    continue
 
-            await bot.send_message(
-                chat_id,
-                f"Проверка актуальности объявлений.\nКоличество объявлений: {len(advertisements)}",
-                reply_markup=actual_checking_kb(advertisements),
-            )
-
-        await bot.session.close()
+                await bot.send_message(
+                    chat_id,
+                    f"Проверка актуальности объявлений.\nКоличество объявлений: {len(advertisements)}",
+                    reply_markup=actual_checking_kb(advertisements),
+                )
+        finally:
+            await bot.session.close()
 
     asyncio.run(send_reminder())
 
@@ -203,29 +213,34 @@ def delete_duplicated_channel_messages():
     bot = Bot(token=config.tg_bot.token)
 
     async def run_delete():
-        async with session_pool() as session:
-            repo = RequestsRepo(session)
-            channel_messages = await repo.channel_messages.get_all_channel_messages()
-
-        items = [
-            ChannelMessageSchema.model_validate(item, from_attributes=True).model_dump()
-            for item in channel_messages
-        ]
-        message_ids = get_message_ids_for_unique_id(items)
-
-        for key, value in message_ids.items():
-            if not value["items"] or len(value["items"]) < 2:
-                continue
-            for i in range(1, len(value["items"])):
-                item = value["items"][i]
-                channel_name = f'@{value["channel_name"]}'
-                await bot.delete_message(
-                    chat_id=channel_name,
-                    message_id=item,
+        try:
+            async with session_pool() as session:
+                repo = RequestsRepo(session)
+                channel_messages = (
+                    await repo.channel_messages.get_all_channel_messages()
                 )
-                await repo.channel_messages.delete_channel_message(message_id=item)
 
-        await bot.session.close()
-        await session.close()
+            items = [
+                ChannelMessageSchema.model_validate(
+                    item, from_attributes=True
+                ).model_dump()
+                for item in channel_messages
+            ]
+            message_ids = get_message_ids_for_unique_id(items)
+
+            for key, value in message_ids.items():
+                if not value["items"] or len(value["items"]) < 2:
+                    continue
+                for i in range(1, len(value["items"])):
+                    item = value["items"][i]
+                    channel_name = f'@{value["channel_name"]}'
+                    await bot.delete_message(
+                        chat_id=channel_name,
+                        message_id=item,
+                    )
+                    await repo.channel_messages.delete_channel_message(message_id=item)
+        finally:
+            await bot.session.close()
+            await session.close()
 
     asyncio.run(run_delete())
