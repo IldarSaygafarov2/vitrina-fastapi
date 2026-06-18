@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 import betterlogging as bl
 from aiogram import Bot, Dispatcher
@@ -51,12 +52,14 @@ async def main():
     config = load_config(".env")
     storage = MemoryStorage()
 
+    session = AiohttpSession(proxy=os.getenv("PROXY_URL"))
+
     bot = Bot(
         token=config.tg_bot.token,
         default=DefaultBotProperties(
             parse_mode=ParseMode.HTML, link_preview_is_disabled=True
         ),
-        # session=session,
+        session=session,
     )
 
     dp = Dispatcher(storage=storage)
