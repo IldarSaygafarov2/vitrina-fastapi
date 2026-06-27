@@ -30,6 +30,7 @@ from tgbot.keyboards.user.inline import (
     advertisement_actions_kb,
     categories_kb,
     districts_kb,
+    installment_plan_kb,
     property_type_kb,
     repair_type_kb,
 )
@@ -448,20 +449,55 @@ async def get_price(
         state_data = await state.get_data()
         cur_message = state_data.pop("cur_message")
 
-        cur_message = await cur_message.answer(
-            text="Количество комнат: ", reply_markup=None
-        )
+        operation_type = state_data.get("operation_type")
+
+        if operation_type == "buy":
+            cur_message = await cur_message.answer(
+                text="Есть ипотека?", reply_markup=installment_plan_kb()
+            )
+        else:
+            cur_message = await cur_message.answer(
+                text="Количество комнат: ", reply_markup=None
+            )
 
         price = filter_digits(message.text)
 
         await state.update_data(price=price, cur_message=cur_message)
-        await state.set_state(AdvertisementCreationState.rooms_quantity)
+
+        if operation_type == "buy":
+            await state.set_state(AdvertisementCreationState.has_installment_plan)
+        else:
+            await state.set_state(AdvertisementCreationState.rooms_quantity)
+
     except Exception as e:
         await send_error_message_to_dev(
             bot=message.bot,
             message="get_price",
             exception=e,
         )
+
+
+@router.callback_query(AdvertisementCreationState.has_installment_plan)
+async def get_installment_plan(
+    call: CallbackQuery,
+    state: FSMContext,
+):
+    await call.answer()
+
+    state_data = await state.get_data()
+
+    installment_option = call.data.split(":")[-1]
+
+    cur_message = state_data.pop("cur_message")
+
+    cur_message = cur_message = await cur_message.answer(
+        text="Количество комнат: ", reply_markup=None
+    )
+
+    await state.update_data(
+        installment_option=installment_option, cur_message=cur_message
+    )
+    await state.set_state(AdvertisementCreationState.rooms_quantity)
 
 
 @router.message(AdvertisementCreationState.rooms_quantity)
@@ -650,6 +686,7 @@ async def get_repair_type(
         state_data = await state.get_data()
 
         unique_id = state_data.get("unique_code")
+        installment_plan = state_data.get("installment_option")
 
         operation_type = state_data.get("operation_type")
         category = state_data.get("category")
@@ -740,6 +777,7 @@ async def get_repair_type(
             user=user.id,
             owner_phone_number=owner_phone_number,
             reminder_time=None,
+            installment_plan=installment_plan,
         )
         new_advertisement = await repo.advertisements.update_advertisement(
             advertisement_id=new_advertisement.id, old_price=int(price)

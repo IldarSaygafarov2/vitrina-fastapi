@@ -298,29 +298,6 @@ async def process_moderation_confirm(
         media_group=media_group,
     )
 
-    # base_for_calc = None
-
-    # if base_for_calc is not None:
-    #     raw_time = base_for_calc + datetime.timedelta(minutes=5)
-    #     time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
-    #     await repo.advertisement_queue.add_advertisement_to_queue(
-    #         advertisement_id=advertisement.id, time_to_send=time_to_send
-    #     )
-    # elif not_sent_advertisements:
-    #     raw_time = not_sent_advertisements[-1].time_to_send + datetime.timedelta(
-    #         minutes=5
-    #     )
-    #     time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
-    #     await repo.advertisement_queue.add_advertisement_to_queue(
-    #         advertisement_id=advertisement.id, time_to_send=time_to_send
-    #     )
-    # else:
-    #     raw_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
-    #     time_to_send = adjust_queue_send_time_to_allowed_window(raw_time)
-    #     await repo.advertisement_queue.add_advertisement_to_queue(
-    #         advertisement_id=advertisement.id, time_to_send=time_to_send
-    #     )
-
     # send_message_by_queue.apply_async(
     #     args=[
     #         advertisement.id,

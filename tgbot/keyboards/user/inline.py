@@ -228,3 +228,17 @@ def actual_checking_kb(advertisements: Sequence[Advertisement]):
     kb.adjust(1)
 
     return kb.as_markup()
+
+
+def installment_plan_kb():
+    kb = InlineKeyboardBuilder()
+
+    kb.add(
+        InlineKeyboardButton(text="Ипотека", callback_data="installment:full"),
+        InlineKeyboardButton(
+            text="Частичтная ипотека", callback_data="installment:partial"
+        ),
+        InlineKeyboardButton(text="Без ипотеки", callback_data="installment:no"),
+    )
+    kb.adjust(1)
+    return kb.as_markup()

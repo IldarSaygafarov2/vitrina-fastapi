@@ -97,6 +97,7 @@ class AdvertisementRepo(BaseRepo):
         owner_phone_number: str,
         reminder_time: datetime | None,
         is_reminded: bool = False,
+        installment_plan: str | None = None,
     ):
         stmt = (
             insert(Advertisement)
@@ -129,6 +130,7 @@ class AdvertisementRepo(BaseRepo):
                 owner_phone_number=owner_phone_number,
                 reminder_time=reminder_time,
                 is_reminded=is_reminded,
+                installment_plan=installment_plan,
             )
             .options(
                 selectinload(Advertisement.category),
@@ -151,7 +153,9 @@ class AdvertisementRepo(BaseRepo):
 
     async def get_all_not_reminded_advertisements(self):
         stmt = select(
-            Advertisement.id, Advertisement.user_id, Advertisement.reminder_time
+            Advertisement.id,
+            Advertisement.user_id,
+            Advertisement.reminder_time,
         ).where(Advertisement.is_reminded == False)
         result = await self.session.execute(stmt)
         return result.scalars().all()

@@ -121,6 +121,7 @@ class Advertisement(Base, IntIdMixin):
     for_base_channel: Mapped[bool] = mapped_column(nullable=True, default=False)
     reminder_time: Mapped[date] = mapped_column(nullable=True)
     is_reminded: Mapped[bool] = mapped_column(nullable=True)
+    installment_plan: Mapped[str] = mapped_column(nullable=True)
 
     images: Mapped[list["AdvertisementImage"]] = relationship(
         back_populates="advertisement"

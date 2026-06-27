@@ -39,6 +39,8 @@ class AdvertisementCreationState(StatesGroup):
 
     check_preview = State()
 
+    has_installment_plan = State()
+
 
 class AdvertisementModerationState(StatesGroup):
     message = State()

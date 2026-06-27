@@ -174,7 +174,9 @@ def get_channel_name_and_message_by_operation_type(advertisement) -> tuple[str, 
         advertisement_message = rent_channel_advertisement_message(advertisement)
     else:
         channel_name = config.tg_bot.buy_channel_name
-        advertisement_message = buy_channel_advertisement_message(advertisement)
+        advertisement_message = buy_channel_advertisement_message(
+            advertisement, advertisement.installment_plan
+        )
 
     return channel_name, advertisement_message
 
